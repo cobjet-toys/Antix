@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "antix.h"
 using namespace Antix;

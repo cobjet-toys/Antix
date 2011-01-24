@@ -3,7 +3,12 @@
 using namespace Antix;
 
 #if GRAPHICS
-#include <GLUT/glut.h> // OS X users need <glut/glut.h> instead
+
+#ifdef __linux
+#include <GL/glut.h>
+#elif __APPLE__
+#include <GLUT/glut.h> 
+#endif
 
 int Robot::winsize( 600 );
 
