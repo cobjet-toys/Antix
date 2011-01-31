@@ -1,0 +1,27 @@
+package Client;
+
+message RobotMessage {
+
+	message NeighborRobots {
+
+	    required int32 id = 1;
+	    required float position = 2;
+	    optional float speed = 3;
+	}
+
+	message NeighborPucks {
+
+	    required float position = 1;
+	    optional bool isHeld = 2;
+	 }
+
+repeated NeighborRobots neighbors = 1;
+repeated NeighborPucks pucks = 2;
+
+}
+
+message Client {
+
+    repeated RobotMessage message = 1;
+
+}
