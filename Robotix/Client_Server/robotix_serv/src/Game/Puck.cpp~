@@ -1,0 +1,18 @@
+#include "Game/Puck.h"
+
+using namespace Game;
+
+Puck::Puck(Position* pos): GameObject(pos), mHeld(false)
+{
+}
+
+bool Puck::isHeld()
+{
+    return mHeld == true;
+}
+
+void Puck::toggleHeld()
+{
+    mHeld = !mHeld;
+}
+

@@ -1,0 +1,198 @@
+#include "Network/DummyServer.h"
+#include "Network/Packer.h"
+#include "Game/Game.h"
+
+#include <list>
+#include <pthread.h>
+
+extern bool m_ClientsReady;
+extern int m_ConnectedClients;
+
+void* InitNetwork(void* port)
+{
+    const char* l_Port = (char*)port;
+
+    int sockfd = 0, new_fd;  // listen on sock_fd, new connection on new_fd
+    struct addrinfo hints, *servinfo, *p;
+    struct sockaddr_storage their_addr; // connector's address information
+    socklen_t sin_size;
+    int yes=1;
+    int rv;
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE; // use my IP
+
+    if ((rv = getaddrinfo(NULL, l_Port, &hints, &servinfo)) != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+    }
+
+    // loop through all the results and bind to the first we can
+    for(p = servinfo; p != NULL; p = p->ai_next) {
+        if ((sockfd = socket(p->ai_family, p->ai_socktype,
+                p->ai_protocol)) == -1) {
+            perror("server: socket");
+            continue;
+        }
+
+        if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes,
+                sizeof(int)) == -1) {
+            perror("setsockopt");
+            exit(1);
+        }
+
+        if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
+            close(sockfd);
+            perror("server: bind");
+            continue;
+        }
+
+        break;
+    }
+
+    if (p == NULL)  {
+        fprintf(stderr, "server: failed to bind\n");
+    }
+
+    freeaddrinfo(servinfo); // all done with this structure
+
+    if (listen(sockfd, BACKLOG) == -1) {
+        perror("listen");
+        exit(1);
+    }
+
+    printf("server: waiting for connections...\n");
+    
+    std::list<pthread_t> threads;
+
+    while(1) {  // main accept() loop
+        sin_size = sizeof their_addr;
+        new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
+        if (new_fd == -1) {
+            perror("accept");
+            continue;
+        }
+
+        printf("server: got connection from\n");
+        
+        ++m_ConnectedClients;
+        pthread_t thread;
+        threads.push_back(thread);
+        pthread_create(&threads.back(), NULL, ClientLoop, (void*)new_fd);
+    }
+
+    return 0;
+}
+
+void sendData(int sockfd, unsigned char* buffer, int &msgSize)
+{
+    //Bytes sent.
+    int l_Sent = 0;
+
+    while (l_Sent < msgSize)
+        l_Sent = send(sockfd, &buffer, msgSize, 0);
+}
+
+void recvData(int sockfd, unsigned char* buffer, int &msgSize)
+{
+    //Bytes received.
+    int l_Recv = 0;
+
+    while (l_Recv < msgSize)
+        l_Recv += recv(sockfd, &buffer, msgSize, 0);
+}
+
+void sendInitConfig(int sockfd)
+{
+     //44byte message
+    using namespace Game;
+    int l_PuckCount = Robotix::getInstance()->getPuckCount();
+    int l_WindowSize = Robotix::getInstance()->getWindowSize();
+    int l_RobPop = Robotix::getInstance()->getRobPop();
+    int l_ClientTeam = m_ConnectedClients;
+    float l_WorldSize = Robotix::getInstance()->getWorldSize();
+    float l_TeamCount = Robotix::getInstance()->getTeamCount();
+    float l_RobFOV = Robotix::getInstance()->getRobFOV();
+    float l_RobRadius = Robotix::getInstance()->getRobRadius();
+    float l_RobSensorRange = Robotix::getInstance()->getRobSensorRange();
+    float l_RobPickupRange = Robotix::getInstance()->getRobPickupRange();
+    float l_HomeRadius = Robotix::getInstance()->getHomeRadius();
+
+    //If you add config options, change this too.
+    int l_MessageSize = 44;    
+    unsigned char l_Buffer[l_MessageSize];
+
+    //Pack our message.
+    pack(l_Buffer, "llllfffffff", l_PuckCount, l_WindowSize, l_RobPop, l_ClientTeam, l_WorldSize,
+            l_TeamCount, l_RobFOV, l_RobRadius, l_RobSensorRange, l_RobPickupRange, l_HomeRadius);
+
+    //Send shit like a boss.
+    sendData(sockfd, l_Buffer, l_MessageSize);
+
+    printf("Sent initial config\n");
+   
+}
+
+void recvAck(int sockfd)
+{
+   //Expecting a short int
+   int l_ExpectedSize = 2;
+   unsigned char l_Buffer[l_ExpectedSize];
+
+    
+   recvData(sockfd, l_Buffer, l_ExpectedSize);
+
+   int16_t l_Ack;
+   unpack(l_Buffer, "h", &l_Ack);
+
+   printf("Received ACK %hd\n", l_Ack);
+}
+
+void sendGameInfo(int sockfd)
+{
+}
+
+void recvGameInfo(int sockfd)
+{
+
+}
+
+void* ClientLoop(void* sockfd)
+{
+    int l_Clientfd = (intptr_t)sockfd;
+    
+    /*
+     * 0 = INIT - Send config options, puck, robot, and home locations.
+     * 1 = READY
+     * 2 = BUSY
+     */
+    int l_ClientState = 0;
+
+    while(1)
+    {
+        switch(l_ClientState)
+        {
+            case(0):
+                sendInitConfig(l_Clientfd);
+                recvAck(l_Clientfd);
+                l_ClientState = 1;
+                break;
+            case(1):
+                if (m_ClientsReady)
+                {
+                    sendGameInfo(l_Clientfd);
+                    l_ClientState = 2;
+                }
+                break;
+            case(2):
+                recvGameInfo(l_Clientfd);
+                l_ClientState = 1;
+                break;
+        }
+    }
+    close(l_Clientfd);
+    return 0;
+}
+
+

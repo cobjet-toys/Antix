@@ -1,0 +1,11 @@
+#include "Math/Position.h"
+#include <math.h>
+
+
+int main(int argc, char** argv)
+{
+    using namespace Math;
+    Position newPos = Position();
+
+    return 0;
+}
