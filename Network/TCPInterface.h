@@ -1,3 +1,6 @@
+#ifndef TCPINTERFACE_H_
+#define TCPINTERFACE_H_
+
 #include <netdb.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -21,3 +24,4 @@ typedef struct {
 void* InitConnection(void* args);
 int sendAll(int sockfd, unsigned char* msg, int msgSize);
 int rcvAll(int sockfd, unsigned char* msg, int msgSize);
+#endif

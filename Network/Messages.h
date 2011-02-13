@@ -1,5 +1,7 @@
-//New messages should be added to this header file.
-//Use int32_t for message members to ensure the same bit size on all machines.
+#ifndef MESSAGES_H_
+#define MESSAGES_H
+
+//New messages should be added to this header file.//Use int32_t for message members to ensure the same bit size on all machines.
 #include <stdint.h>
 
 //All messages should contain a static const member named 'size'.
@@ -11,3 +13,5 @@ typedef struct
     float ypos;
     static const int size = 12;
 } Msg_example;
+
+#endif
