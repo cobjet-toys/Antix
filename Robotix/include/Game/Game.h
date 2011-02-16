@@ -24,6 +24,11 @@ public:
     void update();
 
     /**
+     * Sorts the robot population
+     */
+    void sortRobots();
+
+    /**
      * Dtor. Delete the pucks and teams.
      */
     ~Robotix();

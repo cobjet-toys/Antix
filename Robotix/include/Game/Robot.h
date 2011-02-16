@@ -70,9 +70,25 @@ public:
     bool Pickup();
 
     /**
+     * Print data about the robot.
+     */
+    void printInfo();
+
+    /**
+     * Get X coordinate of robot.
+     */
+    float getX();
+
+    /**
+     * Get Y coordinate of robot.
+     */
+    float getY();
+
+    /**
      * Return the radius of the robot.
      */
     static float& getRadius();
+
 private: 
     /**
      * Current speed of the object.

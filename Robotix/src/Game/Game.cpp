@@ -6,6 +6,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <iostream>
 
 #include <stdio.h>
 
@@ -36,9 +37,9 @@ void Robotix::init()
     m_Updates = 0;
     m_MaxUpdates = 0;
 
-    m_TotalPuckCount = 400;
-    m_TotalTeamCount = 3;
-    Team::m_RobotPopCount = 50;
+    m_TotalPuckCount = 1000;
+    m_TotalTeamCount = 5;
+    Team::m_RobotPopCount = 200;
     
     m_SleepMsec = 10; 
 
@@ -78,6 +79,71 @@ Robotix::~Robotix()
     }
 }
 
+void Robotix::sortRobots()
+{
+
+	// DEBUG
+	/*
+	printf("before list:");
+    for(std::list<Robot*>::iterator it = m_Population.begin(); it != m_Population.end(); it++)
+    {
+		printf("%f,", (*it)->getX());
+	}
+	printf("\n");
+	*/
+
+	int outer = 0;
+
+	//std::cout << "1. size: " << (int) m_Population.size() << std::endl;
+
+	std::list<Robot*>::iterator i = m_Population.begin();
+	i++;
+
+	int inner = 1;
+    for(; i != m_Population.end(); ++i)
+    {
+		outer++;
+		//printf("outer: %d, %f\n", outer, (*i)->getX());
+
+		std::list<Robot*>::iterator j = i;
+		std::list<Robot*>::iterator k = i;
+		j--;
+
+		for(int counter = inner; counter > 0; counter--)
+		{
+			//printf("j is %f\n", (*j)->getX());
+			//printf("inner: %d\n", inner);
+	
+			if ( (*j)->getX() > (*k)->getX())
+			{
+				//Robot* temp = (*k);
+				//m_Population.erase(k);
+				//m_Population.insert(j, temp);	
+           		std::swap((*j), (*k));
+				//printf("less than!\n");
+				
+			}
+			k--;
+			j--;
+		}
+		inner++;
+
+	}		
+
+	// DEBUG
+
+	/*
+	printf("\nafter list:");
+    for(std::list<Robot*>::iterator it = m_Population.begin(); it != m_Population.end(); it++)
+    {
+		printf("%f,", (*it)->getX());
+	}
+	printf("\n");
+	*/
+
+
+}
+
 void Robotix::update()
 {
     //If we've set max update, then check if we've done enough updates.
@@ -86,7 +152,11 @@ void Robotix::update()
 
     //Main AI loop.
     if (!m_GamePaused)
-    { 
+    {
+		//sort the robot population using insertion sort, which is good for
+		//lists which do not get too out of order 
+		Robotix::sortRobots();
+
         //Update the position of all robots.
         for (std::list<Robot*>::iterator it = m_Population.begin(); it != m_Population.end(); it++)
         {
@@ -104,6 +174,7 @@ void Robotix::update()
         {
            (*it)->updateController(); 
         }
+
     }
 
     m_Updates++;

@@ -266,3 +266,23 @@ bool Robot::Pickup()
     return false;
 }
 
+void Robot::printInfo()
+{
+
+	printf("Position: %f, %f\n", (*getPosition()).getX(), (*getPosition()).getY());
+
+}
+
+float Robot::getX()
+{
+
+	return (*getPosition()).getX();
+
+}
+
+float Robot::getY()
+{
+
+	return (*getPosition()).getY();
+
+}
