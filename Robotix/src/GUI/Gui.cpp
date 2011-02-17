@@ -109,11 +109,12 @@ void drawRobot(Game::Robot* robot, const GUI::Color* color )
         glVertex2f(cos(l_Left)* l_SensRange, sin(l_Left)*l_SensRange);
         glEnd();
 
+        //Draw bounding box.
         glBegin(GL_LINE_LOOP);
-        glVertex2f(0.0, -l_SensRange);
-        glVertex2f(l_SensRange, -l_SensRange);
-        glVertex2f(l_SensRange, l_SensRange);
-        glVertex2f(0.0, l_SensRange);
+        glVertex2f(0.0, sin(l_Left)*l_SensRange);
+        glVertex2f(l_SensRange, sin(l_Left)*l_SensRange);
+        glVertex2f(l_SensRange, sin(l_Right)*l_SensRange);
+        glVertex2f(0.0, sin(l_Right)*l_SensRange);
         glEnd();
     }
 
