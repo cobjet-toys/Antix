@@ -37,9 +37,9 @@ void Robotix::init()
     m_Updates = 0;
     m_MaxUpdates = 0;
 
-    m_TotalPuckCount = 1000;
-    m_TotalTeamCount = 5;
-    Team::m_RobotPopCount = 200;
+    m_TotalPuckCount = 5;
+    m_TotalTeamCount = 1;
+    Team::m_RobotPopCount = 5;
     
     m_SleepMsec = 10; 
 
@@ -82,28 +82,13 @@ Robotix::~Robotix()
 void Robotix::sortRobots()
 {
 
-	// DEBUG
-	/*
-	printf("before list:");
-    for(std::list<Robot*>::iterator it = m_Population.begin(); it != m_Population.end(); it++)
-    {
-		printf("%f,", (*it)->getX());
-	}
-	printf("\n");
-	*/
-
 	int outer = 0;
-
-	//std::cout << "1. size: " << (int) m_Population.size() << std::endl;
-
 	std::list<Robot*>::iterator i = m_Population.begin();
 	i++;
-
 	int inner = 1;
     for(; i != m_Population.end(); ++i)
     {
 		outer++;
-		//printf("outer: %d, %f\n", outer, (*i)->getX());
 
 		std::list<Robot*>::iterator j = i;
 		std::list<Robot*>::iterator k = i;
@@ -111,17 +96,10 @@ void Robotix::sortRobots()
 
 		for(int counter = inner; counter > 0; counter--)
 		{
-			//printf("j is %f\n", (*j)->getX());
-			//printf("inner: %d\n", inner);
 	
 			if ( (*j)->getX() > (*k)->getX())
 			{
-				//Robot* temp = (*k);
-				//m_Population.erase(k);
-				//m_Population.insert(j, temp);	
            		std::swap((*j), (*k));
-				//printf("less than!\n");
-				
 			}
 			k--;
 			j--;
@@ -129,18 +107,6 @@ void Robotix::sortRobots()
 		inner++;
 
 	}		
-
-	// DEBUG
-
-	/*
-	printf("\nafter list:");
-    for(std::list<Robot*>::iterator it = m_Population.begin(); it != m_Population.end(); it++)
-    {
-		printf("%f,", (*it)->getX());
-	}
-	printf("\n");
-	*/
-
 
 }
 
