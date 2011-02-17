@@ -37,9 +37,9 @@ void Robotix::init()
     m_Updates = 0;
     m_MaxUpdates = 0;
 
-    m_TotalPuckCount = 5;
-    m_TotalTeamCount = 1;
-    Team::m_RobotPopCount = 5;
+    m_TotalPuckCount = 1000;
+    m_TotalTeamCount = 5;
+    Team::m_RobotPopCount = 400;
     
     m_SleepMsec = 10; 
 

@@ -7,6 +7,8 @@
 
 using namespace Game;
 
+#define PI 3.14159265
+
 //Initialize our static variables.
 float Robot::m_FOV = 0.0;
 float Robot::m_Radius = 0.0;
@@ -64,11 +66,42 @@ void Robot::updateSensors()
 
     //Note: The following two large sensing operations could safely be done in parallel since
     //they do not modify any common data.
-    
+
+	float xr = l_CurrentPos->getX();
+
+	float x1 = sin( (l_CurrentPos->getOrient() * m_SensorRange) + xr);
+	float x2 = sin( ((l_CurrentPos->getOrient() + PI/4) * m_SensorRange) + xr);
+	float x3 = sin( ((l_CurrentPos->getOrient() - PI/4) * m_SensorRange) + xr);
+
+	//printf("xr: %f,x1:%f, x2:%f, x3:%f, orient:%f\n", xr, x1, x2, x3, l_CurrentPos->getOrient());
+   
+	float xs[3] = {x1, x2, x3};
+
+	float xmin = xr;
+	float xmax = xr;	
+
+	for (int i = 0; i < 3; i++)
+	{
+		if (xs[i] > xmax)
+		{
+			xmax = xs[i];
+		}
+		if (xs[i] < xmin)
+		{
+			xmin = xs[i];
+		}
+	}
+
+	//printf("xmin: %f,xmax:%f\n", xmin, xmax);
+
+	std::list<Robot*> boundedRobots = GetRobotsInRange(xmin, xmax);
+ 
     //Check every robot in the world, and determine if it is in range.
     //If it is, push it into our visible robots collection. 
-    for (std::list<Robot*>::iterator it = Robotix::getInstance()->getFirstRobot();
-            it != Robotix::getInstance()->getLastRobot(); it++)
+    for (std::list<Robot*>::iterator it = boundedRobots.begin();
+            it != boundedRobots.end(); it++)
+    //for (std::list<Robot*>::iterator it = Robotix::getInstance()->getFirstRobot();
+    //        it != Robotix::getInstance()->getLastRobot(); it++)
     {
         Robot *l_Other = *it;
         
@@ -286,3 +319,68 @@ float Robot::getY()
 	return (*getPosition()).getY();
 
 }
+
+std::list<Robot*> Robot::GetRobotsInRange(float xmin, float xmax)
+{
+
+
+	if(xmin < 0)
+	{
+		std::list<Robot*> list1 = GetRobotsInRange(0, xmax);
+		std::list<Robot*> list2 = GetRobotsInRange(1+xmin, xmax);
+		list1.insert(list1.end(), list2.begin(), list2.end());
+		return list1;
+	}
+	else if(xmax > 1)
+	{
+		std::list<Robot*> list1 = GetRobotsInRange(xmin, 1);
+		std::list<Robot*> list2 = GetRobotsInRange(0, xmax-1);
+		list1.insert(list1.end(), list2.begin(), list2.end());
+		return list1;	
+	}
+	else{
+
+		std::list<Robot*> robots;
+	
+		if (xmax < 0.5)
+		{
+			std::list<Robot*>::iterator it = Robotix::getInstance()->getFirstRobot();
+			
+			while((*it)->getX() <= xmax)
+			{
+				if ( (*it)->getX() >= xmin )
+				{
+					robots.push_front( (*it) );
+				}
+				it++;
+			}
+
+		}
+		else if (xmax < 0.5)
+		{
+			std::list<Robot*>::iterator it = Robotix::getInstance()->getLastRobot();
+			
+			while((*it)->getX() <= xmax)
+			{
+				if ( (*it)->getX() >= xmin )
+				{
+					robots.push_front( (*it) );
+				}
+				it++;
+			}
+
+		}
+		
+		return robots;
+
+	}
+
+
+
+}
+
+
+
+
+
+

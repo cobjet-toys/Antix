@@ -83,6 +83,11 @@ public:
      * Get Y coordinate of robot.
      */
     float getY();
+    
+	/**
+     * Returns a list of robots within a min and max
+     */
+    std::list<Robot*> GetRobotsInRange(float min, float max);
 
     /**
      * Return the radius of the robot.
