@@ -84,14 +84,34 @@ void drawRobot(Game::Robot* robot, const GUI::Color* color )
 	}
 	else
 	{
+        //Draw the robot body.
 	    glBegin(GL_LINE_LOOP);
 	    for (float a = 0.0; a < (M_PI*2.0); a+=M_PI/16)
 		    glVertex2f( sin(a) * lRadius, cos(a) * lRadius);
 	    glEnd();
+        //Draw the robot orientation.
 	    glBegin(GL_LINES);
 	    glVertex2f(0,0);
+        glVertex2f(Game::Robot::getRadius(), 0);
 	    glEnd();
-	}
+
+        //Draw the robot FOV:
+        glBegin(GL_LINE_LOOP);
+
+        glVertex2f(0,0);
+
+
+        float l_FOV = Game::Robot::getFOV();
+        float l_Right = -l_FOV/2.0;
+        float l_Left = +l_FOV/2.0;
+        float l_Incr = l_FOV/32.0;
+
+        float l_SensRange = Game::Robot::getSensRange();
+        for(float i = l_Right; i < l_Left; i+=l_Incr)
+            glVertex2f(cos(i)* l_SensRange, sin(i)*l_SensRange);
+        glVertex2f(cos(l_Left)* l_SensRange, sin(l_Left)*l_SensRange);
+        glEnd();
+    }
 
     glPopMatrix();
 }

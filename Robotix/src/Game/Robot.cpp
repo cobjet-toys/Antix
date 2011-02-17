@@ -30,6 +30,16 @@ float& Robot::getRadius()
     return m_Radius;
 }
 
+float& Robot::getSensRange()
+{
+    return m_SensorRange;
+}
+
+float& Robot::getFOV()
+{
+    return m_FOV;
+}
+
 void Robot::updatePosition()
 {
     //Calculate our displacement based on our speed and current position.

@@ -89,6 +89,18 @@ public:
      */
     static float& getRadius();
 
+    /**
+     * Return the sensor range of all robots.
+     */
+
+    static float& getSensRange();
+
+    /**
+     * Return the FOV of all robots.
+     */
+
+    static float& getFOV();
+
 private: 
     /**
      * Current speed of the object.
