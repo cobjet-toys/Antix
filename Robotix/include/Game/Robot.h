@@ -89,6 +89,11 @@ public:
      */
     std::list<Robot*> GetRobotsInRange(float min, float max);
 
+	/**
+     * Returns a list of pucks within a min and max
+     */
+    std::list<Puck*> GetPucksInRange(float min, float max);
+
     /**
      * Return the radius of the robot.
      */

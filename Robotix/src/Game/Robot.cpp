@@ -32,6 +32,20 @@ float& Robot::getRadius()
     return m_Radius;
 }
 
+float Robot::getX()
+{
+
+	return (*getPosition()).getX();
+
+}
+
+float Robot::getY()
+{
+
+	return (*getPosition()).getY();
+
+}
+
 void Robot::updatePosition()
 {
     //Calculate our displacement based on our speed and current position.
@@ -104,6 +118,9 @@ void Robot::updateSensors()
     //        it != Robotix::getInstance()->getLastRobot(); it++)
     {
         Robot *l_Other = *it;
+		//float test = l_Other->getRadius();
+
+		//printf("%f", test);
         
         //Discard if it's the same robot.
         if (l_Other == this)
@@ -136,10 +153,16 @@ void Robot::updateSensors()
         m_VisibleRobots.push_back(VisibleRobotPtr(l_Other, l_Range, l_RelHeading));
     }
 
+	std::list<Puck*> boundedPucks = GetPucksInRange(xmin, xmax);
+ 
+    //Check every robot in the world, and determine if it is in range.
+    //If it is, push it into our visible robots collection. 
+    for (std::list<Puck*>::iterator it = boundedPucks.begin();
+            it != boundedPucks.end(); it++)
     //Check every puck in the world, and determine if it's in range.
     //If it is, push it into our visible puck collection.
-    for (std::list<Puck*>::iterator it = Robotix::getInstance()->getFirstPuck();
-            it != Robotix::getInstance()->getLastPuck(); it++)
+    //for (std::list<Puck*>::iterator it = Robotix::getInstance()->getFirstPuck();
+    //        it != Robotix::getInstance()->getLastPuck(); it++)
     {
         Puck* l_Puck = (*it);
         Position* l_PuckPosition = l_Puck->getPosition();
@@ -306,24 +329,9 @@ void Robot::printInfo()
 
 }
 
-float Robot::getX()
-{
-
-	return (*getPosition()).getX();
-
-}
-
-float Robot::getY()
-{
-
-	return (*getPosition()).getY();
-
-}
 
 std::list<Robot*> Robot::GetRobotsInRange(float xmin, float xmax)
 {
-
-
 	if(xmin < 0)
 	{
 		std::list<Robot*> list1 = GetRobotsInRange(0, xmax);
@@ -338,15 +346,39 @@ std::list<Robot*> Robot::GetRobotsInRange(float xmin, float xmax)
 		list1.insert(list1.end(), list2.begin(), list2.end());
 		return list1;	
 	}
-	else{
+	else
+	{
 
-		std::list<Robot*> robots;
-	
+		std::list<Robot*> objects;
+
+    	for (std::list<Robot*>::iterator it = Robotix::getInstance()->getFirstRobot();
+            it != Robotix::getInstance()->getLastRobot(); it++)
+		{
+			
+			if( (*it)->getX() >= xmin && (*it)->getX() <= xmax )
+			{
+				objects.push_front( (*it) );
+				//printf("%f", (*it)->getX());
+			}
+			if( (*it)->getX() > xmax )
+			{
+				break;
+			}
+
+		}
+		//printf("\n");
+
+		return objects;
+
+	}	
+
+
+		/*	
 		if (xmax < 0.5)
 		{
 			std::list<Robot*>::iterator it = Robotix::getInstance()->getFirstRobot();
 			
-			while((*it)->getX() <= xmax)
+			while((*it)->getX() <= xmax && it != Robotix::getInstance()->getLastRobot() )
 			{
 				if ( (*it)->getX() >= xmin )
 				{
@@ -356,31 +388,48 @@ std::list<Robot*> Robot::GetRobotsInRange(float xmin, float xmax)
 			}
 
 		}
-		else if (xmax < 0.5)
-		{
-			std::list<Robot*>::iterator it = Robotix::getInstance()->getLastRobot();
-			
-			while((*it)->getX() <= xmax)
-			{
-				if ( (*it)->getX() >= xmin )
-				{
-					robots.push_front( (*it) );
-				}
-				it++;
-			}
-
-		}
+		*/
 		
-		return robots;
-
-	}
-
-
-
 }
 
+std::list<Puck*> Robot::GetPucksInRange(float xmin, float xmax)
+{
+	if(xmin < 0)
+	{
+		std::list<Puck*> list1 = GetPucksInRange(0, xmax);
+		std::list<Puck*> list2 = GetPucksInRange(1+xmin, xmax);
+		list1.insert(list1.end(), list2.begin(), list2.end());
+		return list1;
+	}
+	else if(xmax > 1)
+	{
+		std::list<Puck*> list1 = GetPucksInRange(xmin, 1);
+		std::list<Puck*> list2 = GetPucksInRange(0, xmax-1);
+		list1.insert(list1.end(), list2.begin(), list2.end());
+		return list1;	
+	}
+	else{
 
+		std::list<Puck*> objects;
 
+    	for (std::list<Puck*>::iterator it = Robotix::getInstance()->getFirstPuck();
+            it != Robotix::getInstance()->getLastPuck(); it++)
+		{
+			
+			if( (*it)->getX() >= xmin && (*it)->getX() <= xmax )
+			{
+				objects.push_front( (*it) );
+				//printf("%f", (*it)->getX());
+			}
+			if( (*it)->getX() > xmax )
+			{
+				break;
+			}
 
+		}
+		//printf("\n");
 
+		return objects;
+	}
+}
 

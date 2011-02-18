@@ -26,11 +26,23 @@ public:
      * Toggle the status of the puck.
      */
     void toggleHeld();
+
+    /**
+     * Get X coordinate of puck.
+     */
+    float getX();
+
+    /**
+     * Get Y coordinate of puck.
+     */
+    float getY();
 private:
     /**
      * Is the puck held.
      */
     bool m_Held;
+
+    
 };
 }
 

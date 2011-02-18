@@ -39,7 +39,7 @@ void Robotix::init()
 
     m_TotalPuckCount = 1000;
     m_TotalTeamCount = 5;
-    Team::m_RobotPopCount = 400;
+    Team::m_RobotPopCount = 600;
     
     m_SleepMsec = 10; 
 
@@ -110,6 +110,37 @@ void Robotix::sortRobots()
 
 }
 
+void Robotix::sortPucks()
+{
+
+	int outer = 0;
+	std::list<Puck*>::iterator i = m_Pucks.begin();
+	i++;
+	int inner = 1;
+    for(; i != m_Pucks.end(); ++i)
+    {
+		outer++;
+
+		std::list<Puck*>::iterator j = i;
+		std::list<Puck*>::iterator k = i;
+		j--;
+
+		for(int counter = inner; counter > 0; counter--)
+		{
+	
+			if ( (*j)->getX() > (*k)->getX())
+			{
+           		std::swap((*j), (*k));
+			}
+			k--;
+			j--;
+		}
+		inner++;
+
+	}		
+
+}
+
 void Robotix::update()
 {
     //If we've set max update, then check if we've done enough updates.
@@ -122,6 +153,10 @@ void Robotix::update()
 		//sort the robot population using insertion sort, which is good for
 		//lists which do not get too out of order 
 		Robotix::sortRobots();
+		
+		//sort the robot population using insertion sort, which is good for
+		//lists which do not get too out of order 
+		Robotix::sortPucks();
 
         //Update the position of all robots.
         for (std::list<Robot*>::iterator it = m_Population.begin(); it != m_Population.end(); it++)

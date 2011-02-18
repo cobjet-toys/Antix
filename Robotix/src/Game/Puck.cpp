@@ -16,3 +16,16 @@ void Puck::toggleHeld()
     m_Held = !m_Held;
 }
 
+float Puck::getX()
+{
+
+	return (*getPosition()).getX();
+
+}
+
+float Puck::getY()
+{
+
+	return (*getPosition()).getY();
+
+}

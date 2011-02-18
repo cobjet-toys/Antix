@@ -24,6 +24,16 @@ public:
     virtual ~GameObject();
 
     /**
+     * Get X coordinate of robot.
+     */
+    float getX();
+
+    /**
+     * Get Y coordinate of robot.
+     */
+    float getY();
+
+    /**
      * Return the current object position.
      */
     Position* getPosition();

@@ -15,3 +15,17 @@ Math::Position* GameObject::getPosition()
 {
     return m_Position;
 }
+
+float GameObject::getX()
+{
+
+	return (*getPosition()).getX();
+
+}
+
+float GameObject::getY()
+{
+
+	return (*getPosition()).getY();
+
+}
