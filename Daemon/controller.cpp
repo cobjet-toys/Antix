@@ -1,3 +1,5 @@
+#include "../Network/Messages.h"
+#include "../Network/Packer.h"
 #include "../Network/TCPInterface.h"
 #include <stdio.h>
 #include <stdlib.h>
