@@ -4,7 +4,7 @@
 #include <unistd.h>
 int sendAll(int sockfd, unsigned char* msg, int msgSize)
 {
-    int l_Total = 0, l_BytesLeft = msgSize, l_Sent;
+    int l_Total = 0, l_BytesLeft = msgSize, l_Sent = 0;
 
     while(l_Total < l_BytesLeft)
     {
@@ -21,7 +21,7 @@ int sendAll(int sockfd, unsigned char* msg, int msgSize)
 
 int rcvAll(int sockfd, unsigned char* msg, int msgSize)
 {
-    int l_Total = 0, l_BytesLeft = msgSize, l_Rcvd;
+    int l_Total = 0, l_BytesLeft = msgSize, l_Rcvd = 0;
 
     while(l_Total < l_BytesLeft)
     {
