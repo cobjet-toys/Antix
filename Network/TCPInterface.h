@@ -21,7 +21,8 @@ typedef struct {
 
 #define BACKLOG 10
 
-void* InitConnection(void* args);
+void* InitServerConnection(void* args);
+void* InitClientConnection(void* args);
 int sendAll(int sockfd, unsigned char* msg, int msgSize);
 int rcvAll(int sockfd, unsigned char* msg, int msgSize);
 #endif
