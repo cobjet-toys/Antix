@@ -19,17 +19,18 @@ CC = g++
 CXXFLAGS = -g -Wall -O3 $(GLUTFLAGS)
 LIBS =  -g -lm -pthread $(GLUTLIBS)
 INCLUDE = -I"./"
-
-SRC = controller.cpp  ../Network/Packer.cpp ../Network/TCPInterface.cpp ../Network/Messages.h ../Network/Packer.h ../Network/TCPInterface.h
+CONTROLLER = controller.cpp
+DAEMON = daemon.cpp
+SRC = ../Network/Packer.cpp ../Network/TCPInterface.cpp ../Network/Messages.h ../Network/Packer.h ../Network/TCPInterface.h
 
 all: controller daemon
 
 controller: $(SRC)
-	$(CC) $(CXXFLAGS) $(LIBS) $(INCLUDE) -o $@ $(SRC)
+	$(CC) $(CXXFLAGS) $(LIBS) $(INCLUDE) -o $@ $(SRC) $(CONTROLLER)
 
 daemon: $(SRC)
-	$(CC) $(CXXFLAGS) $(LIBS) $(INCLUDE) -o $@ $(SRC)
+	$(CC) $(CXXFLAGS) $(LIBS) $(INCLUDE) -o $@ $(SRC) $(DAEMON)
 
 clean:
-	rm controller
+	rm controller daemon
 
