@@ -52,6 +52,7 @@ void* ClientLoop(void* args)
         printf("Received an example message with id: %d, xpos: %f,  and ypos: %f\n", l_Expected.id, l_Expected.xpos, l_Expected.ypos);
         exit(0);
     }
+    return (void*)0;
 }
 
 
@@ -91,4 +92,5 @@ void* ServerLoop(void* args)
        //Send our message to the client.
        sendAll(l_Newfd, l_Buffer, l_Example.size);
     }
+    return (void*)0;
 }

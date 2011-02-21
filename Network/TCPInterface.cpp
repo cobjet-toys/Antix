@@ -45,12 +45,6 @@ void* InitConnection(void* args)
     int l_Sockfd = 0; 
     struct addrinfo l_ConHints, *l_ServInfo;
 
-#ifdef SERVER
-    int l_Newfd; //Connector's socket fd.
-    socklen_t l_ConnectSize;
-    struct sockaddr_storage l_ConnectAddr;
-#endif
-
     memset(&l_ConHints, 0, sizeof l_ConHints);
     l_ConHints.ai_family = AF_UNSPEC;
     l_ConHints.ai_socktype = SOCK_STREAM;
@@ -66,7 +60,9 @@ void* InitConnection(void* args)
 
     //Connection iterator.
     struct addrinfo *l_Iter;
+#ifdef SERVER
     int l_Yes = 1;
+#endif
     for(l_Iter = l_ServInfo; l_Iter != NULL; l_Iter = l_Iter->ai_next) {
         if ((l_Sockfd = socket(l_Iter->ai_family, l_Iter->ai_socktype, l_Iter->ai_protocol)) == -1) {
             perror("Log: Trying next addrinfo to create socket");
@@ -112,5 +108,6 @@ void* InitConnection(void* args)
     freeaddrinfo(l_ServInfo);
 
     l_Args->Main((void*)l_Sockfd); 
-
+    
+    return (void*)0;
 }
