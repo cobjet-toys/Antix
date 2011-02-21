@@ -12,7 +12,7 @@
 
 #define RUNNING_DIR "/tmp"
 #define LOCK_FILE "exampled.lock"
-#define LOG_FILE "exampled.log"
+#define LOG_FILE (char*)"exampled.log"
 
 void* MsgControllerWithReady(void* args);
 
@@ -30,11 +30,11 @@ void signal_handler(int sig)
     switch(sig){
 
         case SIGHUP:
-            log_message(LOG_FILE, "Hangup signal caught.");
+            log_message(LOG_FILE, (char *)"Hangup signal caught.");
             break;
 
         case SIGTERM:
-            log_message(LOG_FILE, "Terminate signal caught.");
+            log_message(LOG_FILE, (char *)"Terminate signal caught.");
             exit(0);
             break;
         }
@@ -88,7 +88,7 @@ void daemonize()
 main()
 {
     daemonize();
-    log_message(LOG_FILE, "Daemon proccess started.");
+    log_message(LOG_FILE, (char *)"Daemon proccess started.");
 
     // Connects to controller
     // Sends ready message, including CPU load average
@@ -111,9 +111,9 @@ void* MsgControllerWithReady(void* args)
     {
         // Couldn't get the load average, defaulting to -1
         load[0] = -1; load[1] = -1; load[2] = -1;
-        log_message(LOG_FILE, "Unable to get CPU load average data.");
+        log_message(LOG_FILE, (char *)"Unable to get CPU load average data.");
     }
-    log_message(LOG_FILE, "Got CPU load average data.");
+    log_message(LOG_FILE, (char *)"Got CPU load average data.");
 
     int l_Sockfd = (intptr_t)args, l_Newfd;
     socklen_t l_ConnectSize;
@@ -123,11 +123,11 @@ void* MsgControllerWithReady(void* args)
     l_ConnectSize = sizeof l_ConnectAddr;
     l_Newfd = accept(l_Sockfd, (struct sockaddr *)&l_ConnectAddr, &l_ConnectSize);
     if (l_Newfd == -1) {
-        log_message(LOG_FILE, "TCP: Error accepting connection.");
+        log_message(LOG_FILE, (char *)"TCP: Error accepting connection.");
         return (void*)0;
     }
    // ...Handle our new connection...
-   log_message(LOG_FILE, "TCP: Received new connection.");
+   log_message(LOG_FILE, (char *)"TCP: Received new connection.");
 
    // Create the ready message to send
    Msg_controller_ready l_Ready = {(float)(load[0]), (float)(load[1]), (float)(load[2])};
@@ -140,7 +140,7 @@ void* MsgControllerWithReady(void* args)
     
    // Send our message to the client.
    sendAll(l_Newfd, l_Buffer, l_Ready.size);
-   log_message(LOG_FILE, "Sent ready message to controller.");
+   log_message(LOG_FILE, (char *)"Sent ready message to controller.");
 
    return (void*)0;
 }
