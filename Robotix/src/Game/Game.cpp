@@ -39,7 +39,7 @@ void Robotix::init()
 
     m_TotalPuckCount = 1000;
     m_TotalTeamCount = 5;
-    Team::m_RobotPopCount = 600;
+    Team::m_RobotPopCount = 200;
     
     m_SleepMsec = 10; 
 
