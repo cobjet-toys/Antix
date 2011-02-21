@@ -4,12 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <map>
+#include <pthread.h>
 
 //void* ClientLoop(void* args);
 void* ServerLoop(void* args);
 
 int main(int argc, char** argv)
 {
+	pthread_t thread1, thread2;
     //Create our connection arguments.
     //First parameter is IP.
     //Second is port.
@@ -23,10 +25,11 @@ int main(int argc, char** argv)
 //#ifdef CLIENT
 //    ConnectArgs l_ConInfo = {"localhost", "13337", &ClientLoop}; 
 //#endif
-
-    //Initialize our connection. 
-    InitConnection((void*)&l_ConInfo);
-
+	int  iret1
+    //Initialize our connection.
+	iret1 = pthread_create( &thread1, NULL, InitConnection, (void*)&l_ConInfo);
+    //InitConnection((void*)&l_ConInfo);
+	pthread_join( thread1, NULL);
     return 0;
 }
 /*
