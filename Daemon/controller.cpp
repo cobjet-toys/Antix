@@ -57,7 +57,7 @@ void* ClientLoop(void* args)
     {
         //Create an empty example message to receive into.
         //Message types are defined in Messages.h
-        Msg_example l_Expected;
+        Msg_controller_ready l_Expected;
 
         //Create a buffer to receive into, with size of the expected message size.
         //Do NOT use sizeof message. Compilers optimize structs and pad them with extra data. *See Messages.h
@@ -67,9 +67,9 @@ void* ClientLoop(void* args)
         rcvAll(l_Sockfd, l_Buffer, l_Expected.size);
 
         //Unpack our message from the char buffer into our message struct.
-        unpack(l_Buffer, "lff", &l_Expected.id, &l_Expected.xpos, &l_Expected.ypos);
+        unpack(l_Buffer, "lff", &l_Expected.one, &l_Expected.five, &l_Expected.fifteem);
 
-        printf("Received an example message with id: %d, xpos: %f,  and ypos: %f\n", l_Expected.id, l_Expected.xpos, l_Expected.ypos);
+        printf("Received an example message with one: %f, five: %f,  and fifteen: %f\n", l_Expected.one, l_Expected.five, l_Expected.fifteen);
 		
 		//Wait
         pthread_yield();
