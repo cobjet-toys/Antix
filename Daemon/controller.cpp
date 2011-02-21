@@ -67,7 +67,7 @@ void* ClientLoop(void* args)
         rcvAll(l_Sockfd, l_Buffer, l_Expected.size);
 
         //Unpack our message from the char buffer into our message struct.
-        unpack(l_Buffer, "lff", &l_Expected.load_one, &l_Expected.load_five, &l_Expected.load_fifteem);
+        unpack(l_Buffer, "lff", &l_Expected.load_one, &l_Expected.load_five, &l_Expected.load_fifteen);
 
         printf("Received an example message with one: %f, five: %f,  and fifteen: %f\n", l_Expected.load_one, l_Expected.load_five, l_Expected.load_fifteen);
 		
