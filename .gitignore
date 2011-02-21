@@ -1,0 +1,5 @@
+# Files ignored by git
+
+# Swap  and temp files
+*.swp
+*~

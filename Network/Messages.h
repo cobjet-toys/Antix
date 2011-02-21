@@ -33,6 +33,7 @@ typedef struct
 typedef struct
 {
     // Message sent by daemon to controller to indicate readiness
+    // Sends CPU load average for daemon machine
     float load_one;
     float load_five;
     float load_fifteen;
