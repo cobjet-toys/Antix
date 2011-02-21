@@ -1,6 +1,7 @@
-#include "TCPInterface.h"
+#include "../Network/TCPInterface.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <map>
 
 //void* ClientLoop(void* args);
 void* ServerLoop(void* args);
@@ -64,6 +65,7 @@ void* ServerLoop(void* args)
     socklen_t l_ConnectSize;
     struct sockaddr_storage l_ConnectAddr;
 
+	std::map<int, int> l_Machines;
     while(1)
     {
         //Listen and accept new connections.
@@ -76,7 +78,7 @@ void* ServerLoop(void* args)
        //...Handle our new connection...
        printf("Log: Received new connection.\n");
 
-
+	   l_Machines[l_Newfd]=1;
        //Create a new message to send.
        Msg_example l_Example = {1337, 3.14159, 2.71828};
 
@@ -87,6 +89,14 @@ void* ServerLoop(void* args)
        //Pack our message into the char buffer.
        pack(l_Buffer, "lff", l_Example.id, l_Example.xpos, l_Example.ypos);
 
+
+		//Keep track of which machines available, whats running on each machine
+		//decide which machine to send client or server
+		//Hash  available machines
+		//Use file descriptor as key
+		
+		//
+		
        //Send our message to the client.
        sendAll(l_Newfd, l_Buffer, l_Example.size);
     }

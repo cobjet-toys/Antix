@@ -14,4 +14,20 @@ typedef struct
     static const int size = 12;
 } Msg_example;
 
+typedef struct
+{
+    int32_t id;
+    float xpos;
+    float ypos;
+    static const int size = 12;
+} Msg_daemon_client;
+
+typedef struct
+{
+    int32_t id;
+    float xpos;
+    float ypos;
+    static const int size = 12;
+} Msg_daemon_server;
+
 #endif
