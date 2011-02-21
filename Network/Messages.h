@@ -30,4 +30,13 @@ typedef struct
     static const int size = 12;
 } Msg_daemon_server;
 
+typedef struct
+{
+    // Message sent by daemon to controller to indicate readiness
+    float load_one;
+    float load_five;
+    float load_fifteen;
+    static const int size = 12;
+} Msg_controller_ready;
+
 #endif
