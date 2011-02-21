@@ -15,16 +15,20 @@ int main(int argc, char** argv)
     //Third is function callback to main loop function. void* func(void*)
     //To build the server, add -DSERVER to g++ flags
 #ifdef SERVER
-    ConnectArgs l_ConInfo = {"localhost", "13337", &ServerLoop};
+    ConnectArgs l_ConInfo = {"0.0.0.0", "13338", &ServerLoop};
+    //Initialize our connection. 
+    InitServerConnection((void*)&l_ConInfo);
+    InitClientConnection((void*)&l_ConInfo);
 #endif
 
     //To build the client, add -DCLIENT to g++ flags
 #ifdef CLIENT
-    ConnectArgs l_ConInfo = {"localhost", "13337", &ClientLoop}; 
+    ConnectArgs l_ConInfo = {"142.58.35.41", "13338", &ClientLoop}; 
+    //Initialize our connection. 
+    InitClientConnection((void*)&l_ConInfo);
+    InitServerConnection((void*)&l_ConInfo);
 #endif
 
-    //Initialize our connection. 
-    InitConnection((void*)&l_ConInfo);
 
     return 0;
 }
