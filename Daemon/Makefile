@@ -19,22 +19,17 @@ CC = g++
 CXXFLAGS = -g -Wall -O3 $(GLUTFLAGS)
 LIBS =  -g -lm $(GLUTLIBS)
 INCLUDE = -I"./"
-CLIENT = -DCLIENT
-SERVER = -DSERVER
 
 SRC = main.cpp Packer.cpp TCPInterface.cpp Messages.h Packer.h TCPInterface.h
 
-all: client server
+all: controller daemon
 
-network: $(SRC)
+controller: $(SRC)
 	$(CC) $(CXXFLAGS) $(LIBS) $(INCLUDE) -o $@ $(SRC)
 
-client: $(SRC)
-	$(CC) $(CXXFLAGS) $(LIBS) $(INCLUDE) -o $@ $(SRC) $(CLIENT)
-
-server: $(SRC)
-	$(CC) $(CXXFLAGS) $(LIBS) $(INCLUDE) -o $@ $(SRC) $(SERVER)
+daemon: $(SRC)
+	$(CC) $(CXXFLAGS) $(LIBS) $(INCLUDE) -o $@ $(SRC)
 
 clean:
-	rm network client server
+	rm controller daemon
 
