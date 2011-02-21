@@ -36,8 +36,9 @@ int rcvAll(int sockfd, unsigned char* msg, int msgSize)
     return l_Rcvd==-1?-1:0;
 }
 
+
 //Initialize our connection.
-void* InitConnection(void* args)
+void* InitServerConnection(void* args)
 {
     //Common variables.
     ConnectArgs* l_Args = (ConnectArgs*)args;
@@ -48,9 +49,7 @@ void* InitConnection(void* args)
     memset(&l_ConHints, 0, sizeof l_ConHints);
     l_ConHints.ai_family = AF_UNSPEC;
     l_ConHints.ai_socktype = SOCK_STREAM;
-#ifdef SERVER
-    l_ConHints.ai_flags = AI_PASSIVE;
-#endif    
+    l_ConHints.ai_flags = AI_PASSIVE;  
 
     int l_RetValue;
     if ((l_RetValue = getaddrinfo(l_Args->IP, l_Args->Port, &l_ConHints, &l_ServInfo)) != 0){
@@ -60,23 +59,14 @@ void* InitConnection(void* args)
 
     //Connection iterator.
     struct addrinfo *l_Iter;
-#ifdef SERVER
     int l_Yes = 1;
-#endif
+
     for(l_Iter = l_ServInfo; l_Iter != NULL; l_Iter = l_Iter->ai_next) {
         if ((l_Sockfd = socket(l_Iter->ai_family, l_Iter->ai_socktype, l_Iter->ai_protocol)) == -1) {
             perror("Log: Trying next addrinfo to create socket");
             continue;
         }
-#ifdef CLIENT
-            if (connect(l_Sockfd, l_Iter->ai_addr, l_Iter->ai_addrlen) == -1) {
-                close(l_Sockfd);
-                perror("Log: Trying next addrinfo to connect.");
-                continue;
-            }
-#endif
 
-#ifdef SERVER
         if (setsockopt(l_Sockfd, SOL_SOCKET, SO_REUSEADDR, &l_Yes, sizeof(int)) == -1) {
             perror("Log: Error setting socket options. Exiting");
             exit(1);
@@ -87,7 +77,6 @@ void* InitConnection(void* args)
             perror("Log: Trying next addrinfo to bind socket");
             continue;
         }
-#endif
         break;
     }
 
@@ -96,12 +85,63 @@ void* InitConnection(void* args)
         exit(1);
     }
 
-#ifdef SERVER
     if (listen(l_Sockfd, BACKLOG) == -1) {
         perror("Log: Error on socket 'listen'");
         exit(1);
     }
-#endif
+
+    printf("Socket created successfully\n");
+
+    freeaddrinfo(l_ServInfo);
+
+    l_Args->Main((void*)l_Sockfd); 
+    
+    return (void*)0;
+}
+
+
+//Initialize our Client connection.
+void* InitClientConnection(void* args)
+{
+    //Common variables.
+    ConnectArgs* l_Args = (ConnectArgs*)args;
+    //Need to initialize or compiler complains.
+    int l_Sockfd = 0; 
+    struct addrinfo l_ConHints, *l_ServInfo;
+
+    memset(&l_ConHints, 0, sizeof l_ConHints);
+    l_ConHints.ai_family = AF_UNSPEC;
+    l_ConHints.ai_socktype = SOCK_STREAM;
+
+    int l_RetValue;
+    if ((l_RetValue = getaddrinfo(l_Args->IP, l_Args->Port, &l_ConHints, &l_ServInfo)) != 0){
+        fprintf(stderr, "getaddrinfo %s\n", gai_strerror(l_RetValue));
+        exit(1); 
+    }
+
+    //Connection iterator.
+    struct addrinfo *l_Iter;
+
+    for(l_Iter = l_ServInfo; l_Iter != NULL; l_Iter = l_Iter->ai_next) {
+        if ((l_Sockfd = socket(l_Iter->ai_family, l_Iter->ai_socktype, l_Iter->ai_protocol)) == -1) {
+            perror("Log: Trying next addrinfo to create socket");
+            continue;
+        }
+			
+            if (connect(l_Sockfd, l_Iter->ai_addr, l_Iter->ai_addrlen) == -1) {
+                close(l_Sockfd);
+                perror("Log: Trying next addrinfo to connect.");
+                continue;
+            }
+			
+        break;
+    }
+
+    if (l_Iter == NULL) {
+        fprintf(stderr, "Failed to create socket.");
+        exit(1);
+    }
+	
 
     printf("Socket created successfully\n");
 

@@ -17,10 +17,10 @@ endif
 
 CC = g++
 CXXFLAGS = -g -Wall -O3 $(GLUTFLAGS)
-LIBS =  -g -lm $(GLUTLIBS)
+LIBS =  -g -lm -pthread $(GLUTLIBS)
 INCLUDE = -I"./"
 
-SRC = main.cpp Packer.cpp TCPInterface.cpp Messages.h Packer.h TCPInterface.h
+SRC = controller.cpp  ../Network/Packer.cpp ../Network/TCPInterface.cpp ../Network/Messages.h ../Network/Packer.h ../Network/TCPInterface.h
 
 all: controller daemon
 
@@ -31,5 +31,5 @@ daemon: $(SRC)
 	$(CC) $(CXXFLAGS) $(LIBS) $(INCLUDE) -o $@ $(SRC)
 
 clean:
-	rm controller daemon
+	rm controller
 

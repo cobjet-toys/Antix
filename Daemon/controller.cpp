@@ -5,34 +5,52 @@
 #include <stdlib.h>
 #include <map>
 #include <pthread.h>
+#include <unistd.h>
 
-//void* ClientLoop(void* args);
-void* ServerLoop(void* args);
+void* ClientLoop(void* args);
+//void* ServerLoop(void* args);
+void* UserInputLoop(void* args);
 
 int main(int argc, char** argv)
 {
-	pthread_t thread1, thread2;
+	//Create our two threads
+	pthread_t receiveMsg, receiveInput;
     //Create our connection arguments.
     //First parameter is IP.
     //Second is port.
     //Third is function callback to main loop function. void* func(void*)
     //To build the server, add -DSERVER to g++ flags
 //#ifdef SERVER
-    ConnectArgs l_ConInfo = {"localhost", "13337", &ServerLoop};
+//    ConnectArgs l_ConInfo = {"localhost", "13337", &ServerLoop};
 //#endif
 
     //To build the client, add -DCLIENT to g++ flags
 //#ifdef CLIENT
-//    ConnectArgs l_ConInfo = {"localhost", "13337", &ClientLoop}; 
+    ConnectArgs l_ConInfo = {"localhost", "13337", &ClientLoop}; 
 //#endif
-	int  iret1
+
+	int  thread1, thread2;
+	//Spawn thread to wait for socket message
+	thread1 = pthread_create( &receiveMsg, NULL, InitClientConnection, (void*)&l_ConInfo);
+	//Spawn thread to wait for user input
+	thread2 = pthread_create( &receiveInput, NULL, UserInputLoop, (void*)0);
     //Initialize our connection.
-	iret1 = pthread_create( &thread1, NULL, InitConnection, (void*)&l_ConInfo);
-    //InitConnection((void*)&l_ConInfo);
-	pthread_join( thread1, NULL);
+	//InitConnection((void*)&l_ConInfo);
+	
+	pthread_join( receiveInput, NULL);
+	pthread_join( receiveMsg, NULL);
+	
     return 0;
 }
-/*
+
+void* UserInputLoop(void* args){
+	printf("Want to play a game?\n");
+	while(1){
+		//Wait for user command
+	}
+	return (void*)0;
+}
+
 void* ClientLoop(void* args)
 {
     int l_Sockfd = (intptr_t)args;
@@ -54,12 +72,14 @@ void* ClientLoop(void* args)
         unpack(l_Buffer, "lff", &l_Expected.id, &l_Expected.xpos, &l_Expected.ypos);
 
         printf("Received an example message with id: %d, xpos: %f,  and ypos: %f\n", l_Expected.id, l_Expected.xpos, l_Expected.ypos);
-        exit(0);
+		
+		//Wait
+        pthread_yield();
     }
     return (void*)0;
 }
-*/
 
+/*
 //Server loop needs to accept incoming connections.
 //Not part of TCPInterface because we can handle new connections in many different ways.
 //So we leave it to be implemented as needed.
@@ -107,3 +127,4 @@ void* ServerLoop(void* args)
     }
     return (void*)0;
 }
+*/
