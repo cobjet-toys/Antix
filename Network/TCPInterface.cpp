@@ -90,7 +90,7 @@ void* InitServerConnection(void* args)
         exit(1);
     }
 
-    printf("Socket created successfully\n");
+    printf("Socket created successfully, listening on port %s \n", l_Args->Port);
 
     freeaddrinfo(l_ServInfo);
 
@@ -143,7 +143,7 @@ void* InitClientConnection(void* args)
     }
 	
 
-    printf("Socket created successfully\n");
+    printf("Connection established to server %s on port %s \n", l_Args->IP, l_Args->Port);
 
     freeaddrinfo(l_ServInfo);
 
