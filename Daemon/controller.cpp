@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 void* ClientLoop(void* args);
-//void* ServerLoop(void* args);
+void* ServerLoop(void* args);
 void* UserInputLoop(void* args);
 
 int main(int argc, char** argv)
@@ -19,19 +19,17 @@ int main(int argc, char** argv)
     //First parameter is IP.
     //Second is port.
     //Third is function callback to main loop function. void* func(void*)
-    //To build the server, add -DSERVER to g++ flags
-//#ifdef SERVER
-//    ConnectArgs l_ConInfo = {"localhost", "13337", &ServerLoop};
-//#endif
+    //To call the server, use InitServerConnection(&l_ServerConInfo);
+    ConnectArgs l_ServerConInfo = {"localhost", "13337", &ServerLoop};
 
-    //To build the client, add -DCLIENT to g++ flags
-//#ifdef CLIENT
-    ConnectArgs l_ConInfo = {"localhost", "13337", &ClientLoop}; 
-//#endif
+
+    //To call the client, use InitClientConnection(&l_ClientConInfo);
+    ConnectArgs l_ClientConInfo = {"localhost", "13337", &ClientLoop}; 
+
 
 	int  thread1, thread2;
 	//Spawn thread to wait for socket message
-	thread1 = pthread_create( &receiveMsg, NULL, InitClientConnection, (void*)&l_ConInfo);
+	thread1 = pthread_create( &receiveMsg, NULL, InitClientConnection, (void*)&l_ClientConInfo);
 	//Spawn thread to wait for user input
 	thread2 = pthread_create( &receiveInput, NULL, UserInputLoop, (void*)0);
     //Initialize our connection.
@@ -79,7 +77,7 @@ void* ClientLoop(void* args)
     return (void*)0;
 }
 
-/*
+
 //Server loop needs to accept incoming connections.
 //Not part of TCPInterface because we can handle new connections in many different ways.
 //So we leave it to be implemented as needed.
@@ -127,4 +125,3 @@ void* ServerLoop(void* args)
     }
     return (void*)0;
 }
-*/
