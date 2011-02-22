@@ -9,7 +9,7 @@
 #include <iostream>
 #include <algorithm>
 #include <stdio.h>
-
+#include <math.h>
 using namespace Game;
 
 Robotix* Robotix::m_Instance = NULL;
@@ -39,7 +39,7 @@ void Robotix::init()
 
     m_TotalPuckCount = 100;
     m_TotalTeamCount = 1;
-    Team::m_RobotPopCount = 2000;
+    Team::m_RobotPopCount = 8000;
     
     m_SleepMsec = 10; 
 
@@ -98,21 +98,6 @@ void Robotix::sortRobots()
         m_XPos[i+1] = l_Key;
         m_XRobs[l_Key] = i+1;
     }
-
-    //Sort on the y axis. 
-    for(unsigned int j = 1; j < m_YPos.size(); j++)
-    {
-        l_Key = m_YPos[j];
-        i = j - 1;
-        while(i >= 0 && m_YPos[i]->getPosition()->getY() > l_Key->getPosition()->getY())
-        {
-            m_YPos[i+1] =m_YPos[i];
-            m_YRobs[m_YPos[i+1]] = i+1;
-            --i;
-        }
-        m_YPos[i+1] = l_Key;
-        m_YRobs[l_Key] = i+1;
-    }
 }
 
 void Robotix::update()
@@ -141,31 +126,20 @@ void Robotix::update()
             
             //Get list of visible robots on x axis;
             std::vector<Robot*> l_XVisible;    
-            for(int j = i-1; j >= 0 && ((m_XPos[i]->getPosition()->getX()-m_XPos[j]->getPosition()->getX()) <= Robot::getSensRange()*2); j--)
+            for(int j = i-1; j >= 0 && ((m_XPos[i]->getPosition()->getX()-m_XPos[j]->getPosition()->getX()) <= Robot::getSensRange()) && fabs(m_XPos[j]->getPosition()->getY()-m_XPos[i]->getPosition()->getY()) <= Robot::getSensRange(); j--)
             {
-               l_XVisible.push_back(m_XPos[j]); 
+               l_Visible.push_back(m_XPos[j]); 
             }
-             for(unsigned int j = i+1; j < m_XPos.size() && ((m_XPos[j]->getPosition()->getX()-m_XPos[i]->getPosition()->getX()) <= Robot::getSensRange()*2); j++)
+             for(unsigned int j = i+1; j < m_XPos.size() && ((m_XPos[j]->getPosition()->getX()-m_XPos[i]->getPosition()->getX()) <= Robot::getSensRange()) && fabs(m_XPos[j]->getPosition()->getY()-m_XPos[i]->getPosition()->getY()) <= Robot::getSensRange(); j++)
             {
-               l_XVisible.push_back(m_XPos[j]); 
-            }
-
-            int l_YIndex = m_YRobs[m_XPos[i]];
-            std::vector<Robot*> l_YVisible;    
-            for(int j = l_YIndex-1; j >= 0 && ((m_YPos[l_YIndex]->getPosition()->getY()-m_YPos[j]->getPosition()->getY()) <= Robot::getSensRange()*2); j--)
-            {
-               l_YVisible.push_back(m_YPos[j]); 
-            }
-             for(unsigned int j = l_YIndex+1; j < m_YPos.size() && ((m_YPos[j]->getPosition()->getY()-m_YPos[l_YIndex]->getPosition()->getY()) <= Robot::getSensRange()*2); j++)
-            {
-               l_YVisible.push_back(m_YPos[j]); 
+               l_Visible.push_back(m_XPos[j]); 
             }
 
-            std::set_intersection(l_XVisible.begin(), l_XVisible.end(), l_YVisible.begin(), l_YVisible.end(), std::back_inserter(l_Visible));
-
-            m_XPos[i]->updateSensors();
+             //   printf("%d collisions\n", l_Visible.size());
+             m_XPos[i]->updateSensors();
         }  
 
+        //m_GamePaused = true;
         //Update the controller of all robots.
         for (RobotIter it = m_Population.begin(); it != m_Population.end(); it++)
         {
@@ -183,7 +157,6 @@ void Robotix::addRobotToPop(Robot* robot)
 {
     this->m_Population.push_back(robot);
     this->m_XPos.push_back(robot);
-    this->m_YPos.push_back(robot);
 }
 Robotix* Robotix::getInstance()
 {

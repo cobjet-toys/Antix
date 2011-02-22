@@ -93,10 +93,8 @@ private:
 
     //O(1) lookup of our sorted vector;     
     std::map<Robot*, int> m_XRobs;
-    std::map<Robot*, int> m_YRobs;
     //Sorted list of robots; 
     std::vector<Robot*> m_XPos;
-    std::vector<Robot*> m_YPos;
 
     //Total number of teams.
     unsigned int m_TotalTeamCount;
