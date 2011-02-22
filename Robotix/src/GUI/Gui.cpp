@@ -38,7 +38,7 @@ void drawPucks()
    
     glBegin(GL_POINTS); 
     
-    for (std::list<Game::Puck*>::iterator it = Game::Robotix::getInstance()->getFirstPuck();
+    for (Game::PuckIter it = Game::Robotix::getInstance()->getFirstPuck();
             it != Game::Robotix::getInstance()->getLastPuck(); it++)
     {
         glVertex2f( (*it)->getPosition()->getX(), (*it)->getPosition()->getY() );
@@ -96,7 +96,7 @@ void drawRobot(Game::Robot* robot, const GUI::Color* color )
 	    glEnd();
 
         //Draw the robot FOV:
-        glBegin(GL_LINE_LOOP);
+/*        glBegin(GL_LINE_LOOP);
         glVertex2f(0,0);
         float l_FOV = Game::Robot::getFOV();
         float l_Right = -l_FOV/2.0;
@@ -108,14 +108,22 @@ void drawRobot(Game::Robot* robot, const GUI::Color* color )
             glVertex2f(cos(i)* l_SensRange, sin(i)*l_SensRange);
         glVertex2f(cos(l_Left)* l_SensRange, sin(l_Left)*l_SensRange);
         glEnd();
-
+*/
+        /*
         //Draw bounding box.
         glBegin(GL_LINE_LOOP);
         glVertex2f(0.0, sin(l_Left)*l_SensRange);
         glVertex2f(l_SensRange, sin(l_Left)*l_SensRange);
         glVertex2f(l_SensRange, sin(l_Right)*l_SensRange);
         glVertex2f(0.0, sin(l_Right)*l_SensRange);
-        glEnd();
+        glEnd();*/
+/*
+        glBegin(GL_LINE_LOOP);
+        glVertex2f(-l_SensRange, -l_SensRange);
+        glVertex2f(-l_SensRange, l_SensRange);
+        glVertex2f(l_SensRange, l_SensRange);  
+        glVertex2f(l_SensRange, -l_SensRange);
+        glEnd();*/
     }
 
     glPopMatrix();

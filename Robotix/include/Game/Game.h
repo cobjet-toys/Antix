@@ -4,10 +4,15 @@
 #include "Game/Team.h"
 #include "Game/Puck.h"
 #include <list>
+#include <vector>
+#include <map>
 #include <stdint.h>
 
 namespace Game
 {
+
+typedef std::vector<Robot*>::iterator RobotIter;
+typedef std::vector<Puck*>::iterator PuckIter;
 
 class Robotix 
 {
@@ -44,14 +49,15 @@ public:
     const float& getWorldSize() const;
 
     //Used for iterating over our collections.
-    std::list<Puck*>::iterator getFirstPuck();
-    std::list<Puck*>::iterator getLastPuck();
+    PuckIter getFirstPuck();
+    PuckIter getLastPuck();
 
     std::list<Team*>::iterator getFirstTeam();
     std::list<Team*>::iterator getLastTeam();
 
-    std::list<Robot*>::iterator getFirstRobot();
-    std::list<Robot*>::iterator getLastRobot();
+    //Robot iterating
+    RobotIter getFirstRobot();
+    RobotIter getLastRobot();
 
     /**
      * Add a robot to the general population.
@@ -78,12 +84,19 @@ private:
     /**
      * List of pucks.
      */
-    std::list<Puck*> m_Pucks;
+    std::vector<Puck*> m_Pucks;
 
     /**
      * List of all available robots.
      */
-    std::list<Robot*> m_Population;
+    std::vector<Robot*> m_Population;
+
+    //O(1) lookup of our sorted vector;     
+    std::map<Robot*, int> m_XRobs;
+    std::map<Robot*, int> m_YRobs;
+    //Sorted list of robots; 
+    std::vector<Robot*> m_XPos;
+    std::vector<Robot*> m_YPos;
 
     //Total number of teams.
     unsigned int m_TotalTeamCount;

@@ -77,7 +77,7 @@ void Robot::updateSensors()
     
     //Check every robot in the world, and determine if it is in range.
     //If it is, push it into our visible robots collection. 
-    for (std::list<Robot*>::iterator it = Robotix::getInstance()->getFirstRobot();
+   /* for (RobotIter it = Robotix::getInstance()->getFirstRobot();
             it != Robotix::getInstance()->getLastRobot(); it++)
     {
         Robot *l_Other = *it;
@@ -111,11 +111,11 @@ void Robot::updateSensors()
 
         //The robot is in our range and FOV, add it to visible robots.
         m_VisibleRobots.push_back(VisibleRobotPtr(l_Other, l_Range, l_RelHeading));
-    }
+    }*/
 
     //Check every puck in the world, and determine if it's in range.
     //If it is, push it into our visible puck collection.
-    for (std::list<Puck*>::iterator it = Robotix::getInstance()->getFirstPuck();
+    for (PuckIter it = Robotix::getInstance()->getFirstPuck();
             it != Robotix::getInstance()->getLastPuck(); it++)
     {
         Puck* l_Puck = (*it);

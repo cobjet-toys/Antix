@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <iostream>
-
+#include <algorithm>
 #include <stdio.h>
 
 using namespace Game;
@@ -37,9 +37,9 @@ void Robotix::init()
     m_Updates = 0;
     m_MaxUpdates = 0;
 
-    m_TotalPuckCount = 5;
+    m_TotalPuckCount = 100;
     m_TotalTeamCount = 1;
-    Team::m_RobotPopCount = 5;
+    Team::m_RobotPopCount = 2000;
     
     m_SleepMsec = 10; 
 
@@ -73,7 +73,7 @@ Robotix::~Robotix()
     }
 
     //Delete the pucks.
-    for(std::list<Puck*>::iterator it = m_Pucks.begin(); it != m_Pucks.end(); it++)
+    for(PuckIter it = m_Pucks.begin(); it != m_Pucks.end(); it++)
     {
         delete (*it);
     }
@@ -81,33 +81,38 @@ Robotix::~Robotix()
 
 void Robotix::sortRobots()
 {
-
-	int outer = 0;
-	std::list<Robot*>::iterator i = m_Population.begin();
-	i++;
-	int inner = 1;
-    for(; i != m_Population.end(); ++i)
+    //Sort on the x axis.
+    int i;
+    Robot* l_Key;
+    for(unsigned int j = 1; j < m_XPos.size(); j++)
     {
-		outer++;
+        l_Key = m_XPos[j];
+        i = j - 1;
+        while(i >= 0 && m_XPos[i]->getPosition()->getX() > l_Key->getPosition()->getX())
+        {
+            m_XPos[i+1] =m_XPos[i];
+            m_XRobs[m_XPos[i+1]] = i+1;
+            --i;
+        }
 
-		std::list<Robot*>::iterator j = i;
-		std::list<Robot*>::iterator k = i;
-		j--;
+        m_XPos[i+1] = l_Key;
+        m_XRobs[l_Key] = i+1;
+    }
 
-		for(int counter = inner; counter > 0; counter--)
-		{
-	
-			if ( (*j)->getX() > (*k)->getX())
-			{
-           		std::swap((*j), (*k));
-			}
-			k--;
-			j--;
-		}
-		inner++;
-
-	}		
-
+    //Sort on the y axis. 
+    for(unsigned int j = 1; j < m_YPos.size(); j++)
+    {
+        l_Key = m_YPos[j];
+        i = j - 1;
+        while(i >= 0 && m_YPos[i]->getPosition()->getY() > l_Key->getPosition()->getY())
+        {
+            m_YPos[i+1] =m_YPos[i];
+            m_YRobs[m_YPos[i+1]] = i+1;
+            --i;
+        }
+        m_YPos[i+1] = l_Key;
+        m_YRobs[l_Key] = i+1;
+    }
 }
 
 void Robotix::update()
@@ -121,22 +126,48 @@ void Robotix::update()
     {
 		//sort the robot population using insertion sort, which is good for
 		//lists which do not get too out of order 
-		Robotix::sortRobots();
+        sortRobots();
 
         //Update the position of all robots.
-        for (std::list<Robot*>::iterator it = m_Population.begin(); it != m_Population.end(); it++)
+        for (RobotIter it = m_Population.begin(); it != m_Population.end(); it++)
         {
            (*it)->updatePosition(); 
         }
 
-        //Update the sensors of all robots.
-        for (std::list<Robot*>::iterator it = m_Population.begin(); it != m_Population.end(); it++)
+        std::vector<Robot*> l_Visible;
+        for(unsigned int i = 0; i < m_XPos.size(); i++)
         {
-           (*it)->updateSensors(); 
-        }
+            l_Visible.clear();
+            
+            //Get list of visible robots on x axis;
+            std::vector<Robot*> l_XVisible;    
+            for(int j = i-1; j >= 0 && ((m_XPos[i]->getPosition()->getX()-m_XPos[j]->getPosition()->getX()) <= Robot::getSensRange()*2); j--)
+            {
+               l_XVisible.push_back(m_XPos[j]); 
+            }
+             for(unsigned int j = i+1; j < m_XPos.size() && ((m_XPos[j]->getPosition()->getX()-m_XPos[i]->getPosition()->getX()) <= Robot::getSensRange()*2); j++)
+            {
+               l_XVisible.push_back(m_XPos[j]); 
+            }
+
+            int l_YIndex = m_YRobs[m_XPos[i]];
+            std::vector<Robot*> l_YVisible;    
+            for(int j = l_YIndex-1; j >= 0 && ((m_YPos[l_YIndex]->getPosition()->getY()-m_YPos[j]->getPosition()->getY()) <= Robot::getSensRange()*2); j--)
+            {
+               l_YVisible.push_back(m_YPos[j]); 
+            }
+             for(unsigned int j = l_YIndex+1; j < m_YPos.size() && ((m_YPos[j]->getPosition()->getY()-m_YPos[l_YIndex]->getPosition()->getY()) <= Robot::getSensRange()*2); j++)
+            {
+               l_YVisible.push_back(m_YPos[j]); 
+            }
+
+            std::set_intersection(l_XVisible.begin(), l_XVisible.end(), l_YVisible.begin(), l_YVisible.end(), std::back_inserter(l_Visible));
+
+            m_XPos[i]->updateSensors();
+        }  
 
         //Update the controller of all robots.
-        for (std::list<Robot*>::iterator it = m_Population.begin(); it != m_Population.end(); it++)
+        for (RobotIter it = m_Population.begin(); it != m_Population.end(); it++)
         {
            (*it)->updateController(); 
         }
@@ -151,6 +182,8 @@ void Robotix::update()
 void Robotix::addRobotToPop(Robot* robot)
 {
     this->m_Population.push_back(robot);
+    this->m_XPos.push_back(robot);
+    this->m_YPos.push_back(robot);
 }
 Robotix* Robotix::getInstance()
 {
@@ -172,12 +205,12 @@ const float& Robotix::getWorldSize() const
     return m_WorldSize;
 }
 
-std::list<Puck*>::iterator Robotix::getFirstPuck()
+PuckIter Robotix::getFirstPuck()
 {
     return m_Pucks.begin();
 }
 
-std::list<Puck*>::iterator Robotix::getLastPuck()
+PuckIter Robotix::getLastPuck()
 {
     return m_Pucks.end();
 }
@@ -192,12 +225,12 @@ std::list<Team*>::iterator Robotix::getLastTeam()
     return m_Teams.end();
 }
 
-std::list<Robot*>::iterator Robotix::getFirstRobot()
+RobotIter Robotix::getFirstRobot()
 {
     return m_Population.begin();
 }
 
-std::list<Robot*>::iterator Robotix::getLastRobot()
+RobotIter Robotix::getLastRobot()
 {
     return m_Population.end();
 }
