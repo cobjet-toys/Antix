@@ -52,13 +52,18 @@ void drawTeams()
     for (std::list<Game::Team*>::iterator it = Game::Robotix::getInstance()->getFirstTeam();
             it != Game::Robotix::getInstance()->getLastTeam();it++)
     {
-        drawHome((*it)->getHome(), (*it)->getColor());
-
-	    for (std::list<Game::Robot*>::iterator rt = (*it)->getFirstRobot();
+        const GUI::Color *l_TeamColor = (*it)->getColor();
+        drawHome((*it)->getHome(), l_TeamColor);
+        
+        glColor3f(l_TeamColor->getR(), l_TeamColor->getG(), l_TeamColor->getB());
+	    glBegin(GL_POINTS);
+        for (std::list<Game::Robot*>::iterator rt = (*it)->getFirstRobot();
 	    		rt != (*it)->getLastRobot(); rt++)
 	    {
-	    	drawRobot((*rt), (*it)->getColor());
+             glVertex2f( (*rt)->getPosition()->getX(), (*rt)->getPosition()->getY() );
+	    	//drawRobot((*rt), (*it)->getColor());
 	    }
+        glEnd();
     }
 }
 
