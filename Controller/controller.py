@@ -12,7 +12,7 @@ def start_process(name):
         # TODO: some code that stops all running processes across all computers
         # not exactly sure how to do this
         sys.exit()
-    script = "ssh p 24" + USER + "@" + machine + " '"
+    script = "ssh -p 24 " + USER + "@" + machine + " '"
     if name is "clock":
         script += CLOCK_STARTUP_SCRIPT + "'"
     elif name is "client":
