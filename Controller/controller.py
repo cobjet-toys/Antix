@@ -15,11 +15,11 @@ def start_process(name):
     if name is "clock":
         script = CLOCK_STARTUP_SCRIPT
     elif name is "client":
-        script = "ssh " + USER + "@" + machine + " '" + CLIENT_STARTUP_SCRIPT + "'"
+        script = "ssh -p 24 " + USER + "@" + machine + " '" + CLIENT_STARTUP_SCRIPT + "'"
     elif name is "server":
-        script = "ssh " + USER + "@" + machine + " '" + SERVER_STARTUP_SCRIPT + "'"
+        script = "ssh -p 24 " + USER + "@" + machine + " '" + SERVER_STARTUP_SCRIPT + "'"
     elif name is "drawer":
-        script = "ssh " + USER + "@" + machine + " '" + DRAWER_STARTUP_SCRIPT + "'"
+        script = "ssh -p 24 " + USER + "@" + machine + " '" + DRAWER_STARTUP_SCRIPT + "'"
     print "Running: " + script
 
     try:
