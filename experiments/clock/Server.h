@@ -11,10 +11,10 @@ class Server
 {
 public:
     Server();
-    //virtual int handler();
+    virtual int handler() = 0;
     virtual int init(const char* port);
 private:
-    char[MAX_PORT_LENGTH] m_Port;
+    char m_Port[MAX_PORT_LENGTH];
     TcpConnection m_ServerConn;
     std::map<int, TcpConnection*> m_Clients;
 };

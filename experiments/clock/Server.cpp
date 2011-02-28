@@ -14,9 +14,19 @@ Server::Server()
 
 int Server::init(const char* port)
 {
+    printf("Attempting to create a server socket on port: %s\n", port);
+    
     //Copy the port to m_Port.
-    strncpy(m_Port, port, MAX_PORT_LENGTH-1);
-    m_Port[MAX_PORT_LENGTH] = '\0';
+    size_t l_PortSize = strlen(port);
+    if (l_PortSize > (MAX_PORT_LENGTH-1))
+    {
+        perror("Port is of invalid size\n");
+        return -2;
+    }
+    strncpy(m_Port, port, l_PortSize);
+    m_Port[l_PortSize] = '\0';
+    printf("Attempting to create a server socket on port: %s\n", m_Port);
+
 
     struct addrinfo l_Hints, *l_ServerInfo; 
     
