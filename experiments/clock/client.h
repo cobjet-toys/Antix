@@ -9,7 +9,7 @@ namespace Network
 	{
 	public:
 		client();
-		client(char * host, char * port);
+		init(char * host, char * port);
 		~client();
 		
 		virtual int handler() = 0;
