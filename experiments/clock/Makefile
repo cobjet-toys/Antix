@@ -1,6 +1,6 @@
 COMPILER = g++
 
-SRC = connectionHelpers.cpp TcpConnection.cpp
+SRC = TcpConnection.cpp
 OBJECTS = $(SRC:.cpp=.o)
 INCLUDES = 
 LIBRARIES = 
