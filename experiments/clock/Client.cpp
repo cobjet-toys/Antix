@@ -1,13 +1,13 @@
 #include "Client.h"
 
-Network::client::client()
+Network::Client::Client()
 {
 	memset(&m_info, 0, sizeof(struct addrinfo));
-	m_host = NULL;
-	m_port = NULL;
+	memset(&m_host, 0, INET6_ADDRSTRLEN);
+	memset(&m_port, 0, MAX_PORT_LENGTH);
 }
 
-int Network::client::init(char* host, char * port)
+int Network::Client::init(char* host, char * port)
 {
 	if (strlen(host) > INET6_ADDRSTRLEN || strlen(port) > MAX_PORT_LENGTH )
 	{
@@ -35,7 +35,7 @@ int Network::client::init(char* host, char * port)
 	
 	memset(&l_hints, 0, sizeof(struct addrinfo) );
 	l_hints.ai_family = AF_UNSPEC;
-	l_hints.ai_protocol = SOCK_STREAM;
+	l_hints.ai_socktype = SOCK_STREAM;
 	
 	if ((l_resvalue = getaddrinfo(m_host, m_port, &l_hints, &l_result)) != 0)
 	{
@@ -89,7 +89,7 @@ int Network::client::init(char* host, char * port)
 	
 }
 
-Network::client::~client()
+Network::Client::~Client()
 {
-
+	m_conn.close();
 }
