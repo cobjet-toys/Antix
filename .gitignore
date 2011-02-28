@@ -3,3 +3,6 @@
 # Swap  and temp files
 *.swp
 *~
+
+# Python pyc files
+*.pyc
