@@ -54,7 +54,7 @@ int TcpConnection::socket(struct addrinfo * addrsock)
 	return 0;
 }
 
-int TcpConnection::listen(int amount = MAX_ACCEPT_CONNECTIONS )
+int TcpConnection::listen(int amount)
 {
 	if (m_socketfd == -1)
 	{

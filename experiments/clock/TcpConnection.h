@@ -63,7 +63,7 @@ class TcpConnection {
 		 * @brief Used to listen to incoming connections
 		 * defaults to MAX_ACCEPT_CONNECTIONS connections if amount not provided
 		 */
-		int listen(int amount);
+		int listen(int amount = MAX_ACCEPT_CONNECTIONS);
 		
 		/*
 		 * @brief Used to send a message through the socket descriptor 
