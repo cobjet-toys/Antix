@@ -50,6 +50,10 @@ class TcpConnection {
 		int connect(struct addrinfo * addrsock);
 		
 		/*
+		 * @brief Used to create a socket descriptor. Use getaddrinfo to generate the addrinfo.
+		 */
+		int socket(struct addrinfo * addrsock);
+		/*
 		 * @brief Used to bind your server to a port.
 		 * use getaddrinfo to generate the adderinfo struct "addrsock"
 		 */
@@ -62,7 +66,7 @@ class TcpConnection {
 		int listen(int amount);
 		
 		/*
-		 * @brief send a message through the socket descriptor 
+		 * @brief Used to send a message through the socket descriptor 
 		 * Needs a valid socket descriptor
 		 */
 		int send(char * message, int messageSize);
@@ -73,6 +77,11 @@ class TcpConnection {
 		 */
 		int recv(char * message, int messageSize);
 
+		/*
+		 * @brief Used to get the socket descriptor associated with this object.
+		 */
+		int getSocketDescriptor();
+		
 	private:
 		
 		struct sockaddr_storage m_thier_info; // store information about a client

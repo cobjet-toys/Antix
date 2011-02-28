@@ -25,7 +25,7 @@ int TcpConnection::bind(struct addrinfo * addrsock)
 	if (m_addrinfo == NULL ||  m_socketfd == -1)
 	{
 		perror("Invalid socket cant listen");
-		exit(0);
+		exit(1);
 	} 
 	
 	m_addrinfo = addrsock;
@@ -36,12 +36,29 @@ int TcpConnection::bind(struct addrinfo * addrsock)
     return 0;
 }
 
+int TcpConnection::socket(struct addrinfo * addrsock)
+{
+	if (addrsock == NULL)
+	{
+		perror("Invalid socket connect");
+		exit(1);
+	}
+	int l_filedesc = -1;
+	if ((l_filedesc = socket(addrsock->ai_family, addrsock->ai_socktype, addrsock->ai_protocol)) == -1)
+	{
+		perror("Could not create socket");
+		exit(1);
+	}
+	m_socketfd = l_filedesc;
+	return 0;
+}
+
 int TcpConnection::listen(int amount = MAX_ACCEPT_CONNECTIONS )
 {
 	if (m_socketfd == -1)
 	{
 		perror("Invalid socket cant listen");
-		exit(0);
+		exit(1);
 	} 
 	
     if (::listen(m_socketfd, 5) == -1)
@@ -57,7 +74,7 @@ TcpConnection * TcpConnection::accept()
 	if (m_addrinfo == NULL || m_socketfd == -1)
 	{
 		perror("Invalid addrinfo or socket");
-		exit(0);
+		exit(1);
 	} 
 	
 	struct sockaddr_storage thier_addr;
@@ -69,7 +86,7 @@ TcpConnection * TcpConnection::accept()
 	if ((newFileDescriptor = ::accept(m_socketfd, (struct sockaddr * )&thier_addr, &thier_addr_size) ) == -1 )
 	{
 		perror("Could not accept new connection");
-		exit(0);
+		exit(1);
 	} 
 	return new TcpConnection(newFileDescriptor, thier_addr, thier_addr_size);
 }
@@ -81,7 +98,7 @@ int TcpConnection::connect(struct addrinfo * addrsock)
 	if (m_addrinfo == NULL || m_socketfd == -1)
 	{
 		perror("Invalid addrinfo or socket");
-		exit(0);
+		exit(1);
 	} 
 	
 	if (::connect(m_socketfd, addrsock->ai_addr, addrsock->ai_addrlen) == -1)
@@ -96,7 +113,7 @@ int TcpConnection::send(char * message, int messageSize)
 	if (m_socketfd == -1)
 	{
 		perror("Invalid addrinfo or socket");
-		exit(0);
+		exit(1);
 	} 
 	
     int l_Total = 0, l_BytesLeft = messageSize, l_Sent = 0;
@@ -119,7 +136,7 @@ int TcpConnection::recv(char * message, int messageSize)
 	if (m_socketfd == -1)
 	{
 		perror("Invalid addrinfo or socket");
-		exit(0);
+		exit(1);
 	} 
 	
     int l_Total = 0, l_BytesLeft = messageSize, l_Rcvd = 0;
@@ -140,4 +157,9 @@ int TcpConnection::recv(char * message, int messageSize)
 int TcpConnection::close()
 {
 	::shutdown(m_socketfd, 2);
+}
+
+int TcpConnection::getSocketDescriptor()
+{
+	return m_socketfd;
 }

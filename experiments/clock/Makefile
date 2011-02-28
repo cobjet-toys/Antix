@@ -1,4 +1,4 @@
-COMPILER = gcc
+COMPILER = g++
 
 SRC = connectionHelpers.cpp TcpConnection.cpp
 OBJECTS = $(SRC:.cpp=.o)

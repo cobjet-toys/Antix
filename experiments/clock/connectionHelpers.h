@@ -15,7 +15,9 @@ typedef struct
 
 namespace connHelper
 {
+	int createTcpServer(char * location, int port, TcpConnection * conn);
 	
+	int createTcpClient(char * location, int port, TcpConnection * conn);
 }
 
 #endif
