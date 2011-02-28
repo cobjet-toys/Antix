@@ -31,7 +31,7 @@ int TcpConnection::bind(struct addrinfo * addrsock)
 	m_addrinfo = addrsock;
     if (::bind(m_socketfd, m_addrinfo->ai_addr, m_addrinfo->ai_addrlen) == -1) {
         perror("Could not bind socket (Server)");
-        exit(1);
+        return -1;
     }
     return 0;
 }
@@ -43,11 +43,12 @@ int TcpConnection::socket(struct addrinfo * addrsock)
 		perror("Invalid socket connect");
 		exit(1);
 	}
+	m_addrinfo = addrsock;
 	int l_filedesc = -1;
 	if ((l_filedesc = ::socket(addrsock->ai_family, addrsock->ai_socktype, addrsock->ai_protocol)) == -1)
 	{
 		perror("Could not create socket");
-		exit(1);
+		return -1;
 	}
 	m_socketfd = l_filedesc;
 	return 0;
@@ -64,14 +65,14 @@ int TcpConnection::listen(int amount = MAX_ACCEPT_CONNECTIONS )
     if (::listen(m_socketfd, 5) == -1)
     {
 		perror("Could not listen (Server)");
-		exit(1);
+		return -1;
     }
     return 0;
 }
 
 TcpConnection * TcpConnection::accept()
 {
-	if (m_addrinfo == NULL || m_socketfd == -1)
+	if (m_socketfd == -1)
 	{
 		perror("Invalid addrinfo or socket");
 		exit(1);
@@ -86,7 +87,7 @@ TcpConnection * TcpConnection::accept()
 	if ((newFileDescriptor = ::accept(m_socketfd, (struct sockaddr * )&thier_addr, &thier_addr_size) ) == -1 )
 	{
 		perror("Could not accept new connection");
-		exit(1);
+		return NULL;
 	} 
 	return new TcpConnection(newFileDescriptor, thier_addr, thier_addr_size);
 }
@@ -104,6 +105,7 @@ int TcpConnection::connect(struct addrinfo * addrsock)
 	if (::connect(m_socketfd, addrsock->ai_addr, addrsock->ai_addrlen) == -1)
 	{
 		perror("Could not connect (Client)");
+		return -1;
 	}
 	return 0;
 }
