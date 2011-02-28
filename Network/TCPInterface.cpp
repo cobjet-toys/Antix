@@ -45,6 +45,8 @@ void* InitServerConnection(void* args)
     //Need to initialize or compiler complains.
     int l_Sockfd = 0; 
     struct addrinfo l_ConHints, *l_ServInfo;
+    struct addrinfo l_ConHints, *l_ServInfo;
+    struct addrinfo l_ConHints, *l_ServInfo;
 
     memset(&l_ConHints, 0, sizeof l_ConHints);
     l_ConHints.ai_family = AF_UNSPEC;
