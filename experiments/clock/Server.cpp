@@ -25,8 +25,6 @@ int Server::init(const char* port)
     }
     strncpy(m_Port, port, l_PortSize);
     m_Port[l_PortSize] = '\0';
-    printf("Attempting to create a server socket on port: %s\n", m_Port);
-
 
     struct addrinfo l_Hints, *l_ServerInfo; 
     
@@ -106,4 +104,13 @@ int Server::init(const char* port)
     }
 
     printf("Server initialized and listening on port: %s\n", m_Port);
+}
+
+Server::~Server()
+{
+    TcpMap::iterator l_ClientsEnd = m_Clients.end(); 
+    for (TcpMap::iterator l_Client = m_Clients.begin(); l_Client != l_ClientsEnd; l_Client++)
+    {
+        delete (*l_Client).second;
+    }
 }

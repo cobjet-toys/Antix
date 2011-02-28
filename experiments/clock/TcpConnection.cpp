@@ -161,7 +161,7 @@ int TcpConnection::close()
 	::shutdown(m_socketfd, 2);
 }
 
-int TcpConnection::getSocketDescriptor()
+int TcpConnection::getSocketFd()
 {
 	return m_socketfd;
 }

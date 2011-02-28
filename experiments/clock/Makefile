@@ -6,7 +6,7 @@ INCLUDES =
 LIBRARIES = 
 EXECUTABLE = main
 
-TEEBS_SRC = $(SRC) teebs.cpp Server.cpp
+TEEBS_SRC = $(SRC) teebs.cpp Server.cpp GridServer.cpp
 TEEBS_OBJ = $(TEEBS_SRC:.cpp=.o)
 
 ALL: depends objects

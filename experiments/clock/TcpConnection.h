@@ -81,7 +81,7 @@ class TcpConnection {
 		/*
 		 * @brief Used to get the socket descriptor associated with this object.
 		 */
-		int getSocketDescriptor();
+		int getSocketFd();
 		
 	private:
 		

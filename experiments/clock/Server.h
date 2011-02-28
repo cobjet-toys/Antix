@@ -7,16 +7,20 @@
 namespace Network
 {
 
+typedef std::map<int, TcpConnection*> TcpMap;
+
 class Server
 {
 public:
     Server();
+    virtual ~Server();
     virtual int handler() = 0;
     virtual int init(const char* port);
 private:
     char m_Port[MAX_PORT_LENGTH];
+protected:
     TcpConnection m_ServerConn;
-    std::map<int, TcpConnection*> m_Clients;
+    TcpMap m_Clients;
 };
 
 }
