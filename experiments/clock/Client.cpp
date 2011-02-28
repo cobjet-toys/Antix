@@ -1,4 +1,4 @@
-#include "client.h"
+#include "Client.h"
 
 Network::client::client()
 {
@@ -20,7 +20,7 @@ int Network::client::init(char* host, char * port)
 	
 	if ((l_resvalue = getaddrinfo(host, port, &l_hints, &l_result)) != 0)
 	{
-		fprintf(stderr, "Could not get addrinfo %s\n", gai_error(l_resvalue));
+		fprintf(stderr, "Could not get addrinfo %s\n", gai_strerror(l_resvalue));
 		return -1;
 	}
 	
@@ -59,13 +59,13 @@ int Network::client::init(char* host, char * port)
 		break;
 	}
 	
-	if (p == NULL)
+	if (l_p == NULL)
 	{
 		perror("No valid addrinfo");
 		return -1;
 	}
 	
-	freeaddrinfo();
+	freeaddrinfo(l_result);
 	return 0;
 	
 }

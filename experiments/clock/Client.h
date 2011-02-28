@@ -1,3 +1,6 @@
+#ifndef CLIENT_H
+#define CLIENT_H
+
 #include <netdb.h>
 #include <string.h>
 #include "TcpConnection.h"
@@ -9,7 +12,7 @@ namespace Network
 	{
 	public:
 		client();
-		init(char * host, char * port);
+		int init(char * host, char * port);
 		~client();
 		
 		virtual int handler() = 0;
@@ -22,3 +25,5 @@ namespace Network
 	};
 
 }
+
+#endif
