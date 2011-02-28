@@ -25,7 +25,7 @@ int TcpConnection::bind(struct addrinfo * addrsock)
 	if (m_addrinfo == NULL ||  m_socketfd == -1)
 	{
 		perror("Invalid socket cant listen");
-		exit(1);
+		return -2;
 	} 
 	
 	m_addrinfo = addrsock;
@@ -41,7 +41,7 @@ int TcpConnection::socket(struct addrinfo * addrsock)
 	if (addrsock == NULL)
 	{
 		perror("Invalid socket connect");
-		exit(1);
+		return -2;
 	}
 	m_addrinfo = addrsock;
 	int l_filedesc = -1;
@@ -59,7 +59,7 @@ int TcpConnection::listen(int amount)
 	if (m_socketfd == -1)
 	{
 		perror("Invalid socket cant listen");
-		exit(1);
+		return -2;
 	} 
 	
     if (::listen(m_socketfd, 5) == -1)
@@ -75,7 +75,7 @@ TcpConnection * TcpConnection::accept()
 	if (m_socketfd == -1)
 	{
 		perror("Invalid addrinfo or socket");
-		exit(1);
+		return -2;
 	} 
 	
 	struct sockaddr_storage thier_addr;
@@ -99,7 +99,7 @@ int TcpConnection::connect(struct addrinfo * addrsock)
 	if (m_addrinfo == NULL || m_socketfd == -1)
 	{
 		perror("Invalid addrinfo or socket");
-		exit(1);
+		return -2;
 	} 
 	
 	if (::connect(m_socketfd, addrsock->ai_addr, addrsock->ai_addrlen) == -1)
@@ -115,7 +115,7 @@ int TcpConnection::send(char * message, int messageSize)
 	if (m_socketfd == -1)
 	{
 		perror("Invalid addrinfo or socket");
-		exit(1);
+		return -2;
 	} 
 	
     int l_Total = 0, l_BytesLeft = messageSize, l_Sent = 0;
@@ -138,7 +138,7 @@ int TcpConnection::recv(char * message, int messageSize)
 	if (m_socketfd == -1)
 	{
 		perror("Invalid addrinfo or socket");
-		exit(1);
+		return -2;
 	} 
 	
     int l_Total = 0, l_BytesLeft = messageSize, l_Rcvd = 0;
