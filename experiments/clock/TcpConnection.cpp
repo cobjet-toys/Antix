@@ -75,7 +75,7 @@ TcpConnection * TcpConnection::accept()
 	if (m_socketfd == -1)
 	{
 		perror("Invalid addrinfo or socket");
-		return -2;
+		return NULL;
 	} 
 	
 	struct sockaddr_storage thier_addr;
