@@ -9,7 +9,26 @@ Network::client::client()
 
 int Network::client::init(char* host, char * port)
 {
-	if (host == NULL || port == NULL) return -2;
+	if (strlen(host) > INET6_ADDRSTRLEN || strlen(port) > MAX_PORT_LENGTH )
+	{
+		perror("Invalid port or host length to init");
+		return -2;
+	}
+	
+	if (host == NULL || port == NULL) 
+	{
+		perror("Invalid arguments to init");
+		return -2;
+	}
+	
+	size_t l_hostlen= strlen(host); 
+	size_t l_portlen= strlen(port); 
+	
+	strncpy(m_host, host, l_hostlen);
+	m_host[l_hostlen] = '\0';
+	
+	strncpy(m_port, port, l_portlen);
+	m_port[l_hostlen] = '\0';
 	
 	struct addrinfo l_hints, *l_result, *l_p;
 	int l_resvalue = 0;
@@ -18,7 +37,7 @@ int Network::client::init(char* host, char * port)
 	l_hints.ai_family = AF_UNSPEC;
 	l_hints.ai_protocol = SOCK_STREAM;
 	
-	if ((l_resvalue = getaddrinfo(host, port, &l_hints, &l_result)) != 0)
+	if ((l_resvalue = getaddrinfo(m_host, m_port, &l_hints, &l_result)) != 0)
 	{
 		fprintf(stderr, "Could not get addrinfo %s\n", gai_strerror(l_resvalue));
 		return -1;

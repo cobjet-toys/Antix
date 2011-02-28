@@ -3,6 +3,8 @@
 
 #include <netdb.h>
 #include <string.h>
+#include <netinet/in.h>
+#include <sys/types.h>
 #include "TcpConnection.h"
 
 namespace Network
@@ -18,8 +20,8 @@ namespace Network
 		virtual int handler() = 0;
 		
 	private:
-		char * m_host;
-		char *  m_port;
+		char m_host[INET6_ADDRSTRLEN];
+		char m_port[MAX_PORT_LENGTH];
 		struct addrinfo m_info;
 		TcpConnection m_conn;
 	};
