@@ -44,7 +44,7 @@ int TcpConnection::socket(struct addrinfo * addrsock)
 		exit(1);
 	}
 	int l_filedesc = -1;
-	if ((l_filedesc = socket(addrsock->ai_family, addrsock->ai_socktype, addrsock->ai_protocol)) == -1)
+	if ((l_filedesc = ::socket(addrsock->ai_family, addrsock->ai_socktype, addrsock->ai_protocol)) == -1)
 	{
 		perror("Could not create socket");
 		exit(1);
