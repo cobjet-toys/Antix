@@ -5,13 +5,19 @@
 
 using namespace Network;
 
-Server::Server(char* port):m_Port(port), m_ServerConn()
+Server::Server()
 {
-
+    memset(&m_Port, 0, sizeof m_Port);
+    m_Clients.clear();
+    m_ServerConn = TcpConnection(); 
 }
 
-int Server::init()
+int Server::init(const char* port)
 {
+    //Copy the port to m_Port.
+    strncpy(m_Port, port, MAX_PORT_LENGTH-1);
+    m_Port[MAX_PORT_LENGTH] = '\0';
+
     struct addrinfo l_Hints, *l_ServerInfo; 
     
     memset(&l_Hints, 0 , sizeof l_Hints);    

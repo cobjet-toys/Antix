@@ -11,6 +11,7 @@
 
 #define SIZE sizeof(struct sockaddr_in)
 #define MAX_ACCEPT_CONNECTIONS 5
+#define MAX_PORT_LENGTH 6
 
 class TcpConnection {
 

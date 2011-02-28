@@ -10,11 +10,11 @@ namespace Network
 class Server
 {
 public:
-    Server(char* port);
+    Server();
     //virtual int handler();
-    virtual int init();
+    virtual int init(const char* port);
 private:
-    char* m_Port;
+    char[MAX_PORT_LENGTH] m_Port;
     TcpConnection m_ServerConn;
     std::map<int, TcpConnection*> m_Clients;
 };
