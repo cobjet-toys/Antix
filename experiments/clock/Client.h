@@ -10,14 +10,14 @@
 namespace Network
 {
 	
-	class client
+	class Client
 	{
 	public:
-		client();
+		Client();
 		int init(char * host, char * port);
-		~client();
+		~Client();
 		
-		virtual int handler() = 0;
+		//virtual int handler() = 0;
 		
 	private:
 		char m_host[INET6_ADDRSTRLEN];
