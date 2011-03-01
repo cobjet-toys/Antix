@@ -21,7 +21,7 @@ public:
      * All initializatoin of the game happens here.
      * Config options etc...
      */
-    void init();
+    void init(int argc, char** argv);
     
     /**
      * Main game loop. All game logic goes here.

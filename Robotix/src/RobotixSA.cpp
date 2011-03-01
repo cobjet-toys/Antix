@@ -3,7 +3,7 @@
 
 int main(int argc, char** argv)
 {
-    Game::Robotix::getInstance()->init();
+    Game::Robotix::getInstance()->init(argc, argv);
     initGraphics(argc, argv);
     return 0;
 }

@@ -14,7 +14,7 @@ using namespace Game;
 
 Robotix* Robotix::m_Instance = NULL;
 
-void Robotix::init()
+void Robotix::init(int argc, char** argv)
 {
     //Seed our number generator.
     srand48(time(NULL));
@@ -42,6 +42,64 @@ void Robotix::init()
     Team::m_RobotPopCount = 10000;
     
     m_SleepMsec = 10; 
+
+    //parse options
+    int c;
+    while( ( c = getopt( argc, argv, "dh:a:p:s:f:r:u:z:w:")) != -1 )
+	    switch( c )
+	    {
+	        case 'h':
+	          m_TotalTeamCount = atoi( optarg );
+	          printf( "[Antix] home count: %d\n", m_TotalTeamCount );
+	          break;
+
+	        case 'a':
+	          m_TotalPuckCount = atoi( optarg );
+	          printf( "[Antix] puck count: %d\n", m_TotalPuckCount );
+	          break;
+	          
+	        case 'p': 
+		        Team::m_RobotPopCount = atoi( optarg );
+		        printf( "[Antix] home_population: %d\n", Team::m_RobotPopCount );
+		        break;
+		
+	        case 's': 
+		        m_WorldSize = atof( optarg );
+		        printf( "[Antix] worldsize: %.2f\n", m_WorldSize );
+		        break;
+		
+	        case 'f': 
+		        Robot::m_FOV = dtor(atof( optarg )); // degrees to radians
+		        printf( "[Antix] fov: %.2f\n", Robot::m_FOV );
+		        break;
+		
+	        case 'r': 
+		        Robot::m_SensorRange = atof( optarg );
+		        printf( "[Antix] range: %.2f\n", Robot::m_SensorRange );
+		        break;
+						
+	        case 'u':
+		        m_MaxUpdates = atol( optarg );
+		        printf( "[Antix] updates_max: %lu\n", (long unsigned)m_MaxUpdates );
+		        break;
+		
+	        case 'z':
+		        m_SleepMsec = atoi( optarg );
+		        printf( "[Antix] sleep_msec: %d\n", m_SleepMsec );
+		        break;
+		
+	        case 'w': 
+                m_WindowSize = atoi( optarg );
+		        printf( "[Antix] winsize: %d\n", m_WindowSize );
+		        break;
+
+	        case 'd': m_ShowData=true;
+	          puts( "[Antix] show data" );
+	          break;
+
+            default:
+                break;
+	    }
 
     //Generate pucks at random locations.
     for (uint i = 0; i <m_TotalPuckCount; i++)
