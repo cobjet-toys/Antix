@@ -2,7 +2,8 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <unistd.h>
+#include <sys/epoll.h>
+
 
 using namespace Network;
 
@@ -11,12 +12,14 @@ Server::Server()
     memset(&m_Port, 0, sizeof m_Port);
     m_Clients.clear();
     m_ServerConn = TcpConnection(); 
+	m_epfd = -1;
 }
 
 int Server::init(const char* port)
 {
     printf("Attempting to create a server socket on port: %s\n", port);
-    
+    m_epfd = epoll_create(10);
+	if (m_epfd < 0 ) return -1;
     //Copy the port to m_Port.
     size_t l_PortSize = strlen(port);
     if (l_PortSize > (MAX_PORT_LENGTH-1))
@@ -28,7 +31,7 @@ int Server::init(const char* port)
     m_Port[l_PortSize] = '\0';
 
     struct addrinfo l_Hints, *l_ServerInfo; 
-    
+
     memset(&l_Hints, 0 , sizeof l_Hints);    
     l_Hints.ai_family = AF_UNSPEC; // Use IPv4 or IPv6
     l_Hints.ai_socktype = SOCK_STREAM;
@@ -57,7 +60,10 @@ int Server::init(const char* port)
                 return -2;
             }
             else
+			{
                 perror("WTF is Hardeep returning.\n");
+				return -3;
+			}
         }
 
         //TODO Set SOCKET REUSEADDR option.
@@ -76,7 +82,10 @@ int Server::init(const char* port)
                 return -2;
             }
             else
+			{
                 perror("WTF is Hardeep returning.\n");
+				return -3;
+			}
         }
        
        break; 
@@ -101,92 +110,68 @@ int Server::init(const char* port)
         {
             perror("Invalid argument in 'listen'.\n");
             return -2;
-        }
+        } else {
+			perror("WTF is Hardeep returning.\n");
+			return -3;
+		}
     }
-
-    printf("Server socket created, now listening for new connections.\n");
-    struct sockaddr_storage l_ClienAddr;
-    fd_set l_Master;
-    fd_set l_ReadFds;
-
-    FD_ZERO(&l_Master);
-    FD_ZERO(&l_ReadFds);
-
-    FD_SET(m_ServerConn.getSocketFd(), &l_Master);
-    int l_Listener = m_ServerConn.getSocketFd();
-    int l_MaxFd = l_Listener;
-    for(;;)
-    {
-        l_ReadFds = l_Master;
-        if (select(l_MaxFd+1, &l_ReadFds, NULL, NULL, NULL) == -1)
-        {
-            perror("Error receiving with select.\n");
-            return -1;
-        }
-
-        for (int i = 0; i <= l_MaxFd;i++)
-        {
-            if (FD_ISSET(i, &l_ReadFds))
-            {
-                //Got a new connection.
-               if (i == l_Listener)
-               {
-                   TcpConnection *l_NewConn = m_ServerConn.accept();
-                   if (l_NewConn == NULL)
-                   {
-                        perror("Error accepting connection\n");
-                        return -1;
-                   }
-                   else
-                   {
-                        printf("Received new connection\n");
-                        int l_NewFd = m_ServerConn.getSocketFd();
-                        m_Clients[l_NewFd] = l_NewConn; 
-                        FD_SET(l_NewFd, &l_Master);
-                        if (l_NewFd > l_MaxFd)
-                        {
-                            l_MaxFd = l_NewFd;
-                        }
-                   }
-               }
-               //Need an update on an existing fd.
-               else
-               {
-                    char l_Message[2] = "1";
-                    if ((l_ResValue = m_Clients[i]->recv(l_Message, 2)) <= 0)
-                    { 
-                        if  (l_ResValue == -2)
-                        {
-                            perror("Invalid socket for rcv\n");
-                            return -2;
-                        }
-                        else if (l_ResValue == 0)
-                        {
-                            printf("Server hung up\n");
-                        }
-                        else
-                        {
-                            perror("WTF is Hardeep returning\n");
-                        }
-                        close(i);
-                        FD_CLR(i, &l_Master);
-                   }
-                   else
-                   {
-                      //Code to handle new messages goes here.
-                   }
-               }
-           } 
-        }
-    }
+	int fileDesc = m_ServerConn.getSocketFd();
+	
+	this->setnonblock(fileDesc); // @ todo check for errors
+	this->addHandler(fileDesc, EPOLLIN, &m_ServerConn); //@ todo check for errors
+	
+    printf("Server initialized and listening on port: %s\n", m_Port);
+	
+	return 0;
 }
 
 
-Server::~Server()
+int Server::addHandler(int fd, unsigned int events, TcpConnection * connection)
 {
-    TcpMap::iterator l_ClientsEnd = m_Clients.end(); 
-    for (TcpMap::iterator l_Client = m_Clients.begin(); l_Client != l_ClientsEnd; l_Client++)
-    {
-        delete (*l_Client).second;
-    }
+	m_Clients[fd] = connection;
+	epoll_event e;
+	e.data.fd = fd;
+	e.events = events;
+	
+	if (epoll_ctl(m_epfd, EPOLL_CTL_ADD, fd, &e) < 0)
+	{
+		return -1;
+	} else return 0;
+}
+
+void Server::start()
+{
+	epoll_event e[10];
+	int nfd;
+	for (;;)
+	{
+		nfd = epoll_wait(m_epfd, e, 10, -1);
+		for (int i = 0; i < nfd ; i++)
+		{
+			if (e[i].data.fd == m_ServerConn.getSocketFd()) // new connection
+			{
+				TcpConnection * temp = m_ServerConn.accept();
+				if (temp!= NULL)
+				{
+					int fd = temp->getSocketFd();
+					m_Clients[fd] = temp;
+					this->setnonblock(fd); // @ todo check for errors
+					this->addHandler(fd, EPOLLIN|EPOLLET, temp); //@ todo check for errors	
+				}
+			}
+			else // 
+			{
+				handler(e[i].data.fd);
+			}
+		}
+	}
+}
+
+int Server::setnonblock(int fd)
+{
+  int flags;
+
+  flags = fcntl(fd, F_GETFL);
+  flags |= O_NONBLOCK;
+  return fcntl(fd, F_SETFL, flags);
 }

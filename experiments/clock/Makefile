@@ -1,6 +1,6 @@
 COMPILER = g++
 
-SRC = TcpConnection.cpp
+SRC = Server.cpp GridServer.cpp TcpConnection.cpp
 OBJECTS = $(SRC:.cpp=.o)
 INCLUDES = 
 LIBRARIES = 
@@ -8,13 +8,13 @@ EXECUTABLE = main
 
 # ------------------------------------------------------------
 
-TEEBS_SRC = $(SRC) teebs.cpp Server.cpp GridServer.cpp
+TEEBS_SRC = $(SRC) teebs.cpp 
 TEEBS_OBJ = $(TEEBS_SRC:.cpp=.o)
 
 
 # ------------------------------------------------------------
 
-HARDEEP_SRC = $(SRC) hardeep.cpp Client.cpp
+HARDEEP_SRC = $(SRC) hardeep.cpp 
 HARDEEP_OBJ = $(HARDEEP_SRC:.cpp=.o)
 
 # ------------------------------------------------------------

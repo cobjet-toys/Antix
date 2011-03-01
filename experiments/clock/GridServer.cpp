@@ -2,25 +2,14 @@
 
 using namespace Network;
 
-GridServer::GridServer()
+GridServer::GridServer():Server()
 {
 }
 
-int GridServer::handler()
+int GridServer::handler(int fd)
 {
-    struct sockaddr_storage l_ClienAddr;
-    while(1)
-    {
-        TcpConnection *l_NewConn = m_ServerConn.accept();
-        if (l_NewConn == NULL)
-        {
-            perror("Error accepting connection\n");
-            continue;
-        }
-        printf("Received new connection\n");
-
-        m_Clients[l_NewConn->getSocketFd()] = l_NewConn; 
-    }
+    printf("got a connection");
+	
 }
 
 

@@ -1,11 +1,11 @@
-#include "Client.h"
+#include "GridServer.h"
 
 int main(int argc, char ** argv)
 {
-	Network::Client hardbot;
+	Network::GridServer hardserve;
 	
-	int returnV = hardbot.init(argv[1], argv[2]);
-	printf("%i\n", returnV);
+	hardserve.init(argv[1]);
+	hardserve.start();
 	
 	return 0;
 }
