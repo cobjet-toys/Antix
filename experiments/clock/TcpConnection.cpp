@@ -110,7 +110,7 @@ int TcpConnection::connect(struct addrinfo * addrsock)
 	return 0;
 }
 
-int TcpConnection::send(char * message, int messageSize)
+int TcpConnection::send(unsigned char * message, int messageSize)
 {
 	if (m_socketfd == -1)
 	{
@@ -133,7 +133,7 @@ int TcpConnection::send(char * message, int messageSize)
     return l_Sent==-1?-1:0;
 }
 
-int TcpConnection::recv(char * message, int messageSize)
+int TcpConnection::recv(unsigned char * message, int messageSize)
 {
 	if (m_socketfd == -1)
 	{

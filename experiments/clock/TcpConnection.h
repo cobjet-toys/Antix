@@ -70,13 +70,13 @@ class TcpConnection {
 		 * @brief Used to send a message through the socket descriptor 
 		 * Needs a valid socket descriptor
 		 */
-		int send(char * message, int messageSize);
+		int send(unsigned char * message, int messageSize);
 		
 		/*
 		 * @brief recieve a message through the socket descriptor 
 		 * Needs a valid socket descriptor
 		 */
-		int recv(char * message, int messageSize);
+		int recv(unsigned char * message, int messageSize);
 
 		/*
 		 * @brief Used to get the socket descriptor associated with this object.

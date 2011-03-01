@@ -3,6 +3,7 @@
 
 #include "Server.h"
 #include "Messages.h"
+#include "Packer.h"
 
 namespace Network
 {

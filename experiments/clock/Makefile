@@ -14,7 +14,7 @@ TEEBS_OBJ = $(TEEBS_SRC:.cpp=.o)
 
 # ------------------------------------------------------------
 
-HARDEEP_SRC = $(SRC) hardeep.cpp 
+HARDEEP_SRC = $(SRC) grid.cpp 
 HARDEEP_OBJ = $(HARDEEP_SRC:.cpp=.o)
 
 # ------------------------------------------------------------
@@ -53,7 +53,7 @@ teebs_clean:
 # ------------------------------------------------------------
 
 hardeep: hardeep_depend hardeep_objects
-	$(COMPILER) -o $@ $(HARDEEP_OBJ) $(LIBRARIES) $(INCLUDES)
+	$(COMPILER) -o grid.bin $(HARDEEP_OBJ) $(LIBRARIES) $(INCLUDES)
 
 hardeep_depend:
 	$(COMPILER) -M $(HARDEEP_SRC) > depends
@@ -68,7 +68,7 @@ hardeep_clean:
 # ------------------------------------------------------------
 
 clock: clock_depend clock_objects 
-	$(COMPILER) -o $@ $(CLOCK_OBJ) $(LIBRARIES) $(INCLUDES)
+	$(COMPILER) -o clock.bin $(CLOCK_OBJ) $(LIBRARIES) $(INCLUDES)
 
 clock_depend:
 	$(COMPILER) -M $(CLOCK_SRC) > depends
