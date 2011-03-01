@@ -3,6 +3,7 @@
 
 //New messages should be added to this header file.//Use int32_t for message members to ensure the same bit size on all machines.
 #include <stdint.h>
+#include <sys/types.h>
 
 enum 
 {
@@ -24,26 +25,26 @@ typedef struct
     int32_t id;
     float xpos;
     float ypos;
-    static const int size = 12;
+    static const size_t size = 12;
 } Msg_example;
 
 typedef struct
 {
 	uint16_t sender;
 	uint16_t message;
-	static const uint32_t size = 4;
+	static const size_t size = 4;
 } Msg_header;
 
 typedef struct 
 {
 	uint32_t uId;
-	static const uint32_t size = 4;
+	static const size_t size = 4;
 } Msg_uId;
 
 typedef struct
 {
     uint16_t hb;
-    static const uint16_t size = 2;
+    static const size_t size = 2;
 } Msg_HB;
 
 #endif

@@ -152,7 +152,7 @@ int TcpConnection::recv(unsigned char * message, int messageSize)
         l_Total += l_Rcvd;
         l_BytesLeft -= l_Rcvd;
     }
-    
+
     return l_Rcvd==-1?-1:0;	
 }
 

@@ -143,29 +143,55 @@ void Server::start()
 {
 	for (;;)
 	{
-		epoll_event e[10];
+		epoll_event * e = new epoll_event[10];
 		int nfd;		
-		nfd = epoll_wait(m_epfd, e, 10, -1);
-		printf("%i polled\n", nfd);
+		nfd = epoll_wait(m_epfd, e, 10, 500);
+
 		for (int i = 0; i < nfd ; i++)
 		{
-			if (e[i].data.fd == m_ServerConn.getSocketFd()) // new connection
+			/*if (e[i].events & EPOLLHUP)
 			{
-				TcpConnection * temp = m_ServerConn.accept();
-				if (temp!= NULL)
+				epoll_ctl(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, &e[i]); // @todo add error checking
+			}
+			if (e[i].events & EPOLLERR)
+			{
+				epoll_ctl(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL); // @todo add error checking
+			}
+			if (e[i].events & EPOLLIN)
+			{*/
+				if (e[i].data.fd == m_ServerConn.getSocketFd()) // new connection
 				{
-					int fd = temp->getSocketFd();
-					m_Clients[fd] = temp;
-					this->setnonblock(fd); // @ todo check for errors
-					this->addHandler(fd, EPOLLIN|EPOLLET, temp); //@ todo check for errors	
-                    printf("A client connected.\n");
+					TcpConnection * temp = m_ServerConn.accept();
+					if (temp!= NULL)
+					{
+						int fd = temp->getSocketFd();
+						m_Clients[fd] = temp;
+						this->setnonblock(fd); // @ todo check for errors
+						this->addHandler(fd, EPOLLIN|EPOLLET|EPOLLRDHUP, temp); //@ todo check for errors	
+						printf("A client connected.\n");
+					}
 				}
-			}
-			else // 
-			{
-				int ret = handler(e[i].data.fd);
-				printf("Handler returned %i\n", ret);
-			}
+				else // 
+				{
+					if (e[i].events & EPOLLRDHUP || e[i].events & EPOLLHUP || e[i].events & EPOLLERR)
+					{
+						printf("Client Hangup/Error \n");
+						epoll_ctl(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL); // @todo add error checking
+					} else if (e[i].events & EPOLLIN)
+					{
+						printf("Handeling \n");
+						int ret = handler(e[i].data.fd);
+						printf("Handler returned %i\n", ret);
+						if (ret < 0)
+						{
+							if (epoll_ctl(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL))
+							{
+									return ;
+							}
+						}
+					}
+				}
+			//}
 		}
 	}
 }
