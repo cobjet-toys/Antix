@@ -14,6 +14,8 @@ public:
     virtual int handler();
 
     int heartbeat();
+private:
+	uint16_t m_heartbeat;
 };
 }
 

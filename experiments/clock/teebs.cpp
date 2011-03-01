@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     std::vector<char*> l_GridIPs;
 
     //Add an ip.
-    l_GridIPs.push_back("142.58.172.169");
+    l_GridIPs.push_back("142.58.95.170");
     //l_GridIPs.push_back("127.0.0.1");
 
     /*TODO: FILL UP HOSTS FILE WITH GRID SERVER IPS*/
@@ -44,9 +44,6 @@ int main(int argc, char** argv)
     }
     /*TODO: Initialize server*/ 
    
-    while(1)
-    {
-
-    } 
+    
     return 0;
 }

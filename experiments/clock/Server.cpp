@@ -149,16 +149,6 @@ void Server::start()
 
 		for (int i = 0; i < nfd ; i++)
 		{
-			/*if (e[i].events & EPOLLHUP)
-			{
-				epoll_ctl(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, &e[i]); // @todo add error checking
-			}
-			if (e[i].events & EPOLLERR)
-			{
-				epoll_ctl(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL); // @todo add error checking
-			}
-			if (e[i].events & EPOLLIN)
-			{*/
 				if (e[i].data.fd == m_ServerConn.getSocketFd()) // new connection
 				{
 					TcpConnection * temp = m_ServerConn.accept();
@@ -191,7 +181,6 @@ void Server::start()
 						}
 					}
 				}
-			//}
 		}
 	}
 }
