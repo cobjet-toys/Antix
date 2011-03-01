@@ -1,6 +1,6 @@
 COMPILER = g++
 
-SRC = Client.cpp ControllerClient.cpp Server.cpp GridServer.cpp TcpConnection.cpp Packer.cpp
+SRC = Client.cpp ControllerClient.cpp ClockClient.cpp Server.cpp GridServer.cpp TcpConnection.cpp Packer.cpp
 OBJECTS = $(SRC:.cpp=.o)
 INCLUDES = 
 LIBRARIES = 
@@ -16,6 +16,11 @@ TEEBS_OBJ = $(TEEBS_SRC:.cpp=.o)
 
 HARDEEP_SRC = $(SRC) hardeep.cpp 
 HARDEEP_OBJ = $(HARDEEP_SRC:.cpp=.o)
+
+# ------------------------------------------------------------
+
+CLOCK_SRC = $(SRC) clock.cpp
+CLOCK_OBJ = $(CLOCK_SRC:.cpp=.o)
 
 # ------------------------------------------------------------
 
@@ -62,7 +67,15 @@ hardeep_clean:
 
 # ------------------------------------------------------------
 
+clock: clock_depend clock_objects 
+	$(COMPILER) -o $@ $(CLOCK_OBJ) $(LIBRARIES) $(INCLUDES)
 
+clock_depend:
+	$(COMPILER) -M $(CLOCK_SRC) > depends
+
+clock_objects:
+	g++ -c $(CLOCK_SRC)
+	
 
 include depends
 
