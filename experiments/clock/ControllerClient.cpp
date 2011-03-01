@@ -11,6 +11,8 @@ int ControllerClient::handler()
     int l_State = 0;
     while(1)
     {
+        //Send grid ids to grid server
 
+        
     }
 }

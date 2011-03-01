@@ -1,6 +1,6 @@
 COMPILER = g++
 
-SRC = Client.cpp ControllerClient.cpp Server.cpp GridServer.cpp TcpConnection.cpp
+SRC = Client.cpp ControllerClient.cpp Server.cpp GridServer.cpp TcpConnection.cpp Packer.cpp
 OBJECTS = $(SRC:.cpp=.o)
 INCLUDES = 
 LIBRARIES = 
@@ -34,7 +34,7 @@ clean:
 # ------------------------------------------------------------
 
 teebs: teebs_depend teebs_objects
-	$(COMPILER) -o $@ $(TEEBS_OBJ) $(LIBRARIES) $(INCLUDES)
+	$(COMPILER) -o teebs.bin $(TEEBS_OBJ) $(LIBRARIES) $(INCLUDES)
 
 teebs_depend:
 	$(COMPILER) -M $(TEEBS_SRC) > depends
@@ -43,7 +43,7 @@ teebs_objects:
 	g++ -c $(TEEBS_SRC)
 	
 teebs_clean:
-	rm $(TEEBS_OBJ) depends
+	rm $(TEEBS_OBJ) teebs.bin depends
 
 # ------------------------------------------------------------
 
