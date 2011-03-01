@@ -12,6 +12,9 @@ class GridServer : public Server
 public:
     GridServer();
     virtual int handler(int fd);
+	
+private:
+	uint32_t m_uId;
 };
 }
 

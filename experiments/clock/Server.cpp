@@ -141,11 +141,12 @@ int Server::addHandler(int fd, unsigned int events, TcpConnection * connection)
 
 void Server::start()
 {
-	epoll_event e[10];
-	int nfd;
 	for (;;)
 	{
+		epoll_event e[10];
+		int nfd;		
 		nfd = epoll_wait(m_epfd, e, 10, -1);
+		printf("%i polled\n", nfd);
 		for (int i = 0; i < nfd ; i++)
 		{
 			if (e[i].data.fd == m_ServerConn.getSocketFd()) // new connection
@@ -162,7 +163,8 @@ void Server::start()
 			}
 			else // 
 			{
-				handler(e[i].data.fd);
+				int ret = handler(e[i].data.fd);
+				printf("Handler returned %i\n", ret);
 			}
 		}
 	}
