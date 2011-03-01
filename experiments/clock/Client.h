@@ -10,21 +10,23 @@
 namespace Network
 {
 	
-	class Client
-	{
-	public:
-		Client();
-		int init(char * host, char * port);
-		virtual ~Client();
+class Client
+{
+public:
+	Client();
+	int init(char * host, char * port);
+	virtual ~Client();
 		
-		virtual int handler() = 0;
+	virtual int handler() = 0;
 		
-	private:
-		char m_host[INET6_ADDRSTRLEN];
-		char m_port[MAX_PORT_LENGTH];
-		struct addrinfo m_info;
-		TcpConnection m_conn;
-	};
+private:
+	char m_host[INET6_ADDRSTRLEN];
+    char m_port[MAX_PORT_LENGTH];
+    struct addrinfo m_info;
+protected:
+    TcpConnection m_conn;
+
+};
 
 }
 

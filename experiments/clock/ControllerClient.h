@@ -10,6 +10,8 @@ class ControllerClient : public Client
 public:
     ControllerClient();
     virtual int handler();
+    int sendId(int id);
+private:
 };
 }
 
