@@ -157,6 +157,7 @@ void Server::start()
 					m_Clients[fd] = temp;
 					this->setnonblock(fd); // @ todo check for errors
 					this->addHandler(fd, EPOLLIN|EPOLLET, temp); //@ todo check for errors	
+                    printf("A client connected.\n");
 				}
 			}
 			else // 

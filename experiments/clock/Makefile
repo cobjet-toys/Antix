@@ -1,6 +1,6 @@
 COMPILER = g++
 
-SRC = Server.cpp GridServer.cpp TcpConnection.cpp
+SRC = Client.cpp Server.cpp GridServer.cpp TcpConnection.cpp
 OBJECTS = $(SRC:.cpp=.o)
 INCLUDES = 
 LIBRARIES = 
