@@ -3,6 +3,7 @@
 #include "Game/Team.h"
 #include "Math/Position.h"
 #include "Math/Math.h"
+#include "logger/logger.h"
 #include <time.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -12,9 +13,12 @@
 #include <math.h>
 using namespace Game;
 
-Robotix* Robotix::m_Instance = NULL;
+#define MILLISECS_IN_SECOND 1000
 
-void Robotix::init()
+Robotix* Robotix::m_Instance = NULL;
+AntixUtils::Logger Robotix::profiler(*(new AntixUtils::Logger()));
+
+void Robotix::init(int argc, char** argv)
 {
     //Seed our number generator.
     srand48(time(NULL));
@@ -43,6 +47,70 @@ void Robotix::init()
     
     m_SleepMsec = 10; 
 
+    m_loggingEnabled = false;
+
+    //parse options
+    int c;
+    while( ( c = getopt( argc, argv, "dlh:a:p:s:f:r:u:z:w:")) != -1 )
+	    switch( c )
+	    {
+	        case 'h':
+	          m_TotalTeamCount = atoi( optarg );
+	          printf( "[Antix] home count: %d\n", m_TotalTeamCount );
+	          break;
+
+	        case 'a':
+	          m_TotalPuckCount = atoi( optarg );
+	          printf( "[Antix] puck count: %d\n", m_TotalPuckCount );
+	          break;
+	          
+	        case 'p': 
+		        Team::m_RobotPopCount = atoi( optarg );
+		        printf( "[Antix] home_population: %d\n", Team::m_RobotPopCount );
+		        break;
+		
+	        case 's': 
+		        m_WorldSize = atof( optarg );
+		        printf( "[Antix] worldsize: %.2f\n", m_WorldSize );
+		        break;
+		
+	        case 'f': 
+		        Robot::m_FOV = dtor(atof( optarg )); // degrees to radians
+		        printf( "[Antix] fov: %.2f\n", Robot::m_FOV );
+		        break;
+		
+	        case 'r': 
+		        Robot::m_SensorRange = atof( optarg );
+		        printf( "[Antix] range: %.2f\n", Robot::m_SensorRange );
+		        break;
+						
+	        case 'u':
+		        m_MaxUpdates = atol( optarg );
+		        printf( "[Antix] updates_max: %lu\n", (long unsigned)m_MaxUpdates );
+		        break;
+		
+	        case 'z':
+		        m_SleepMsec = atoi( optarg );
+		        printf( "[Antix] sleep_msec: %d\n", m_SleepMsec );
+		        break;
+		
+	        case 'w': 
+                m_WindowSize = atoi( optarg );
+		        printf( "[Antix] winsize: %d\n", m_WindowSize );
+		        break;
+
+	        case 'd': m_ShowData=true;
+	          puts( "[Antix] show data" );
+	          break;
+
+	        case 'l': m_loggingEnabled=true;
+	          puts( "[Antix] logging to redis server enabled" );
+	          break;
+
+            default:
+                break;
+	    }
+
     //Generate pucks at random locations.
     for (uint i = 0; i <m_TotalPuckCount; i++)
     {
@@ -59,6 +127,13 @@ void Robotix::init()
     {
        Team* l_Team = new Team();
        m_Teams.push_back( l_Team ); 
+    }
+
+    if (m_loggingEnabled)
+    {
+        std::ostringstream s;
+        s << "Home=" << m_TotalTeamCount << ", Population=" << Team::m_RobotPopCount;
+        profiler.append(s.str());
     }
 }
 
@@ -109,6 +184,9 @@ void Robotix::update()
     //Main AI loop.
     if (!m_GamePaused)
     {
+        //start clock for profiling
+        clock_t start = clock();
+
 		//sort the robot population using insertion sort, which is good for
 		//lists which do not get too out of order 
         sortRobots();
@@ -135,8 +213,8 @@ void Robotix::update()
                l_Visible.push_back(m_XPos[j]); 
             }
 
-             //   printf("%d collisions\n", l_Visible.size());
-             m_XPos[i]->updateSensors();
+            //   printf("%d collisions\n", l_Visible.size());
+            m_XPos[i]->updateSensors();
         }  
 
         //m_GamePaused = true;
@@ -146,6 +224,13 @@ void Robotix::update()
            (*it)->updateController(); 
         }
 
+        if (m_loggingEnabled)
+        {
+            double elapsed = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
+            std::ostringstream s;
+            s << "Turn complete in " << elapsed << " ms";
+            profiler.append(s.str());
+        }
     }
 
     m_Updates++;

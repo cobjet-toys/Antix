@@ -3,6 +3,7 @@
 
 #include "Game/Team.h"
 #include "Game/Puck.h"
+#include "logger/logger.h"
 #include <list>
 #include <vector>
 #include <map>
@@ -21,7 +22,7 @@ public:
      * All initializatoin of the game happens here.
      * Config options etc...
      */
-    void init();
+    void init(int argc, char** argv);
     
     /**
      * Main game loop. All game logic goes here.
@@ -69,6 +70,11 @@ public:
      * Singleton instance that allows access anywhere Game.h is included.
      */
     static Robotix* getInstance();
+
+    /**
+     * Redis client logging-wrapper instance.
+     */
+    static AntixUtils::Logger profiler;        
 private:
 
     /**
@@ -113,6 +119,9 @@ private:
 
     //TODO implement data.
     bool m_ShowData;
+
+    //Enable logging to the redis server
+    bool m_loggingEnabled;
 
     //Returns the max window size.
     unsigned int m_WindowSize;
