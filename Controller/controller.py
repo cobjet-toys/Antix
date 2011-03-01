@@ -12,16 +12,30 @@ def start_process(name):
         # TODO: some code that stops all running processes across all computers
         # not exactly sure how to do this
         sys.exit()
-    script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup "
+    # get machine hostname for output file
+    get_hostname = "ssh -p 24 " + USER + "@" + machine + " 'hostname'"
+    try:
+        out, error = run_bash_script(get_hostname)
+        hostname = out.rstrip()
+    except BashScriptException as e:
+        print "* ERROR STARTING " + name.upper() + " *"
+        print e
+        return
+    
+    script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH + "Controller/wrappers/"
     if name is "clock":
-        script += CLOCK_STARTUP_SCRIPT
+        #script += CLOCK_STARTUP_SCRIPT
+        script += "clock.sh"
     elif name is "client":
-        script += CLIENT_STARTUP_SCRIPT
+        #script += CLIENT_STARTUP_SCRIPT
+        script += "client.sh"
     elif name is "server":
-        script += SERVER_STARTUP_SCRIPT
+        #script += SERVER_STARTUP_SCRIPT
+        script += "server.sh"
     elif name is "drawer":
-        script += DRAWER_STARTUP_SCRIPT
-    script += " > antix.out 2> antix.err < /dev/null &'"
+        #script += DRAWER_STARTUP_SCRIPT
+        script += "drawer.sh"
+    script += " > antix." + hostname + ".out'"
     print "Running: " + script
 
     try:
@@ -78,12 +92,14 @@ class BashScriptException(Exception):
 
 
 # Get the user argument
-if len(sys.argv) != 2:
-    print "Usage: python controller.py <sfu_username>"
-    print "Make sure you've set up SSH keys for your account."
+if len(sys.argv) != 3:
+    print "Usage: python controller.py <sfu_username> <path/to/antix/directory/in/your/home/directory/>"
+    print "For example: python contoller.py hha13 ~/Documents/Antix/"
+    print "Also, make sure you've set up SSH keys for your account."
     sys.exit()
 
 USER = sys.argv[1]
+PATH = sys.argv[2]
 
 # Start clock
 print "*** STARTING CLOCK ***"
