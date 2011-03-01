@@ -13,7 +13,8 @@ enum
 
 enum 
 {
-	MSG_ASSIGN_ID = 0
+	MSG_ASSIGN_ID = 0,
+    MSG_HEARTBEAT = 1
 };
 
 //All messages should contain a static const member named 'size'.
