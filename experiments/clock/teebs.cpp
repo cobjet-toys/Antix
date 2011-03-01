@@ -1,10 +1,10 @@
-#include "Client.h"
+#include "ControllerClient.h"
 
 int main(int argc, char** argv)
 {
     using namespace Network;
-
-    Client aClient = Client();
-    aClient.init(argv[1], argv[2]); 
+    ControllerClient l_CtrlClient = ControllerClient();
+    l_CtrlClient.init(argv[1], argv[2]);
+ 
     return 0;
 }

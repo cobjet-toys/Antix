@@ -17,7 +17,7 @@ namespace Network
 		int init(char * host, char * port);
 		virtual ~Client();
 		
-		//virtual int handler();
+		virtual int handler() = 0;
 		
 	private:
 		char m_host[INET6_ADDRSTRLEN];
