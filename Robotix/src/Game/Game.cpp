@@ -3,6 +3,7 @@
 #include "Game/Team.h"
 #include "Math/Position.h"
 #include "Math/Math.h"
+#include "logger/logger.h"
 #include <time.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -12,7 +13,10 @@
 #include <math.h>
 using namespace Game;
 
+#define MILLISECS_IN_SECOND 1000
+
 Robotix* Robotix::m_Instance = NULL;
+AntixUtils::Logger Robotix::profiler(*(new AntixUtils::Logger()));
 
 void Robotix::init(int argc, char** argv)
 {
@@ -43,9 +47,11 @@ void Robotix::init(int argc, char** argv)
     
     m_SleepMsec = 10; 
 
+    m_loggingEnabled = false;
+
     //parse options
     int c;
-    while( ( c = getopt( argc, argv, "dh:a:p:s:f:r:u:z:w:")) != -1 )
+    while( ( c = getopt( argc, argv, "dlh:a:p:s:f:r:u:z:w:")) != -1 )
 	    switch( c )
 	    {
 	        case 'h':
@@ -97,6 +103,10 @@ void Robotix::init(int argc, char** argv)
 	          puts( "[Antix] show data" );
 	          break;
 
+	        case 'l': m_loggingEnabled=true;
+	          puts( "[Antix] logging to redis server enabled" );
+	          break;
+
             default:
                 break;
 	    }
@@ -117,6 +127,13 @@ void Robotix::init(int argc, char** argv)
     {
        Team* l_Team = new Team();
        m_Teams.push_back( l_Team ); 
+    }
+
+    if (m_loggingEnabled)
+    {
+        std::ostringstream s;
+        s << "Home=" << m_TotalTeamCount << ", Population=" << Team::m_RobotPopCount;
+        profiler.append(s.str());
     }
 }
 
@@ -167,6 +184,9 @@ void Robotix::update()
     //Main AI loop.
     if (!m_GamePaused)
     {
+        //start clock for profiling
+        clock_t start = clock();
+
 		//sort the robot population using insertion sort, which is good for
 		//lists which do not get too out of order 
         sortRobots();
@@ -193,8 +213,8 @@ void Robotix::update()
                l_Visible.push_back(m_XPos[j]); 
             }
 
-             //   printf("%d collisions\n", l_Visible.size());
-             m_XPos[i]->updateSensors();
+            //   printf("%d collisions\n", l_Visible.size());
+            m_XPos[i]->updateSensors();
         }  
 
         //m_GamePaused = true;
@@ -204,6 +224,13 @@ void Robotix::update()
            (*it)->updateController(); 
         }
 
+        if (m_loggingEnabled)
+        {
+            double elapsed = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
+            std::ostringstream s;
+            s << "Turn complete in " << elapsed << " ms";
+            profiler.append(s.str());
+        }
     }
 
     m_Updates++;
