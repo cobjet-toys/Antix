@@ -37,7 +37,7 @@ typedef struct
 typedef struct 
 {
 	uint32_t uId;
-	static const uint16_t size = 4;
+	static const uint32_t size = 4;
 } Msg_uId;
 
 typedef struct
