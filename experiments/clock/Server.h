@@ -3,7 +3,6 @@
 
 #include "TcpConnection.h"
 #include "fcntl.h"
-#include <event.h>
 #include <map>
 
 namespace Network
