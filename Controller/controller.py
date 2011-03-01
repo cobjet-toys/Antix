@@ -12,15 +12,16 @@ def start_process(name):
         # TODO: some code that stops all running processes across all computers
         # not exactly sure how to do this
         sys.exit()
-    script = "ssh -p 24 " + USER + "@" + machine + " '"
+    script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup "
     if name is "clock":
-        script += CLOCK_STARTUP_SCRIPT + "'"
+        script += CLOCK_STARTUP_SCRIPT
     elif name is "client":
-        script += CLIENT_STARTUP_SCRIPT + "'"
+        script += CLIENT_STARTUP_SCRIPT
     elif name is "server":
-        script += SERVER_STARTUP_SCRIPT + "'"
+        script += SERVER_STARTUP_SCRIPT
     elif name is "drawer":
-        script += DRAWER_STARTUP_SCRIPT + "'"
+        script += DRAWER_STARTUP_SCRIPT
+    script += " > antix.out 2> antix.err < /dev/null &'"
     print "Running: " + script
 
     try:

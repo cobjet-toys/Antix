@@ -1,11 +1,11 @@
 # Configuration settings for controller
 
 # Client
-CLIENTS = 19
+CLIENTS = 1
 CLIENT_STARTUP_SCRIPT = "ls"
 
 # Server
-SERVERS = 19
+SERVERS = 1
 SERVER_STARTUP_SCRIPT = "date"
 
 # Clock
