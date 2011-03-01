@@ -18,13 +18,13 @@ typedef struct
 {
 	uint16_t sender;
 	uint16_t message;
-	uint16_t size = 4;
+	static const uint16_t size = 4;
 } Msg_header;
 
 typedef struct 
 {
 	uint32_t uId;
-	uint16_t size = 4;
+	static const uint16_t size = 4;
 } Msg_uId;
 
 #endif
