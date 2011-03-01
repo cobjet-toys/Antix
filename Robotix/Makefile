@@ -15,18 +15,28 @@ ifeq ($(OS),Darwin)
 GLUTFLAGS = -framework OpenGL -framework GLUT
 endif
 
+# logger macros
+LOGLIBNAME = include/logger/libredisclient.a
+LOGLIBS = $(LOGLIBNAME) -lstdc++ -lpthread -lboost_thread-mt
+LOGCLIENTOBJS = anet.o
+
 CC = g++
 CXXFLAGS = -g -Wall -O3 $(GLUTFLAGS)
-LIBS =  -g -lm $(GLUTLIBS)
-INCLUDE = -I"include/"
+LIBS =  -g -lm $(GLUTLIBS) $(LOGLIBS)
+INCLUDE = -I"include/" -I"include/logger/"
 
 SRC = src/Math/Position.cpp src/Math/Speed.cpp src/Math/Math.cpp src/Game/GameObject.cpp include/Game/VisibleObject.h src/Game/Robot.cpp src/Game/Home.cpp src/Game/Puck.cpp src/Game/Team.cpp src/Game/Game.cpp src/GUI/Color.cpp src/GUI/Gui.cpp src/RobotixSA.cpp 
 
-all: antix
+LOGHDR = include/logger/redisclient.h include/logger/logger.h
 
-antix: $(SRC)
-	$(CC) $(CXXFLAGS) $(LIBS) $(INCLUDE) -o $@ $(SRC) 
+all: $(LOGLIBNAME) antix
+
+antix: $(SRC) $(LOGHDR)
+	$(CC) $(CXXFLAGS) $(LIBS) $(INCLUDE) -o $@ $(SRC) $(LOGLIBS)
 
 clean:
 	rm antix
+
+anet.o:             logger/anet.c logger/fmacros.h logger/anet.h
+logger.o:		    logger/redisclient.h logger/logger.h
 
