@@ -1,19 +1,14 @@
 # Configuration settings for controller
 
-# Client
+# Client settings
 CLIENTS = 1
-CLIENT_STARTUP_SCRIPT = "ls"
 
-# Server
+# Server settings
 SERVERS = 1
-SERVER_STARTUP_SCRIPT = "date"
 
-# Clock
-# starts on controller host
-CLOCK_STARTUP_SCRIPT = "hostname"
+# Clock settings
 
-# Drawer
-DRAWER_STARTUP_SCRIPT = "ls -l"
+# Drawer settings
 
 # Computers
 CSIL_COMPUTERS = (
