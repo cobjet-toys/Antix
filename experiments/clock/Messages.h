@@ -14,4 +14,17 @@ typedef struct
     static const int size = 12;
 } Msg_example;
 
+typedef struct
+{
+	uint16_t sender;
+	uint16_t message;
+	static const uint16_t size = 4;
+} Msg_header;
+
+typedef struct 
+{
+	uint32_t uId;
+	static const uint16_t size = 4;
+} Msg_uId;
+
 #endif

@@ -2,7 +2,7 @@
 #define GRID_SERVER_H_
 
 #include "Server.h"
-#include <stdio.h>
+#include "Messages.h"
 
 namespace Network
 {
