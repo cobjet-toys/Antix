@@ -15,20 +15,24 @@ Network::ClockClient::~ClockClient()
 
 int Network::ClockClient::handler()
 {
-    return 0;
+	return 0;
 }
+
 
 int Network::ClockClient::heartbeat()
 {
 	unsigned int x =0;
-	for(;;)
+	while(1)
 	{
-		x++;
+		//printf("ready for write\n");
+
+		
+		
 		Msg_header header = {SENDER_CLOCK, MSG_HEARTBEAT};
 		unsigned char buf[header.size];
 
-		pack(buf, "hh", header.sender, header.message);
-		printf("%i: Sending Message %i\n", x,m_heartbeat);
+		printf("status of pack %u of %u\n", pack(buf, "hh", header.sender, header.message), header.size);
+		//printf("%i: Sending Message %i\n", x,m_heartbeat);
 		if (m_conn.send(buf, header.size) < 0) 
 		{
 			printf("Failed to send header\n");
@@ -38,7 +42,7 @@ int Network::ClockClient::heartbeat()
 		heartbeat.hb = m_heartbeat;
 		unsigned char bufhb[heartbeat.size];
 		pack(bufhb, "h", heartbeat.hb);
-		printf("Sending HB Message %i\n", m_heartbeat);
+		printf("%i Sending HB Message %i\n", x,m_heartbeat);
 		if (m_conn.send(bufhb, heartbeat.size) < 0) 
 		{
 			printf("Failed to send heartbeat\n");
@@ -47,6 +51,7 @@ int Network::ClockClient::heartbeat()
 		
 		if (m_heartbeat == 0) m_heartbeat=1;
 		else m_heartbeat=0;
+		x++;
 	}
 	
     return 0;

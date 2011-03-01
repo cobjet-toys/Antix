@@ -6,6 +6,9 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #include "TcpConnection.h"
+#include <sys/epoll.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 namespace Network
 {
@@ -16,10 +19,10 @@ public:
 	Client();
 	int init(char * host, char * port);
 	virtual ~Client();
-		
 	virtual int handler() = 0;
 		
 private:
+	
 	char m_host[INET6_ADDRSTRLEN];
     char m_port[MAX_PORT_LENGTH];
     struct addrinfo m_info;
