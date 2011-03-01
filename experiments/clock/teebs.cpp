@@ -40,9 +40,13 @@ int main(int argc, char** argv)
     size_t l_NumGrids = l_GridServers.size(); 
     for (unsigned int i = 0; i < l_NumGrids; i++)
     {
-        l_GridServers[i]->sendId(0);           
+        l_GridServers[i]->sendId(1);           
     }
     /*TODO: Initialize server*/ 
-    
+   
+    while(1)
+    {
+
+    } 
     return 0;
 }
