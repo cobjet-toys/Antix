@@ -2,6 +2,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 using namespace Network;
 
@@ -103,8 +104,83 @@ int Server::init(const char* port)
         }
     }
 
-    printf("Server initialized and listening on port: %s\n", m_Port);
+    printf("Server socket created, now listening for new connections.\n");
+    struct sockaddr_storage l_ClienAddr;
+    fd_set l_Master;
+    fd_set l_ReadFds;
+
+    FD_ZERO(&l_Master);
+    FD_ZERO(&l_ReadFds);
+
+    FD_SET(m_ServerConn.getSocketFd(), &l_Master);
+    int l_Listener = m_ServerConn.getSocketFd();
+    int l_MaxFd = l_Listener;
+    for(;;)
+    {
+        l_ReadFds = l_Master;
+        if (select(l_MaxFd+1, &l_ReadFds, NULL, NULL, NULL) == -1)
+        {
+            perror("Error receiving with select.\n");
+            return -1;
+        }
+
+        for (int i = 0; i <= l_MaxFd;i++)
+        {
+            if (FD_ISSET(i, &l_ReadFds))
+            {
+                //Got a new connection.
+               if (i == l_Listener)
+               {
+                   TcpConnection *l_NewConn = m_ServerConn.accept();
+                   if (l_NewConn == NULL)
+                   {
+                        perror("Error accepting connection\n");
+                        return -1;
+                   }
+                   else
+                   {
+                        printf("Received new connection\n");
+                        int l_NewFd = m_ServerConn.getSocketFd();
+                        m_Clients[l_NewFd] = l_NewConn; 
+                        FD_SET(l_NewFd, &l_Master);
+                        if (l_NewFd > l_MaxFd)
+                        {
+                            l_MaxFd = l_NewFd;
+                        }
+                   }
+               }
+               //Need an update on an existing fd.
+               else
+               {
+                    char l_Message[2] = "1";
+                    if ((l_ResValue = m_Clients[i]->recv(l_Message, 2)) <= 0)
+                    { 
+                        if  (l_ResValue == -2)
+                        {
+                            perror("Invalid socket for rcv\n");
+                            return -2;
+                        }
+                        else if (l_ResValue == 0)
+                        {
+                            printf("Server hung up\n");
+                        }
+                        else
+                        {
+                            perror("WTF is Hardeep returning\n");
+                        }
+                        close(i);
+                        FD_CLR(i, &l_Master);
+                   }
+                   else
+                   {
+                      //Code to handle new messages goes here.
+                   }
+               }
+           } 
+        }
+    }
 }
+
 
 Server::~Server()
 {
