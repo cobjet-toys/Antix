@@ -20,10 +20,10 @@ int Network::ClockClient::handler()
 
 int Network::ClockClient::heartbeat()
 {
-    Msg_header header = {SENDER_CLOCK, MSG_ASSIGN_ID};
+    Msg_header header = {SENDER_CLOCK, MSG_HEARTBEAT};
     unsigned char buf[header.size];
 
-    pack(buf, "h", header.sender, header.message);
+    pack(buf, "hh", header.sender, header.message);
     m_conn.send(buf, header.size);
     return 0;
 }
