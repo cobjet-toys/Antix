@@ -12,15 +12,6 @@ def start_process(name):
         # TODO: some code that stops all running processes across all computers
         # not exactly sure how to do this
         sys.exit()
-    # get machine hostname for output file
-    get_hostname = "ssh -p 24 " + USER + "@" + machine + " 'hostname'"
-    try:
-        out, error = run_bash_script(get_hostname)
-        hostname = out.rstrip()
-    except BashScriptException as e:
-        print "* ERROR STARTING " + name.upper() + " *"
-        print e
-        return
     
     script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH + "Controller/wrappers/"
     if name is "clock":
@@ -35,7 +26,7 @@ def start_process(name):
     elif name is "drawer":
         #script += DRAWER_STARTUP_SCRIPT
         script += "drawer.sh"
-    script += " > antix." + hostname + ".out'"
+    script += " > antix." + machine + ".out'"
     print "Running: " + script
 
     try:
@@ -55,9 +46,26 @@ def get_free_computer():
     our processes running on it. One process per machine.
     """
     try:
-        global FIRST_FREE_MACHINE
-        machine = CSIL_COMPUTERS[FIRST_FREE_MACHINE]
-        FIRST_FREE_MACHINE += 1
+        # check that the machine is up
+        machine = None
+        while(machine is None):
+            global FIRST_FREE_MACHINE
+            machine_to_test = CSIL_COMPUTERS[FIRST_FREE_MACHINE]
+            FIRST_FREE_MACHINE += 1
+            # see if we can get the hostname of the machine
+            # if we can, it's on and we can use it
+            # in the future, we'll get the load average
+            # and make a decision based on that
+            get_hostname = "ssh -p 24 " + USER + "@" + machine_to_test + " 'hostname'"
+            try:
+                out, error = run_bash_script(get_hostname)
+                # it works, return
+                machine = machine_to_test
+            except BashScriptException as e:
+                print "* ERROR CONNECTING TO " + machine_to_test.upper() + " *"
+                print e
+                print "* TRYING ANOTHER MACHINE *"
+
         return machine
     except IndexError:
         return None
