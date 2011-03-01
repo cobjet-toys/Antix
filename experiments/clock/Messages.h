@@ -39,4 +39,10 @@ typedef struct
 	static const uint16_t size = 4;
 } Msg_uId;
 
+typedef struct
+{
+    uint16_t hb;
+    static const uint16_t size = 2;
+} Msg_HB;
+
 #endif

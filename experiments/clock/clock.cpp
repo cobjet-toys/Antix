@@ -7,6 +7,7 @@ int main(int argc, char* argv[])
 
     //Create clock client, create connection with grid servers
     Network::ClockClient c;
+    c.init(argv[1], argv[2]);
     printf("waa\n");
     return 0;
 }

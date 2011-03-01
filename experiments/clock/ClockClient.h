@@ -12,6 +12,8 @@ public:
     ClockClient();
     virtual ~ClockClient();
     virtual int handler();
+
+    int heartbeat();
 };
 }
 
