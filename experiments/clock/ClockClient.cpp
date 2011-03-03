@@ -22,11 +22,9 @@ int Network::ClockClient::handler()
 int Network::ClockClient::heartbeat()
 {
 	unsigned int x =0;
-	while(1)
+	for(;;)
 	{
 		//printf("ready for write\n");
-
-		
 		
 		Msg_header header = {SENDER_CLOCK, MSG_HEARTBEAT};
 		unsigned char buf[header.size];
@@ -42,7 +40,7 @@ int Network::ClockClient::heartbeat()
 		heartbeat.hb = m_heartbeat;
 		unsigned char bufhb[heartbeat.size];
 		pack(bufhb, "h", heartbeat.hb);
-		printf("%i Sending HB Message %i\n", x,m_heartbeat);
+		printf("%i Sending HB Message %i\n", x, m_heartbeat);
 		if (m_conn.send(bufhb, heartbeat.size) < 0) 
 		{
 			printf("Failed to send heartbeat\n");

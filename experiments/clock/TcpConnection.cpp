@@ -1,4 +1,6 @@
 #include "TcpConnection.h"
+#include <errno.h>
+#include <string.h>
 
 TcpConnection::TcpConnection()
 {
@@ -125,6 +127,7 @@ int TcpConnection::send(unsigned char * message, int messageSize)
         l_Sent = ::send(m_socketfd, message+l_Total, l_BytesLeft, 0);
         //Check for error.
         if (l_Sent == -1)
+            printf("Error: %s\n", strerror(errno));
             break;
         l_Total += l_Sent;
         l_BytesLeft -= l_Sent;

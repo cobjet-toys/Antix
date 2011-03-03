@@ -17,7 +17,7 @@ class Client
 {
 public:
 	Client();
-	int init(char * host, char * port);
+	int init(const char * host, const char * port);
 	virtual ~Client();
 	virtual int handler() = 0;
 		

@@ -3,6 +3,10 @@
 
 int main(int argc, char* argv[])
 {
+    if (argc < 3)
+    {
+        printf("Please supply an IP address and port to connect to.\n");
+    }
     //Create clock server, waiting for information about grid servers
 
     //Create clock client, create connection with grid servers
@@ -15,6 +19,5 @@ int main(int argc, char* argv[])
         return -1;
     }
     c.heartbeat();
-    printf("waa\n");
     return 0;
 }

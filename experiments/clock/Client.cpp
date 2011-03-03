@@ -7,7 +7,7 @@ Network::Client::Client()
 	memset(&m_port, 0, MAX_PORT_LENGTH);
 }
 
-int Network::Client::init(char* host, char * port)
+int Network::Client::init(const char* host, const char * port)
 {
 	if (strlen(host) > INET6_ADDRSTRLEN || strlen(port) > MAX_PORT_LENGTH )
 	{

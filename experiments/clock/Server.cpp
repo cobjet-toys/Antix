@@ -1,5 +1,6 @@
 #include "Server.h"
 #include <string.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
@@ -129,14 +130,18 @@ int Server::init(const char* port)
 int Server::addHandler(int fd, unsigned int events, TcpConnection * connection)
 {
 	m_Clients[fd] = connection;
-	epoll_event e;
-	e.data.fd = fd;
-	e.events = events;
+	epoll_event* e = new epoll_event[1];
+	e[0].data.fd = fd;
+	e[0].events = events;
 	
-	if (epoll_ctl(m_epfd, EPOLL_CTL_ADD, fd, &e) < 0)
+	if (handle_epoll(m_epfd, EPOLL_CTL_ADD, fd, e) != 0)
 	{
 		return -1;
-	} else return 0;
+	} 
+    else
+    {
+        return 0;
+    }
 }
 
 void Server::start()
@@ -146,42 +151,53 @@ void Server::start()
 		epoll_event * e = new epoll_event[10];
 		int nfd;		
 		nfd = epoll_wait(m_epfd, e, 10, 500);
+        printf("nfd: %i\n", nfd);
 
 		for (int i = 0; i < nfd ; i++)
 		{
-				if (e[i].data.fd == m_ServerConn.getSocketFd()) // new connection
+			if (e[i].data.fd == m_ServerConn.getSocketFd()) // new connection
+			{
+			    TcpConnection * temp = m_ServerConn.accept();
+				if (temp != NULL)
 				{
-					TcpConnection * temp = m_ServerConn.accept();
-					if (temp!= NULL)
-					{
-						int fd = temp->getSocketFd();
-						m_Clients[fd] = temp;
-						this->setnonblock(fd); // @ todo check for errors
-						this->addHandler(fd, EPOLLIN|EPOLLET|EPOLLRDHUP, temp); //@ todo check for errors	
-						printf("A client connected.\n");
-					}
+					int fd = temp->getSocketFd();
+					m_Clients[fd] = temp;
+					this->setnonblock(fd); // @ todo check for errors
+					if( this->addHandler(fd, EPOLLIN|EPOLLET|EPOLLRDHUP, temp) != 0 )
+                    {
+                        printf("failed connecting to client.\n");
+                        // @ todo -- attempt recovery
+                        return;
+                    }
+                    else
+                    {
+					    printf("A client connected.\n");
+                    }
 				}
-				else // 
+			}
+			else
+			{
+				if (e[i].events & EPOLLRDHUP || e[i].events & EPOLLHUP || e[i].events & EPOLLERR)
 				{
-					if (e[i].events & EPOLLRDHUP || e[i].events & EPOLLHUP || e[i].events & EPOLLERR)
+				    printf("Client Hangup/Error \n");
+					handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL); // @todo add error checking
+				} 
+                else if (e[i].events & EPOLLIN)
+				{
+					printf("Handling \n");
+					int ret = handler(e[i].data.fd);
+					printf("Handler returned %i\n", ret);
+					if (ret < 0)
 					{
-						printf("Client Hangup/Error \n");
-						epoll_ctl(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL); // @todo add error checking
-					} else if (e[i].events & EPOLLIN)
-					{
-						printf("Handeling \n");
-						int ret = handler(e[i].data.fd);
-						printf("Handler returned %i\n", ret);
-						if (ret < 0)
+					    if (handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL) != 0)
 						{
-							if (epoll_ctl(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL))
-							{
-									return ;
-							}
+							return;
 						}
 					}
 				}
+			}
 		}
+        delete e;
 	}
 }
 
@@ -192,4 +208,15 @@ int Server::setnonblock(int fd)
   flags = fcntl(fd, F_GETFL);
   flags |= O_NONBLOCK;
   return fcntl(fd, F_SETFL, flags);
+}
+
+int Server::handle_epoll(int epfd, int op, int fd, epoll_event* event)
+{
+    int ret = epoll_ctl(epfd, op, fd, event);
+    if(ret != 0)
+    {
+        printf("error: %s\n", strerror(errno));
+        return -1;
+    }
+    return 0;
 }

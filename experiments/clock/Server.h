@@ -4,6 +4,7 @@
 #include "TcpConnection.h"
 #include "fcntl.h"
 #include <map>
+#include "sys/epoll.h"
 
 namespace Network
 {
@@ -23,6 +24,7 @@ public:
 private:
 	int addHandler(int fd, unsigned int events, TcpConnection * connection);
 	int setnonblock(int fd);
+    int handle_epoll(int epfd, int op, int fd, epoll_event* event);
 
 	int m_epfd; // epoll file descriptor
 	
