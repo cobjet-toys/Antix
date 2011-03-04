@@ -103,13 +103,13 @@ typedef struct
 
 // GridServer Sends Client RobotSensorData
 // MSG_PuckSensorData = 6
-typedef struct
+/*typedef struct // COMMENTED OUT BY HARDEEP because of conflicting name
 {
 	uint32_t id; 		//Sensor Data For This Robot, Identified By id
 	float xPosition;	
 	float yPosition;	
 	static const size_t size = 12;
-} Msg_RobotSensorData;
+} Msg_RobotSensorData;*/
 
 // Client Robot Makes An Action Request To A GridServer
 // MSG_ = 7
