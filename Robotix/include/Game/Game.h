@@ -3,7 +3,9 @@
 
 #include "Game/Team.h"
 #include "Game/Puck.h"
+#ifdef REDIS
 #include "logger/logger.h"
+#endif
 #include <list>
 #include <vector>
 #include <map>
@@ -74,7 +76,9 @@ public:
     /**
      * Redis client logging-wrapper instance.
      */
+#ifdef REDIS
     static AntixUtils::Logger profiler;        
+#endif
 private:
 
     /**
