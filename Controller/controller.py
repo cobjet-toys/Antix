@@ -36,14 +36,13 @@ def start_process(name):
 def build_binary(name):
     script = "cd " + PATH
     if name is "clock":
-        script += CLOCK_BUILD_DIR
+        script += CLOCK_BUILD_DIR + "; " + CLOCK_BUILD_COMMAND
     elif name is "client":
-        script += CLIENT_BUILD_DIR
+        script += CLIENT_BUILD_DIR + "; " + CLIENT_BUILD_COMMAND
     elif name is "server":
-        script += SERVER_BUILD_DIR
+        script += SERVER_BUILD_DIR + "; " + SERVER_BUILD_COMMAND
     elif name is "drawer":
-        script += DRAWER_BUILD_DIR
-    script += "; make"
+        script += DRAWER_BUILD_DIR + "; " + DRAWER_BUILD_COMMAND
     print "Running: " + script
 
     try:
