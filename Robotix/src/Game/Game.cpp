@@ -3,11 +3,16 @@
 #include "Game/Team.h"
 #include "Math/Position.h"
 #include "Math/Math.h"
+
+#ifdef REDIS
 #include "logger/logger.h"
+#endif
+
 #include <time.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 #include <stdio.h>
 #include <math.h>
@@ -16,7 +21,9 @@ using namespace Game;
 #define MILLISECS_IN_SECOND 1000
 
 Robotix* Robotix::m_Instance = NULL;
+#ifdef REDIS
 AntixUtils::Logger Robotix::profiler(*(new AntixUtils::Logger()));
+#endif
 
 void Robotix::init(int argc, char** argv)
 {
@@ -133,7 +140,9 @@ void Robotix::init(int argc, char** argv)
     {
         std::ostringstream s;
         s << "Home=" << m_TotalTeamCount << ", Population=" << Team::m_RobotPopCount;
+#ifdef REDIS
         profiler.append(s.str());
+#endif
     }
 }
 
@@ -229,7 +238,9 @@ void Robotix::update()
             double elapsed = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
             std::ostringstream s;
             s << "Turn complete in " << elapsed << " ms";
+#ifdef REDIS
             profiler.append(s.str());
+#endif
         }
     }
 
