@@ -2,13 +2,21 @@
 
 # Client settings
 CLIENTS = 1
+# the controller will cd to antix Path + this  directory and call "make":
+CLIENT_BUILD_DIR = ""
 
 # Server settings
 SERVERS = 1
+# the controller will cd to antix Path + this  directory and call "make":
+SERVER_BUILD_DIR = ""
 
 # Clock settings
+# the controller will cd to antix Path + this  directory and call "make":
+CLOCK_BUILD_DIR = ""
 
 # Drawer settings
+# the controller will cd to antix Path + this  directory and call "make":
+DRAWER_BUILD_DIR = ""
 
 # Computers
 CSIL_COMPUTERS = (

@@ -15,16 +15,12 @@ def start_process(name):
     
     script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH + "Controller/wrappers/"
     if name is "clock":
-        #script += CLOCK_STARTUP_SCRIPT
         script += "clock.sh"
     elif name is "client":
-        #script += CLIENT_STARTUP_SCRIPT
         script += "client.sh"
     elif name is "server":
-        #script += SERVER_STARTUP_SCRIPT
         script += "server.sh"
     elif name is "drawer":
-        #script += DRAWER_STARTUP_SCRIPT
         script += "drawer.sh"
     script += " > antix." + machine + ".out'"
     print "Running: " + script
@@ -36,6 +32,29 @@ def start_process(name):
     except BashScriptException as e:
         print "* ERROR STARTING " + name.upper() + " *"
         print e
+
+def build_binary(name):
+    script = "cd " + PATH
+    if name is "clock":
+        script += CLOCK_BUILD_DIR
+    elif name is "client":
+        script += CLIENT_BUILD_DIR
+    elif name is "server":
+        script += SERVER_BUILD_DIR
+    elif name is "drawer":
+        script += DRAWER_BUILD_DIR
+    script += "; make"
+    print "Running: " + script
+
+    try:
+        out, error = run_bash_script(script)
+        print "Output: " + out.rstrip()
+        print
+    except BashScriptException as e:
+        print "* ERROR STARTING " + name.upper() + " *"
+        print e
+        # stop everything!
+        sys.exit()
 
 def get_free_computer():
     """
@@ -98,6 +117,7 @@ class BashScriptException(Exception):
         #print self.stderr
         #return "this is the exception"
 
+# Main:
 
 # Get the user argument
 if len(sys.argv) != 3:
@@ -109,25 +129,48 @@ if len(sys.argv) != 3:
 USER = sys.argv[1]
 PATH = sys.argv[2]
 
+# Build all the code
+print "*** BUILDING BINARIES ***"
+print
+
+print "** BUILDING CLOCK **"
+print
+build_binary("clock")
+
+print "** BUILDING SERVER **"
+print
+build_binary("server")
+
+print "** BUILDING CLIENT **"
+print
+build_binary("client")
+
+print "** BUILDING DRAWER **"
+print
+build_binary("drawer")
+
+# Start processes
+print "*** STARTING PROCESSES ***"
+
 # Start clock
-print "*** STARTING CLOCK ***"
+print "** STARTING CLOCK **"
 print
 start_process("clock")
 
 # Start clients
-print "*** STARTING CLIENTS ***"
+print "** STARTING CLIENTS **"
 print
 for _ in itertools.repeat(None, CLIENTS):
     start_process("client")
 
 # Start servers
-print "*** STARTING SERVERS ***"
+print "** STARTING SERVERS **"
 print
 for _ in itertools.repeat(None, SERVERS):
     start_process("server")
 
 # Start drawer process
-print "*** STARTING DRAWER ***"
+print "** STARTING DRAWER **"
 print
 start_process("drawer")
 
