@@ -50,7 +50,7 @@ def build_binary(name):
         print "Output: " + out.rstrip()
         print
     except BashScriptException as e:
-        print "* ERROR STARTING " + name.upper() + " *"
+        print "* ERROR BUILDING " + name.upper() + " *"
         print e
         # stop everything!
         sys.exit()

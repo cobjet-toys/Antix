@@ -9,12 +9,12 @@ CLIENT_BUILD_COMMAND = ""
 # Server settings
 SERVERS = 1
 # the controller will cd to antix Path + this  directory and call "make":
-SERVER_BUILD_DIR = ""
+SERVER_BUILD_DIR = "experiments/clock/"
 SERVER_BUILD_COMMAND = "make hardeep"
 
 # Clock settings
 # the controller will cd to antix Path + this  directory and call "make":
-CLOCK_BUILD_DIR = ""
+CLOCK_BUILD_DIR = "experiments/clock/"
 CLOCK_BUILD_COMMAND = "make clock"
 
 # Drawer settings
