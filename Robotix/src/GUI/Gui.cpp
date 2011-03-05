@@ -25,9 +25,26 @@ void displayFunc()
     glClear( GL_COLOR_BUFFER_BIT );
     glMatrixMode (GL_MODELVIEW);
     glLoadIdentity();    
+    
+    //Draw the pucks
+    for (Game::PuckIter it = Game::Robotix::getInstance()->getFirstPuck();
+            it != Game::Robotix::getInstance()->getLastPuck(); it++)
+    {
+        (*it)->draw();
+    }
+    
+    for (std::list<Game::Team*>::iterator it = Game::Robotix::getInstance()->getFirstTeam();
+            it != Game::Robotix::getInstance()->getLastTeam();it++)
+    {
+        (*it)->getHome()->draw();
+        
+                for (std::list<Game::Robot*>::iterator rt = (*it)->getFirstRobot();
+	    		rt != (*it)->getLastRobot(); rt++)
+	    {
+            (*rt)->draw();
+	    }
+    }
 
-    drawPucks();
-    drawTeams();
     glutSwapBuffers();
     glutTimerFunc( 20, timerFunc, 0);
 }

@@ -16,3 +16,7 @@ void Puck::toggleHeld()
     m_Held = !m_Held;
 }
 
+void Puck::draw()
+{
+    DrawPoint();
+}

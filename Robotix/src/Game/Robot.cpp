@@ -296,3 +296,9 @@ float Robot::getY()
 	return (*getPosition()).getY();
 
 }
+
+
+void Robot::draw()
+{
+    DrawPoint();
+}

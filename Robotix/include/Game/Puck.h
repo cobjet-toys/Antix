@@ -26,6 +26,8 @@ public:
      * Toggle the status of the puck.
      */
     void toggleHeld();
+    
+    virtual void draw();
 private:
     /**
      * Is the puck held.

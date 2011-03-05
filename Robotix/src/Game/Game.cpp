@@ -45,6 +45,9 @@ void Robotix::init(int argc, char** argv)
     Home::m_Radius = 0.1;
     
     m_WorldSize = 1.0;
+    //Home needs to know the world size when drawing.
+    Home::m_MaxWorldSize = m_WorldSize;
+
     m_Updates = 0;
     m_MaxUpdates = 0;
 

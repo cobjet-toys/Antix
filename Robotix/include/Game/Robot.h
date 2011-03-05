@@ -101,6 +101,8 @@ public:
 
     static float& getFOV();
 
+    virtual void draw();
+
 private: 
     /**
      * Current speed of the object.
