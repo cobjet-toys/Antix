@@ -13,15 +13,10 @@ Network::ClockClient::~ClockClient()
 
 }
 
-int Network::ClockClient::handler()
+int Network::ClockClient::handler(int fd)
 {
-	return 0;
-}
-
-
-int Network::ClockClient::heartbeat()
-{
-	unsigned int x =0;
+	printf("handeling fd %i\n", fd);
+	/*unsigned int x =0;
 	for(;;)
 	{
 		//printf("ready for write\n");
@@ -51,6 +46,6 @@ int Network::ClockClient::heartbeat()
 		else m_heartbeat=0;
 		x++;
 	}
-	
+	*/
     return 0;
 }

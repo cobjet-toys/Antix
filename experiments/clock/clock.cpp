@@ -11,13 +11,15 @@ int main(int argc, char* argv[])
 
     //Create clock client, create connection with grid servers
     Network::ClockClient c;
-    int i = c.init(argv[1], argv[2]);
-    printf("%i\n", i);
+	int g = c.init();
+	printf("g=%i \n", g);
+    int i = c.initConnection(argv[1], argv[2]);
+    /*printf("%i\n", i);
     if(i < 0)
     {
         printf("init failed\n.");
         return -1;
     }
-    c.heartbeat();
+    c.start();*/
     return 0;
 }

@@ -10,7 +10,7 @@ ControllerClient::ControllerClient()
 
 int ControllerClient::sendId(unsigned int id)
 {
-    //Message header.
+   /* //Message header.
     Msg_header l_Header = {SENDER_CONTROLLER, MSG_ASSIGN_ID}; 
     unsigned char l_Buffer[l_Header.size];
     pack(l_Buffer, "hh", l_Header.sender, l_Header.message);
@@ -33,7 +33,7 @@ int ControllerClient::sendId(unsigned int id)
 	if (l_Header.message == MSG_ACK) printf("%i \n", l_Header.message);
 	
 	printf("Sending Robot Information\n");
-	printf("Sending P Information\n");	
+	printf("Sending P Information\n");	*/
 	return 0;
 	
 }
