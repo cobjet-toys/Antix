@@ -13,15 +13,15 @@ def start_process(name):
         # not exactly sure how to do this
         sys.exit()
     
-    script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH + "Controller/wrappers/"
+    script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH
     if name is "clock":
-        script += "clock.sh"
+        script += CLOCK_RUN_COMMAND
     elif name is "client":
-        script += "client.sh"
+        script += CLIENT_RUN_COMMAND
     elif name is "server":
-        script += "server.sh"
+        script += SERVER_RUN_COMMAND
     elif name is "drawer":
-        script += "drawer.sh"
+        script += DRAWER_RUN_COMMAND
     script += " > antix." + machine + ".out'"
     print "Running: " + script
 
