@@ -4,9 +4,10 @@ import itertools
 from configuration import *
 
 FIRST_FREE_MACHINE = 0
+GRIDS = list()
 
 def start_process(name):
-    machine = get_free_computer()
+    machine, machine_ip = get_free_computer()
     if machine is None:
         print "No more free machines, exiting."
         # TODO: some code that stops all running processes across all computers
@@ -19,16 +20,19 @@ def start_process(name):
     elif name is "client":
         script += CLIENT_RUN_COMMAND
     elif name is "server":
-        script += SERVER_RUN_COMMAND
+        script += SERVER_RUN_COMMAND + " " + str(SERVER_PORT)
     elif name is "drawer":
         script += DRAWER_RUN_COMMAND
-    script += " > antix." + machine + ".out'"
+    script += " > antix." + machine + ".out &'"
     print "Running: " + script
 
     try:
         out, error = run_bash_script(script)
         print "Output: " + out.rstrip()
         print
+        if name is "server":
+            GRIDS.append((machine, machine_ip.rstrip()))
+            
     except BashScriptException as e:
         print "* ERROR STARTING " + name.upper() + " *"
         print e
@@ -70,13 +74,14 @@ def get_free_computer():
             global FIRST_FREE_MACHINE
             machine_to_test = CSIL_COMPUTERS[FIRST_FREE_MACHINE]
             FIRST_FREE_MACHINE += 1
-            # see if we can get the hostname of the machine
-            # if we can, it's on and we can use it
-            # in the future, we'll get the load average
+            # get the machine's IP, and return this as well
+            # if we can't get it, the machine's not connectable
+            # in the future, we could also get the load average
             # and make a decision based on that
-            get_hostname = "ssh -p 24 " + USER + "@" + machine_to_test + " 'hostname'"
+            get_machine_ip = "ssh -p 24 " + USER + "@" + machine_to_test + \
+                " 'ifconfig | grep \"inet \" | grep -v 127.0.0.1 | cut -d \" \" -f12 | cut -d : -f2'"
             try:
-                out, error = run_bash_script(get_hostname)
+                out, error = run_bash_script(get_machine_ip)
                 # it works, return
                 machine = machine_to_test
             except BashScriptException as e:
@@ -84,7 +89,7 @@ def get_free_computer():
                 print e
                 print "* TRYING ANOTHER MACHINE *"
 
-        return machine
+        return machine, out
     except IndexError:
         return None
 
@@ -151,6 +156,12 @@ build_binary("drawer")
 # Start processes
 print "*** STARTING PROCESSES ***"
 
+# Start servers
+print "** STARTING SERVERS **"
+print
+for _ in itertools.repeat(None, SERVERS):
+    start_process("server")
+
 # Start clock
 print "** STARTING CLOCK **"
 print
@@ -162,14 +173,9 @@ print
 for _ in itertools.repeat(None, CLIENTS):
     start_process("client")
 
-# Start servers
-print "** STARTING SERVERS **"
-print
-for _ in itertools.repeat(None, SERVERS):
-    start_process("server")
-
 # Start drawer process
 print "** STARTING DRAWER **"
 print
 start_process("drawer")
 
+print GRIDS
