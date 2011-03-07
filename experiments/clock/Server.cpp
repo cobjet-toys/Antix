@@ -133,7 +133,6 @@ int Server::addHandler(int fd, unsigned int events, TcpConnection * connection)
 	epoll_event* e = new epoll_event[1];
 	e[0].data.fd = fd;
 	e[0].events = events;
-	
 	if (handle_epoll(m_epfd, EPOLL_CTL_ADD, fd, e) != 0)
 	{
 		return -1;

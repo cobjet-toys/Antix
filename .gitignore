@@ -6,3 +6,9 @@
 
 # Python pyc files
 *.pyc
+
+# C/C++ object files
+*.o
+
+# .bins
+*.bin
