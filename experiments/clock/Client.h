@@ -12,6 +12,10 @@
 #include <map>
 #include <errno.h>
 
+#ifndef DEBUG
+#define DEBUG true
+#endif
+
 namespace Network
 {
 
@@ -29,14 +33,13 @@ public:
 	int start();
 	
 private:
-	int epoll_handle(int epfd, int op, int fd, epoll_event* event);
+	int handle_epoll(int epfd, int op, int fd, epoll_event* event);
 	int addHandler(int fd, unsigned int events, TcpConnection * connection);
 	int setnonblock(int fd); //magic!!
 	int m_epfd; //more epic magic!! :)
 	
 protected:
 	TcpMap m_serverList;
-	
 };
 }
 

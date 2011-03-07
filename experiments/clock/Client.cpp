@@ -3,13 +3,14 @@
 Network::Client::Client()
 {
 	m_epfd = -1;
+	m_serverList.clear();
 }
 
 int Network::Client::init()
 {
-	if (m_epfd = epoll_create(10) == -1)
+	if ((m_epfd = epoll_create(10)) < 0)
 	{
-		printf("Could not create epoll");
+		if (DEBUG) printf("Could not create epoll");
 		return -1;
 	}	
 	return 0;
@@ -19,13 +20,13 @@ int Network::Client::initConnection(const char* host, const char* port)
 {
 	if (strlen(host) > INET6_ADDRSTRLEN || strlen(port) > MAX_PORT_LENGTH )
 	{
-		perror("Invalid port or host length to init");
+		if (DEBUG) perror("Invalid port or host length to init");
 		return -2;
 	}
 	
 	if (host == NULL || port == NULL)
 	{
-		perror("Invalid arguments to init");
+		if (DEBUG) perror("Invalid arguments to init");
 	} 
 	
 	addrinfo l_hints, *l_result, *l_p;
@@ -38,7 +39,7 @@ int Network::Client::initConnection(const char* host, const char* port)
 	
 	if ((l_resvalue = getaddrinfo(host, port, &l_hints, &l_result)) == -1)
 	{
-		fprintf(stderr, "Could not get addrinfo: %s\n", gai_strerror(l_resvalue));
+		if (DEBUG) fprintf(stderr, "Could not get addrinfo: %s\n", gai_strerror(l_resvalue));
 		return -1;
 	}
 	
@@ -46,7 +47,7 @@ int Network::Client::initConnection(const char* host, const char* port)
 	
 	if (conn == NULL)
 	{
-		printf("Could not create new TcpConnection\n");
+		if (DEBUG) printf("Could not create new TcpConnection\n");
 		return -1;
 	}
 
@@ -56,13 +57,13 @@ int Network::Client::initConnection(const char* host, const char* port)
 		{
 			if (l_resvalue == -1) 
 			{
-				perror("Could not bind socket trying next");
+				if (DEBUG) perror("Could not connect socket trying next\n");
 			} else if (l_resvalue == -2)
 			{
-				perror("Argument error to socket");
+				if (DEBUG) perror("Argument error to socket\n");
 			} else 
 			{
-				perror("What did I just return!?!?");
+				if (DEBUG) perror("What did I just return!?!?\n");
 			}
 			continue;
 		}
@@ -71,12 +72,12 @@ int Network::Client::initConnection(const char* host, const char* port)
 		{
 			if (l_resvalue == -1)
 			{
-				perror("Could not connect to server/port");
+				if (DEBUG) perror("Could not connect to server/port\n");
 			} else if (l_resvalue == -2)
 			{
-				perror("Argument error to connect");
+				if (DEBUG) perror("Argument error to connect\n");
 			} else {
-				perror("What did I just return!?!?");
+				if (DEBUG) perror("What did I just return!?!?\n");
 			}
 			conn->close();
 			continue;
@@ -87,20 +88,21 @@ int Network::Client::initConnection(const char* host, const char* port)
 	
 	if (l_p == NULL)
 	{
-		perror("No valid addrinfo");
+		if (DEBUG) perror("No valid addrinfo");
 		return -1;
 	}
 	
-	int fd = conn->getSocketFd();
+	int fileDesc = conn->getSocketFd();
 	
-	if ( setnonblock(fd) == -1)
+	
+	if ( setnonblock(fileDesc) == -1)
 	{
-		printf("Could not set socket to non-blocking\n");
+		if (DEBUG) printf("Could not set socket to non-blocking\n");
 	}
 	
-	if( addHandler(fd, EPOLLET|EPOLLIN|EPOLLHUP , conn) == -1)
+	if( addHandler(fileDesc, EPOLLET|EPOLLIN|EPOLLHUP, conn ) == -1)
 	{
-		printf("Could not add handler to tcpConnection");
+		if (DEBUG) printf("Could not add handler to tcpConnection");
 		return -1;
 	}
 	
@@ -108,17 +110,16 @@ int Network::Client::initConnection(const char* host, const char* port)
 
 }
 
+
 int Network::Client::addHandler(int fd, unsigned int events, TcpConnection * connection)
 {
 	m_serverList[fd] = connection;
-	epoll_event* e = new epoll_event;
-	e->data.fd = fd;
-	e->events = events;
-	int l_resvalue;
-	
-	if ((l_resvalue = epoll_handle(m_epfd, EPOLL_CTL_ADD, fd, e)) != 0)
+	epoll_event* e = new epoll_event[1];
+	e[0].data.fd = fd;
+	e[0].events = events;
+	if (handle_epoll(m_epfd, EPOLL_CTL_ADD, fd, e) != 0)
 	{
-		fprintf(stderr, "Could not add to epoll handler : %s\n", strerror(errno));
+		if (DEBUG) printf("\n");
 		return -1;
 	} 
     else
@@ -127,12 +128,12 @@ int Network::Client::addHandler(int fd, unsigned int events, TcpConnection * con
     }
 }
 
-int Network::Client::epoll_handle(int epfd, int op, int fd, epoll_event* event)
+int Network::Client::handle_epoll(int epfd, int op, int fd, epoll_event* event)
 {
     int ret = epoll_ctl(epfd, op, fd, event);
-    if(ret != 0)
+    if(ret == -1)
     {
-		fprintf(stderr, "Could not add event to watch to epoll: %s\n", strerror(errno));
+        printf("error: %s\n", strerror(errno));
         return -1;
     }
     return 0;
