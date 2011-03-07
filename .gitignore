@@ -12,3 +12,7 @@
 
 # .bins
 *.bin
+
+# Netbean config files
+nbproject
+Makefile-Antix.mk
