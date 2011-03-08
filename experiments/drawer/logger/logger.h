@@ -18,7 +18,8 @@
 #define DEFAULT_HOST    "localhost"
 #define DEFAULT_PORT    6379
 #define DEFAULT_DBINDEX 0
-#define LOG_KEY         "log"
+#define DEFAULT_LOG_KEY "log"
+
 
 using namespace std;
 using namespace redis;
@@ -38,9 +39,10 @@ namespace AntixUtils
         }
 
     public:
-        string message;
-        tm timestamp;
-        string host;
+        string  message;
+        tm      timestamp;
+        string  host;
+        bool    dataOnly;
 
         LogItem(string hostName, tm time, string msg)
 	{
@@ -48,8 +50,8 @@ namespace AntixUtils
             this->timestamp = time;
             this->message = msg;
 	}
-        LogItem(string msg="")
-            :message(msg)
+        LogItem(string msg="", bool data=false)
+            :message(msg), dataOnly(data)
         {
             //this->host = CURRENT_HOST;
 	    this->host = getCurrentHost();
@@ -61,6 +63,7 @@ namespace AntixUtils
             this->host = item.host;
             this->timestamp = item.timestamp;
             this->message = item.message;
+            this->dataOnly = item.dataOnly;
         }
 
 	static void init()
@@ -75,6 +78,9 @@ namespace AntixUtils
          * */
         string print()
         {
+            if (this->dataOnly)
+                return this->message;
+
             time_t t = mktime(&timestamp);
             string timestr = asctime(localtime(&t));
             return host + "@" + timestr.substr(0,timestr.length()-1) + ": " + message;
@@ -86,6 +92,12 @@ namespace AntixUtils
          * */
         void rprint(string data)
         {
+            if (this->dataOnly)
+            {
+                this->message = data;
+                return;
+            }
+
             int index = data.find('@',0);
             if (index < 0) return;
 
@@ -105,8 +117,9 @@ namespace AntixUtils
         Logger( const client::string_type & host = DEFAULT_HOST,
                 uint16_t port = DEFAULT_PORT,
                 client::int_type dbindex = DEFAULT_DBINDEX,
+                string logKey = DEFAULT_LOG_KEY,
                 int maxLogItems = -1,
-                bool clear = false) :
+                bool clearLog = false) :
             m_maxLogItems(maxLogItems)
         {
             this->m_client = new client(host,port,dbindex);
@@ -117,22 +130,33 @@ namespace AntixUtils
                 exit(1);
             }
 
-            this->m_len = this->m_client->llen(LOG_KEY);
-            if (clear)
+            this->m_logKey = logKey;
+            this->m_len = this->m_client->llen(this->m_logKey);
+            if (clearLog)
             {
-                this->m_client->ltrim(LOG_KEY, this->m_len+1, this->m_len+1);
-                this->m_len = this->m_client->llen(LOG_KEY);
+                clear();
+                this->m_len = this->m_client->llen(this->m_logKey);
             }
         }
 
-        int append(string key, LogItem * item)
+        void setLogKey(string newKey)
+        {
+            this->m_logKey = newKey;
+        }
+
+        void setDataOnly(bool val)
+        {
+            this->m_dataOnly = val;
+        }
+
+        int append(LogItem * item)
         {
             try
             {
-                this->m_len = this->m_client->rpush(key, item->print());
+                this->m_len = this->m_client->rpush(this->m_logKey, item->print());
                 if (this->m_maxLogItems > 0 && this->m_len > this->m_maxLogItems)
                 {
-                    m_client->lpop(LOG_KEY);
+                    m_client->lpop(this->m_logKey);
                     this->m_len--;
                 }
             } catch (redis_error & e)
@@ -143,27 +167,22 @@ namespace AntixUtils
             return this->m_len;
         }
 
-        int append(string key, string message)
-        {
-            return append(key, new LogItem(message));
-        }
-
         int append(string message)
         {
-            return append(LOG_KEY, new LogItem(message));
+            return append(new LogItem(message, this->m_dataOnly));
         }
 
         int trim(int startIndex, int endIndex)
         {
             try
             {
-                this->m_client->ltrim(LOG_KEY, startIndex, endIndex);
+                this->m_client->ltrim(this->m_logKey, startIndex, endIndex);
             } catch (redis_error & e)
             {
                 cout << "Error: Failed to trim log. <" << e.what() << ">" << endl;
             }
 
-            this->m_len = this->m_client->llen(LOG_KEY);
+            this->m_len = this->m_client->llen(this->m_logKey);
             return this->m_len;
         }
 
@@ -175,12 +194,13 @@ namespace AntixUtils
         vector<LogItem> logitems()
         {
             client::string_vector items;
-            int len = this->m_client->lrange(LOG_KEY, 0, -1, items);
+            int len = this->m_client->lrange(this->m_logKey, 0, -1, items);
 
             vector<LogItem> results;
             for (int i=0; i<len; i++)
             {
                 LogItem item;
+                item.dataOnly = this->m_dataOnly;
                 item.rprint(items[i]);
                 results.push_back(item);
             }
@@ -190,6 +210,8 @@ namespace AntixUtils
 
     private:
         client * m_client;
+        string m_logKey;
+        bool m_dataOnly;
         int m_maxLogItems;
         int m_len;
     };

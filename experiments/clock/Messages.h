@@ -14,7 +14,8 @@ enum
 	SENDER_CONTROLLER = 0,
 	SENDER_CLOCK = 1,
 	SENDER_GRIDSERVER = 2,
-	SENDER_CLIENT = 3
+	SENDER_CLIENT = 3,
+        SENDER_DRAWER = 4
 };
 
 // Describes what the Physical Entities can send to each other (i.e. Step 2, How Does Box Communicate With World)
@@ -22,7 +23,7 @@ enum
 {
 	MSG_ACK = 99,
 	MSG_ASSIGN_ID = 0,
-    MSG_HEARTBEAT = 1,
+        MSG_HEARTBEAT = 1,
 	MSG_INITTEAM = 2,
 	MSG_INITGRIDSERVER = 3,
 	MSG_SPECIFYGRIDINFO = 4,
@@ -36,7 +37,8 @@ enum
 	MSG_CLIENTBOUNDRY = 12,
 	MSG_DRAWROBOT = 13,
 	MSG_DRAWPUCK = 14,
-	MSG_INITDRAWER = 15
+	MSG_INITDRAWER = 15,
+        MSG_INITHOME = 16
 };
 
 // Header Message to Identify What Kind Of Message Is Being Sent and Who It Came From
@@ -215,10 +217,24 @@ typedef struct
 	bool enableFoV;
 	float FoVAngle;
 	float FoVRange;
-	int32_t worldSideLength;
-	int16_t initialWindowSize;
+	float worldSideLength;
+	float initialWindowSize;
 	static const size_t size = 17;
 } Msg_InitDrawer;
+
+// Tell Drawer About Home
+// MSG_INITHOME = 16
+typedef struct
+{
+        float radius;
+        float maxWorldSize;
+        float posX;
+        float posY;
+        float colR;
+        float colG;
+        float colB;
+	static const size_t size = 28;
+} Msg_InitHome;
 
 
 #endif

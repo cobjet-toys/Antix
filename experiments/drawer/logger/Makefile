@@ -7,16 +7,12 @@ CC = g++
 CXXFLAGS = -g -O3 -Wall $(GLUTFLAGS)
 LIBS =  $(LOGLIBS)
 
-HDR = antix.h controller.h redisclient.h logger.h
-SRC = antix.cc controller.cc gui.cc main.cc 
+HDR = redisclient.h logger.h
 
 all: $(LOGLIBNAME) export_log
 
 $(LOGLIBNAME): $(LOGCLIENTOBJS)
 	ar rcs $@ $(LOGCLIENTOBJS)
-
-antix: $(SRC) $(HDR)
-	$(CC) $(CXXFLAGS) $(LIBS) -o $@ $(SRC) 
 
 export_log: $(LOGLIBNAME) $(TESTAPPOBJS)
 	$(CC) -o $@ $(TESTAPPOBJS) $(LOGLIBS)

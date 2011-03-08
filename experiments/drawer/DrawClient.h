@@ -3,14 +3,15 @@
 #define	_DRAWCLIENT_H
 
 #include "logger/logger.h"
+#include "dutils.h"
 
 namespace Network
 {
     class DrawClient {
 
 	public:
-	    DrawClient();
-	    //virtual ~DrawClient();
+	    DrawClient(int homes=1, int pucks=5, int homePop=10);
+	    virtual ~DrawClient();
 	    void update();
 
 	private:
@@ -18,17 +19,6 @@ namespace Network
 	    int m_totalPucks;
 	    int m_totalHomes;
 	    AntixUtils::Logger* posDB;
-
-
-	    //AntixUtils::RHash* posDB;
-
-	    #define POS_DB_NAME		"posDB"
-	    #define FIELD_ID		"id"
-	    #define FIELD_POSX		"posX"
-	    #define FIELD_POSY		"posY"
-	    #define FIELD_ORIENTATION	"or"
-	    #define FIELD_HOME		"home"
-	    #define FIELD_HASPUCK	"has_puck"
     };
 }
 

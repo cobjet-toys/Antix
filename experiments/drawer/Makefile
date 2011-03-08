@@ -1,7 +1,4 @@
-#   Makefile - antix project
-#   version 3
-#   Richard Vaughan  
-
+# ----------------------------- GLUT VARS -----------------------------
 # this should work on Linux with MESA
 OS := $(shell uname -s)
 
@@ -15,27 +12,44 @@ ifeq ($(OS),Darwin)
 GLUTFLAGS = -framework OpenGL -framework GLUT
 endif
 
+# ----------------------------- REDIS VARS -----------------------------
+
 # logger macros
 LOGLIBNAME = logger/libredisclient.a
 LOGLIBS = $(LOGLIBNAME) -lstdc++ -lpthread -lboost_thread-mt
 LOGCLIENTOBJS = anet.o
 
-CC = g++
-CXXFLAGS = -g -Wall -O3 $(GLUTFLAGS)
-LIBS =  -g -lm $(GLUTLIBS) 
-INCLUDE = -I"logger/"
-
-SRC = DrawServer.cpp DrawClient.cpp main.cpp
-
 LOGHDR = logger/redisclient.h logger/logger.h
+
+# ----------------------------- MAKE CONFIG -----------------------------
+
+CC = g++
+INCLUDE = -I"logger/"
+BASIC_HDR = $(LOGHDR) dutils.h
+
+# ----------------------------- DRAWER FILES ----------------------------
+
+DRAWER_CXXFLAGS = -g -Wall -O3 $(GLUTFLAGS)
+DRAWER_LIBS =  -g -lm $(GLUTLIBS)
+DRAWER_SRC = DrawServer.cpp drawer.cpp dutils.cpp Gui.cpp
+DRAWER_HDR = $(BASIC_HDR) Gui.h
+
+# ----------------------------- CLIENT FILES ----------------------------
+
+CLIENT_SRC = DrawClient.cpp client.cpp dutils.cpp
+CLIENT_HDR = $(BASIC_HDR)
+
+# ------------------------------ MAKE ARGS ------------------------------
 
 all: drawer client
 
-drawer: $(SRC) $(LOGHDR)
-	$(CC) $(CXXFLAGS) $(LIBS) $(INCLUDE) -DREDIS -o $@ $(SRC) $(LOGLIBS)
+clean: clean_drawer clean_client
 
-client: $(SRC) $(LOGHDR)
-	$(CC) $(CXXFLAGS) $(LIBS) $(INCLUDE) -DREDIS -o $@ $(SRC) $(LOGLIBS)
+drawer: $(DRAWER_HDR) $(DRAWER_SRC)
+	$(CC) $(DRAWER_CXXFLAGS) $(DRAWER_LIBS) $(INCLUDE) -DREDIS -o $@ $(DRAWER_SRC) $(LOGLIBS)
+
+client: $(CLIENT_HDR) $(CLIENT_SRC)
+	$(CC) $(INCLUDE) -DREDIS -o $@ $(CLIENT_SRC) $(LOGLIBS)
 
 clean_drawer:
 	rm drawer
@@ -45,4 +59,3 @@ clean_client:
 
 anet.o:			logger/anet.c logger/fmacros.h logger/anet.h
 rhash.o:		logger/redisclient.h logger/logger.h
-

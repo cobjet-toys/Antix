@@ -6,20 +6,20 @@
  */
 
 #include <stdlib.h>
-#include "DrawClient.h"
 #include "DrawServer.h"
+#include "dutils.h"
+#include "Gui.h"
 
 /*
  * 
  */
 int main(int argc, char** argv)
 {
-    Network::DrawClient * dCli = new Network::DrawClient();
-    dCli->update();
+    Network::DrawServer::getInstance()->init(argc, argv);
+    Network::DrawServer::getInstance()->update();
 
-    Network::DrawServer * dServer = new Network::DrawServer();
-    dServer->draw();
-
+    initGraphics(argc, argv);
+    
     return (EXIT_SUCCESS);
 }
 

@@ -24,6 +24,35 @@ CLOCK_OBJ = $(CLOCK_SRC:.cpp=.o)
 
 # ------------------------------------------------------------
 
+# GLUT VARS
+OS := $(shell uname -s)
+ifeq ($(OS),Linux)
+GLUTLIBS = -L/usr/X11R6/lib -lGLU -lGL -lglut -lX11 -lXext
+GLUTFLAGS = -I/usr/local/include/GL
+endif
+ifeq ($(OS),Darwin)
+GLUTFLAGS = -framework OpenGL -framework GLUT
+endif
+
+# REDIS VARS
+#LOGLIBNAME = include/logger/libredisclient.a
+#LOGLIBS = $(LOGLIBNAME) -lstdc++ -lpthread -lboost_thread-mt
+#LOGCLIENTOBJS = anet.o
+
+DRAWER_SRC = Server.cpp DrawServer.cpp TcpConnection.cpp Packer.cpp drawer.cpp
+DRAWER_FLAGS = -g -Wall -O3 $(GLUTFLAGS)
+#DRAWER_INCLUDES = -I"../../Robotix/include/" -I"../../Robotix/include/logger/" $(INCLUDES)
+DRAWER_INCLUDES = $(INCLUDES)
+DRAWER_LIBS = -g -lm $(GLUTLIBS) $(LIBRARIES)
+DRAWER_OBJ = $(DRAWER_SRC:.cpp=.o)
+
+# ------------------------------------------------------------
+
+CYN_SRC = Client.cpp DrawClient.cpp TcpConnection.cpp Packer.cpp cyn.cpp
+CYN_OBJ = $(CYN_SRC:.cpp=.o)
+
+# ------------------------------------------------------------
+
 ALL: depends objects
 	$(COMPILER) -o $(EXECUTABLE) $(OBJECTS) $(LIBRARIES) $(INCLUDES)
 	
@@ -75,6 +104,39 @@ clock_depend:
 
 clock_objects:
 	g++ -c $(CLOCK_SRC)
+
+
+# ------------------------------------------------------------
+
+drawer: drawer_depend drawer_objects
+	$(COMPILER) -o drawer.bin $(DRAWER_OBJ) $(DRAWER_LIBS) $(DRAWER_INCLUDES)
+
+drawer_depend:
+	$(COMPILER) -M $(DRAWER_SRC) > depends
+
+drawer_objects:
+	g++ -c $(DRAWER_SRC)
+
+drawer_clean:
+	rm $(DRAWER_OBJ) depends
+
+
+# ------------------------------------------------------------
+
+cyn: cyn_depend cyn_objects
+	$(COMPILER) -o dstubs.bin $(CYN_OBJ) $(LIBRARIES) $(INCLUDES)
+
+cyn_depend:
+	$(COMPILER) -M $(CYN_SRC) > depends
+
+cyn_objects:
+	g++ -c $(CYN_SRC)
+
+cyn_clean:
+	rm $(CYN_OBJ) depends
+
+
+# ------------------------------------------------------------
 	
 
 include depends

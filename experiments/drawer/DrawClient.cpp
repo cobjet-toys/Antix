@@ -2,47 +2,76 @@
 
 using namespace Network;
 
-DrawClient::DrawClient()
+DrawClient::DrawClient(int homes, int pucks, int homePop)
 {
     this->posDB = new AntixUtils::Logger();
-    this->m_totalHomes = 1;
-    this->m_totalPucks = 1000;
-    this->m_totalRobots = 10;
-}
-
-void DrawClient::update()
-{
     if (this->posDB == NULL)
     {
         printf("Redis position DB is not initialized");
         return;
     }
+    this->posDB->setDataOnly(true);
+    
+    this->m_totalHomes = homes;
+    this->m_totalPucks = pucks;
+    this->m_totalRobots = homePop;
+}
 
+DrawClient::~DrawClient() 
+{
+}
+
+void DrawClient::update()
+{
     cout << "\n--------------DrawClient----------------\n" << endl;
+    cout << "*** Objects=" << (this->m_totalRobots + this->m_totalPucks) << endl;
+    cout << "*** Steps=" << ULONG_MAX << endl << endl;
 
-    this->posDB->clear();
-    for(int i=0; i<(this->m_totalRobots); i++)
+    for(uint32_t j=0; j<3; j++)
     {
-        char buf[256];
-        int home, hasPuck;
-        float posX, posY, orientation;
+        char logKey[16];
+        sprintf(logKey, "%s%d", POS_DB_NAME, j%MAX_POS_KEYS);
+        this->posDB->setLogKey(logKey);
+        this->posDB->clear();
+        cout << "\n*** LogKey=" << logKey << endl;
 
-        bzero(buf, 256);
-        home=i%3;
-        hasPuck=i%2;
-        posX=(float)i;
-        posY=posX;
-        orientation = 1.0;
+        clock_t start = clock();
+        for(int i=0; i<(this->m_totalRobots); i++)
+        {
+            char buf[64];
+            int home;
+            char hasPuck;
+            float posX, posY, orientation;
 
-        sprintf(buf, "%f %f %f %d %d", posX, posY, orientation, home, hasPuck);
-        //sprintf(buf, "%f %f", posX, posY);
-        cout << buf << endl;
-        this->posDB->append(string(buf));
-    }
+            bzero(buf, 64);
+            home=i%3+1;
+            hasPuck=i%2==0?'T':'F';
+            posX=(float)i;
+            posY=posX;
+            orientation = 1.0;
 
-    for(int i=0; i<(this->m_totalPucks); i++)
-    {
+            sprintf(buf, POS_PATTERN, posX, posY, orientation, home, hasPuck);
+            //cout << buf << " (" << strlen(buf) << ")" << endl;
+            this->posDB->append(string(buf));
+        }
 
+        int x = this->m_totalRobots;        /* used to fake <x,y> of puck */
+        for(int i=0; i<(this->m_totalPucks); i++)
+        {
+            char buf[256];
+            float posX, posY;
+
+            bzero(buf, 256);
+            posX=(float)i+x;
+            posY=posX;
+
+            sprintf(buf, POS_PATTERN, posX, posY, 0.0, 0, 'F');
+            //cout << buf << endl;
+            this->posDB->append(string(buf));
+        }
+
+        double elapsed = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
+        cout << j << ": " << elapsed << "ms" << endl;
     }
     
 
