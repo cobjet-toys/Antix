@@ -8,8 +8,9 @@ CLIENT_BUILD_DIR = ""
 CLIENT_BUILD_COMMAND = ""
 
 # Server settings
-SERVERS = 1
+SERVERS = 2
 SERVER_RUN_COMMAND = "experiments/clock/grid.bin" # args hard-coded
+SERVER_PORT = 13337
 # the controller will cd to antix Path + this  directory and call "make":
 SERVER_BUILD_DIR = "experiments/clock/"
 SERVER_BUILD_COMMAND = "make hardeep"

@@ -11,9 +11,8 @@ class ClockClient: public Client
 public:
     ClockClient();
     virtual ~ClockClient();
-    virtual int handler();
+    virtual int handler(int fd);
 
-    int heartbeat();
 private:
 	uint16_t m_heartbeat;
 };
