@@ -3,13 +3,13 @@
 
 COMPILER = g++
 
-SRC = RobotClient.cpp Client.cpp TcpConnection.cpp Packer.cpp
+SRC = main.cpp RobotClient.cpp Client.cpp TcpConnection.cpp Packer.cpp
 OBJECTS = $(SRC:.cpp=.o)
 INCLUDES =
 LIBRARIES =
 EXECUTABLE = main
 
-ROBOTCLIENT_SRC = $(SRC) main.cpp
+ROBOTCLIENT_SRC = $(SRC)
 ROBOTCLIENT_OBJ = $(ROBOTCLIENT_SRC:.cpp=.o)
 
 robotclient: robotclient_depend robotclient_objects

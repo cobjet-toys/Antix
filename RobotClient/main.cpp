@@ -15,6 +15,8 @@ int main(int argc, char** argv)
 
 Network::RobotClient rclient;
 
+rclient.init();
+
 rclient.initConnection("127.0.0.1","1337");
 
 rclient.start();
