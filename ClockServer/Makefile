@@ -1,12 +1,13 @@
 clock_COMPILER = g++
 
-clock_SRC = 
+clock_SRC = ClockServer.cpp clock.cpp
 clock_EXECUTABLE = clock.bin
 
 # ----- do not edit under this line unless you know what you are doing :)
 
 PWD = $(shell pwd)
 clock_INCLUDE_PATH = $(PWD)/includes
+clock_INCLUDE_COMMON_PATH = $(PWD)/../Common/includes
 clock_SRC_PATH = $(PWD)/src
 
 clock_RELEASE_PATH = $(PWD)/build/release
@@ -21,25 +22,25 @@ clock_DEBUG_OBJ = $(addprefix $(clock_DEBUG_OBJ_PATH)/, $(clock_SRC:.cpp=.o))
 
 
 
-clock: clock_depend clock_release_objects
+clock: common.a clock_depend clock_release_objects
 	@echo "Building RELEASE ----------------------"
 	$(shell cd $(clock_RELEASE_PATH)/; $(clock_COMPILER) -o $(clock_EXECUTABLE) $(clock_RELEASE_OBJ))
 
-clock_debug: clock_depend clock_debug_objects
+clock_debug: common_debug.a clock_depend clock_debug_objects
 	@echo "Building DEBUG ----------------------"
 	$(shell cd $(clock_DEBUG_PATH)/; $(clock_COMPILER) -g -o $(clock_EXECUTABLE) $(clock_DEBUG_OBJ))
 
 clock_depend:
 	@echo "Compiling dependancy list  ----------------------"
-	$(clock_COMPILER) -I$(clock_INCLUDE_PATH)/ -M $(addprefix $(clock_SRC_PATH)/, $(clock_SRC)) > clock_depends
+	$(clock_COMPILER) -I$(clock_INCLUDE_PATH)/ -I$(clock_INCLUDE_COMMON_PATH) -M $(addprefix $(clock_SRC_PATH)/, $(clock_SRC)) > clock_depends
 
 clock_release_objects:
 	@echo "Building relase objects ----------------------"
-	$(shell cd $(clock_RELEASE_OBJ_PATH); $(clock_COMPILER) -c -I$(clock_INCLUDE_PATH) $(addprefix $(clock_SRC_PATH)/, $(clock_SRC)))
+	$(shell cd $(clock_RELEASE_OBJ_PATH); $(clock_COMPILER) -c -I$(clock_INCLUDE_PATH) -I$(clock_INCLUDE_COMMON_PATH) $(addprefix $(clock_SRC_PATH)/, $(clock_SRC)))
 
 clock_debug_objects:
 	@echo "Building debug objects ----------------------"
-	$(shell cd $(clock_DEBUG_OBJ_PATH); $(clock_COMPILER) -c -I$(clock_INCLUDE_PATH) $(addprefix $(clock_SRC_PATH)/, $(clock_SRC)))
+	$(shell cd $(clock_DEBUG_OBJ_PATH); $(clock_COMPILER) -c -I$(clock_INCLUDE_PATH) -I$(clock_INCLUDE_COMMON_PATH) $(addprefix $(clock_SRC_PATH)/, $(clock_SRC)))
 
 clean:
 	@echo "Cleaning ALL ----------------------"
@@ -54,6 +55,6 @@ clean_debug:
 	rm clock_depends $(clock_DEBUG_PATH)/$(clock_EXECUTABLE)  $(clock_DEBUG_OBJ_PATH)/*.o
 
 -include clock_depends
-
+-include ../Common/Makefile
 
 
