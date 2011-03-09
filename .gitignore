@@ -12,3 +12,6 @@
 
 # .bins
 *.bin
+
+# controller generated file
+server.info

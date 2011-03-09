@@ -1,6 +1,6 @@
 clock_COMPILER = g++
 
-clock_SRC = 
+clock_SRC = clock.cpp Client.cpp  ClockServer.cpp  Packer.cpp  Server.cpp  TcpConnection.cpp
 clock_EXECUTABLE = clock.bin
 
 # ----- do not edit under this line unless you know what you are doing :)

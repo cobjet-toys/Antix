@@ -164,7 +164,6 @@ int TcpConnection::recv(unsigned char * message, int messageSize)
 int TcpConnection::close()
 {
 	::shutdown(m_socketfd, 2);
-	return 1;
 }
 
 int TcpConnection::getSocketFd()
