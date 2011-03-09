@@ -5,7 +5,8 @@ common_LIBRARY = common.a
 
 # ----- do not edit under this line unless you know what you are doing :)
 
-PWD = $(shell pwd)
+PWD = $(shell pwd)/$(ROOT_DIR)
+
 common_INCLUDE_PATH = $(PWD)/includes
 common_SRC_PATH = $(PWD)/src
 
@@ -41,15 +42,15 @@ common_debug_objects:
 	@echo "Building debug objects ----------------------"
 	$(shell cd $(common_DEBUG_OBJ_PATH); $(common_COMPILER) -c -I$(common_INCLUDE_PATH) $(addprefix $(common_SRC_PATH)/, $(common_SRC)))
 
-clean:
+common_clean:
 	@echo "Cleaning ALL ----------------------"
 	rm common_depends $(common_RELEASE_PATH)/$(common_LIBRARY) $(common_DEBUG_PATH)/$(common_LIBRARY) $(common_RELEASE_OBJ_PATH)/*.o $(common_DEBUG_OBJ_PATH)/*.o
 
-clean_release:
+common_clean_release:
 	@echo "Cleaning release ----------------------"
 	rm common_depends $(common_RELEASE_PATH)/$(common_LIBRARY)  $(common_RELEASE_OBJ_PATH)/*.o 
 
-clean_debug:
+common_clean_debug:
 	@echo "Cleaning debug ----------------------"
 	rm common_depends $(common_DEBUG_PATH)/$(common_LIBRARY)  $(common_DEBUG_OBJ_PATH)/*.o
 
