@@ -7,18 +7,18 @@ CLIENT_BUILD_DIR = ""
 CLIENT_BUILD_COMMAND = ""
 
 # Server settings
-GRID_RUN_COMMAND = "experiments/clock/grid.bin"
+GRID_RUN_COMMAND = "hostname"
 GRID_PORT = "13337"
 # the controller will cd to antix Path + this  directory and call "make":
-GRID_BUILD_DIR = "experiments/clock/"
-GRID_BUILD_COMMAND = "make hardeep"
+GRID_BUILD_DIR = ""
+GRID_BUILD_COMMAND = ""
 
 # Clock settings
-CLOCK_RUN_COMMAND = "experiments/clock/clock.bin"
+CLOCK_RUN_COMMAND = "hostname"
 CLOCK_PORT = "13338"
 # the controller will cd to antix Path + this  directory and call "make":
-CLOCK_BUILD_DIR = "experiments/clock/"
-CLOCK_BUILD_COMMAND = "make clock"
+CLOCK_BUILD_DIR = ""
+CLOCK_BUILD_COMMAND = ""
 
 # Drawer settings
 DRAWER_RUN_COMMAND = "hostname"
