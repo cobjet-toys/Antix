@@ -30,8 +30,12 @@ private:
 protected:
     TcpConnection m_ServerConn;
     TcpMap m_Clients;
+	bool m_ready;
+	int m_servers_total;
+	int m_servers_connected;
 };
 
 }
+
 
 #endif

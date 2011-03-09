@@ -156,22 +156,27 @@ void Server::start()
 		{
 			if (e[i].data.fd == m_ServerConn.getSocketFd()) // new connection
 			{
-			    TcpConnection * temp = m_ServerConn.accept();
-				if (temp != NULL)
+				if (m_servers_connected < m_servers_total)
 				{
-					int fd = temp->getSocketFd();
-					m_Clients[fd] = temp;
-					this->setnonblock(fd); // @ todo check for errors
-					if( this->addHandler(fd, EPOLLIN|EPOLLET|EPOLLRDHUP, temp) != 0 )
-                    {
-                        printf("failed connecting to client.\n");
-                        // @ todo -- attempt recovery
-                        return;
-                    }
-                    else
-                    {
-					    printf("A client connected.\n");
-                    }
+					TcpConnection * temp = m_ServerConn.accept();
+					if (temp != NULL)
+					{
+						int fd = temp->getSocketFd();
+						m_Clients[fd] = temp;
+						this->setnonblock(fd); // @ todo check for errors
+						if( this->addHandler(fd, EPOLLIN|EPOLLET|EPOLLRDHUP, temp) != 0 )
+						{
+							printf("failed connecting to client.\n");
+							// @ todo -- attempt recovery
+							return;
+						}
+						else
+						{
+							printf("A client connected.\n");
+						}
+					}
+				} else {
+					
 				}
 			}
 			else
