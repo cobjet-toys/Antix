@@ -18,6 +18,12 @@ int num_teams;
 int robots_per_team;
 int num_client_processes;
 int num_grids;
+int window_size;
+float world_size;
+float home_radius;
+bool enable_fov;
+float fov_angle;
+float fov_range;
 char* client_num;
 
 int parse(vector<string> lines)
@@ -26,9 +32,21 @@ int parse(vector<string> lines)
     robots_per_team = atoi( lines[1].c_str() );
     num_client_processes = atoi( lines[2].c_str() );
     num_grids = atoi( lines[3].c_str() );
+    window_size = atoi( lines[4].c_str() );
+    world_size = atof( lines[5].c_str() );
+    home_radius = atof( lines[6].c_str() );
+    enable_fov =  (atoi(lines[7].c_str()) == 1) ? true : false;
+    int i = 8;
+    if(enable_fov)
+    {
+        i = 10;
+        fov_angle = atof( lines[8].c_str() );
+        fov_range = atof( lines[9].c_str() );
+    }
+
     map<int,int> team_grid_map;
    
-    for(int i = 4; i < lines.size(); i++)
+    for(; i < lines.size(); i++)
     {
         vector<string> tokens;
         boost::split( tokens, lines[i], boost::is_any_of(","));
