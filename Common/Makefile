@@ -1,7 +1,7 @@
 common_COMPILER = g++
 
 common_SRC = Client.cpp Packer.cpp Server.cpp TcpConnection.cpp 
-common_LIBRARY = common.a
+common_LIBRARY = libcommon.a
 
 # ----- do not edit under this line unless you know what you are doing :)
 
@@ -22,11 +22,11 @@ common_DEBUG_OBJ = $(addprefix $(common_DEBUG_OBJ_PATH)/, $(common_SRC:.cpp=.o))
 
 
 
-common.a: common_depend common_release_objects
+libcommon.a: common_depend common_release_objects
 	@echo "Building COMMON LIBRARY ---------------------"
 	ar cvq $(common_RELEASE_PATH)/$(common_LIBRARY) $(common_RELEASE_OBJ)
 
-common_debug.a: common_depend common_debug_objects
+libcommon_debug.a: common_depend common_debug_objects
 	@echo "Building DEBUG COMMON LIBRARY ---------------"
 	ar cvq $(common_DEBUG_PATH)/$(common_LIBRARY) $(common_DEBUG_OBJ)
 
