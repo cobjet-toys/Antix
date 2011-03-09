@@ -11,7 +11,7 @@ def start_process(name, **kwargs):
         print "No more free machines, exiting."
         sys.exit()
     
-    script = "ssh -f -p 22 " + USER + "@" + machine + " 'nohup " + PATH
+    script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH
     if name is "clock":
         script += CLOCK_RUN_COMMAND + " " + CLOCK_PORT + " " + NUM_CLIENTS
     elif name is "client":
@@ -90,7 +90,7 @@ def get_free_computer():
             # if we can't get it, the machine's not connectable
             # in the future, we could also get the load average
             # and make a decision based on that
-            get_machine_ip = "ssh -p 22 " + USER + "@" + machine_to_test + \
+            get_machine_ip = "ssh -p 24 " + USER + "@" + machine_to_test + \
                 " 'ifconfig | grep \"inet \" | grep -v 127.0.0.1 | cut -d \" \" -f12 | cut -d : -f2'"
             try:
                 out, error = run_bash_script(get_machine_ip)
