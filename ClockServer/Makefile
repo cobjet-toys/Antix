@@ -26,7 +26,7 @@ clock_DEBUG_OBJ = $(addprefix $(clock_DEBUG_OBJ_PATH)/, $(clock_SRC:.cpp=.o))
 
 clock: libcommon.a clock_depend clock_release_objects
 	@echo "Building RELEASE ----------------------"
-	$(shell cd $(clock_RELEASE_PATH)/; $(clock_COMPILER) $(clock_PWD)/$(ROOT_DIR)/build/release/libcommon.a -o $(clock_EXECUTABLE) $(clock_RELEASE_OBJ))
+	$(shell cd $(clock_RELEASE_PATH)/; $(clock_COMPILER) -o $(clock_EXECUTABLE) $(clock_RELEASE_OBJ) $(clock_PWD)/$(ROOT_DIR)/build/release/libcommon.a )
 
 clock_debug: libcommon_debug.a clock_depend clock_debug_objects
 	@echo "Building DEBUG ----------------------"
