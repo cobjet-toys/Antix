@@ -149,7 +149,35 @@ int Network::Client::setnonblock(int fd)
 
 int Network::Client::start()
 {
-	printf("Handeling\n");
+    for (;;)
+	{
+      	epoll_event * e = new epoll_event[10];
+		int nfd;		
+		nfd = epoll_wait(m_epfd, e, 10, 500);
+        printf("nfd: %i\n", nfd);
+        for (int i = 0; i < nfd; i++)
+        {    
+	    	if (e[i].events & EPOLLRDHUP || e[i].events & EPOLLHUP || e[i].events & EPOLLERR)
+	    	{
+	            printf("Client Hangup/Error \n");
+	    		handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL); // @todo add error checking
+	    	} 
+           else if (e[i].events & EPOLLIN) 
+           {
+		    	printf("Handling \n");
+		    	int ret = handler(e[i].data.fd);
+		    	printf("Handler returned %i\n", ret);
+		    	if (ret < 0)
+			    {
+			        if (handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL) != 0)
+				    {
+				    	return -1;
+				    }
+			    }
+		   }
+        }
+        delete e;
+    }
 	return 0;
 }
 
