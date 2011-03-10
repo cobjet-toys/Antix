@@ -14,11 +14,13 @@ def start_process(name, **kwargs):
     script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH
     if name is "clock":
         script += CLOCK_RUN_COMMAND + " " + CLOCK_PORT + " " + NUM_CLIENTS
+        CLOCK_PORT += 1
     elif name is "client":
         client_num = kwargs['client_num']
         script += CLIENT_RUN_COMMAND + " " + SERVER_INFO + " " + SYSTEM_CONFIG + " " + str(client_num)
     elif name is "grid":
         script += GRID_RUN_COMMAND + " " + SERVER_INFO + " " + GRID_PORT
+        GRID_PORT += 1
     elif name is "drawer":
         if FOV == "1":
             script += DRAWER_RUN_COMMAND + " " + WI_SIZE + " " + WO_SIZE + " " + H_RADIUS + " 1 " + FOV_ANGLE + " " + FOV_RANGE
@@ -48,6 +50,8 @@ def start_process(name, **kwargs):
     except BashScriptException as e:
         print "* ERROR STARTING " + name.upper() + " *"
         print e
+        # stop everything!
+        sys.exit()
 
 def build_binary(name):
     script = "cd " + PATH
@@ -73,11 +77,8 @@ def build_binary(name):
 
 def get_free_computer():
     """
-    In the future this could check the load average on each machine
-    and only return a machine based on what we deem to be free.
-
-    For now, returns the first machine that doesn't have one of
-    our processes running on it. One process per machine.
+    Checks a machine's load average, cpu idle time, and gets its IP.
+    Then it decides what to use the machine for.
     """
     try:
         # check that the machine is up
@@ -90,11 +91,20 @@ def get_free_computer():
             # if we can't get it, the machine's not connectable
             # in the future, we could also get the load average
             # and make a decision based on that
-            get_machine_ip = "ssh -p 24 " + USER + "@" + machine_to_test + \
-                " 'ifconfig | grep \"inet \" | grep -v 127.0.0.1 | cut -d \" \" -f12 | cut -d : -f2'"
+            get_machine_info = "ssh -p 24 " + USER + "@" + machine_to_test + \
+                " '" + PATH + "Controller/machine_info.sh'"
             try:
-                out, error = run_bash_script(get_machine_ip)
-                # it works, return
+                out, error = run_bash_script(get_machine_info)
+                # machine is on, check the info and decide what to use it for
+                info = out.split('\n')[:3]
+                machine_ip = info[0]
+                machine_lavg = info[1].split(" ")
+                m_lavg_one = machine_lavg[0]
+                m_lavg_five = machine_lavg[1]
+                m_lavg_fifteen = machine_lavg[2]
+                machine_idle = info[2].split("%")[0]
+
+                # not using the metrics right now, just return the next machine
                 machine = machine_to_test
             except BashScriptException as e:
                 print "* ERROR CONNECTING TO " + machine_to_test.upper() + " *"
@@ -102,7 +112,7 @@ def get_free_computer():
                 print "* TRYING ANOTHER MACHINE *"
                 print
 
-        return machine, out
+        return machine, machine_ip
     except IndexError:
         return None
 
@@ -205,3 +215,6 @@ for i in range(1, int(NUM_CLIENTS)+1):
     start_process("client", client_num=i)
 
 SERVER_INFO_FILE.close()
+
+print
+print "EVERYTHING IS DONE!"
