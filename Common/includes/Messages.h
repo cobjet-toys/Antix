@@ -60,10 +60,10 @@ typedef struct
 // MSG_HEARTBEAT = 1
 typedef struct
 {
-    char hb;
-    static const size_t size = 1;
+    uint16_t hb;
+    static const size_t size = 2;
 } Msg_HB;
-static const char* Msg_HB_format = "c";
+static const char* Msg_HB_format = "h";
 // Tells A GridServer To Initialize A Team With Robots And It's Client
 // Tell A Client To Connect To A GridServer And Control A Team
 // MSG_INITTEAM = 2

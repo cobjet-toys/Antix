@@ -36,19 +36,77 @@ int RobotClient::handler(int fd)
                 {
                     printf("Received a heartbeat from the clock.\n");
                     
-                    //
-                    //WORK GOES HERE
-                    //
-
-                    //Create heartbeat message.
                     Msg_HB l_HB;
 
-                    //Pack the hearbeat into the header message buffer.
-                    pack(l_Buffer, Msg_HB_format, l_HB.hb);
+                    //Receive the heartbeat message.
+                    l_Conn->recv(l_Buffer, l_HB.size);
 
-                    //Send the heartbeat message.
-                    l_Conn->send(l_Buffer, l_HB.size); 
-                    break;
+                    //Unpack heartbeat message into our buffer.
+                    unpack(l_Buffer, Msg_HB_format, &l_HB.hb);
+                    printf("Hearbeat character: %c\n", l_HB.hb);
+                     
+                    //
+                    //WORK GOES HERE--------------------------------------------------
+                    //
+
+                    //Prepare our 'header' message.
+                    //Set the robot client as the sender
+                    l_Header.sender = SENDER_CLIENT; 
+
+                    //Set the message type as header.
+                    l_Header.message = MSG_HEARTBEAT;
+
+                    //Pack the sender and messege into the header message buffer.
+                    if (pack(l_Buffer, Msg_header_format, 
+                                &l_Header.sender, &l_Header.message) != l_HB.size)
+                    {
+                        printf("Failed to pack the header message\n");
+                        return -1;
+                    }
+
+                    //Try to send the header message 100x.
+                    int i ;
+                    for (i = 0; i < 100; i++)
+                    {
+                        if(l_Conn->send(l_Buffer, l_Header.size) == 0)
+                        {
+                            printf("Sent message header.\n");
+                            break;
+                        } 
+                    }
+
+                    if (i == 100)
+                    {
+                        printf("Couldn't send the header.\n");
+                        return -1;
+                    }
+                    
+                    //Prepare to send heartbeat.
+                    //Set heartbeat.
+                    l_HB.hb = '?';
+                   
+                    //Pack the hearbeat into the header message buffer.
+                    if (pack(l_Buffer, Msg_HB_format, l_HB.hb) != l_HB.size)
+                    {
+                        printf("Failed to pack the HB message\n");
+                        return -1;
+                    }
+
+                    //Try to send the heartbeat message 100x.
+                    for (i = 0; i < 100; i++)
+                    {
+                        if(l_Conn->send(l_Buffer, l_HB.size) == 0)
+                        {
+                            printf("Sent heartbeat.\n");
+                            break;
+                        } 
+                    }
+
+                    if (i == 100)
+                    {
+                        printf("Couldn't send the heartbeat.\n");
+                        return -1;
+                    }
                 }
             }
             break;
