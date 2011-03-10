@@ -16,11 +16,13 @@ Server::Server()
 	m_epfd = -1;
 	m_servers_total = 0;
 	m_servers_connected = 0;
+	m_ready = false;
 }
 
 int Server::init(const char* port, int maxConnections)
 {
 	m_servers_total = maxConnections;
+	if (maxConnections == -1) m_ready = true;
 	
     printf("Attempting to create a server socket on port: %s\n", port);
     m_epfd = epoll_create(10);
@@ -154,7 +156,7 @@ void Server::start()
 		epoll_event * e = new epoll_event[10];
 		int nfd;		
 		nfd = epoll_wait(m_epfd, e, 10, 500);
-        printf("nfd: %i\n", nfd);
+        printf("nfd: %i %d\n", nfd, m_ready);
 
 		for (int i = 0; i < nfd ; i++)
 		{
@@ -178,6 +180,7 @@ void Server::start()
 						{
 							printf("A client connected.\n");
 							m_servers_connected += 1;
+							if (m_servers_total != -1 && m_servers_connected == m_servers_total) m_ready = true;
 						}
 					}
 				} else {
@@ -193,14 +196,17 @@ void Server::start()
 				} 
                 else if (e[i].events & EPOLLIN)
 				{
-					printf("Handling \n");
-					int ret = handler(e[i].data.fd);
-					printf("Handler returned %i\n", ret);
-					if (ret < 0)
+					if (m_ready)
 					{
-					    if (handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL) != 0)
+						printf("Handling \n");
+						int ret = handler(e[i].data.fd);
+						printf("Handler returned %i\n", ret);
+						if (ret < 0)
 						{
-							return;
+							if (handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL) != 0)
+							{
+								return;
+							}
 						}
 					}
 				}

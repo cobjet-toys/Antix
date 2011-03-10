@@ -14,7 +14,9 @@ Network::ClockServer::~ClockServer()
 
 int Network::ClockServer::handler(int fd)
 {
-	printf("handeling fd %i\n", fd);
+	TcpConnection * conn = m_Clients[fd];
+	
+	
 	
     return 0;
 }
