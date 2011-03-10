@@ -50,17 +50,18 @@ clock_debug_objects:
 	@echo "Building clock debug objects ---------------------------------------------------------"
 	$(shell cd $(clock_DEBUG_OBJ_PATH); $(clock_COMPILER) -c -I$(clock_INCLUDE_PATH)  -I$(clock_INCLUDE_COMMON_PATH) $(addprefix $(clock_SRC_PATH)/, $(clock_SRC)))
 	@echo "Building clock debug objects COMPLETE ------------------------------------------------"
-clock_clean:
+
+clock_clean: common_clean 
 	@echo "Cleaning clock ALL -------------------------------------------------------------------"
 	rm clock_depends $(clock_RELEASE_PATH)/$(clock_EXECUTABLE) $(clock_DEBUG_PATH)/$(clock_EXECUTABLE) $(clock_RELEASE_OBJ_PATH)/*.o $(clock_DEBUG_OBJ_PATH)/*.o
 	@echo "Cleaning clock ALL -------------------------------------------------------------------"
 
-clock_clean_release:
+clock_clean_release: common_clean_release
 	@echo "Cleaning clock release ---------------------------------------------------------------"
 	rm clock_depends $(clock_RELEASE_PATH)/$(clock_EXECUTABLE)  $(clock_RELEASE_OBJ_PATH)/*.o 
 	@echo "Cleaning clock release COMPLETE ------------------------------------------------------"
 
-clock_clean_debug:
+clock_clean_debug: common_clean_debug
 	@echo "Cleaning clock debug ------------------------------------------------------------------"
 	rm clock_depends $(clock_DEBUG_PATH)/$(clock_EXECUTABLE)  $(clock_DEBUG_OBJ_PATH)/*.o
 	@echo "Cleaning clock debug COMPLETE ---------------------------------------------------------"
