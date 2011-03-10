@@ -50,7 +50,7 @@ common_debug_objects:
 common_clean:
 	@echo "Cleaning common ALL -------------------------------------------------------------------"
 	rm common_depends $(common_RELEASE_PATH)/$(common_LIBRARY) $(common_DEBUG_PATH)/$(common_LIBRARY) $(common_RELEASE_OBJ_PATH)/*.o $(common_DEBUG_OBJ_PATH)/*.o
-	@echo "Cleaning common ALL -------------------------------------------------------------------"
+	@echo "Cleaning common ALL COMPLETE ----------------------------------------------------------"
 
 common_clean_release:
 	@echo "Cleaning common release ---------------------------------------------------------------"
