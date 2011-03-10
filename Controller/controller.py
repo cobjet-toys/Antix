@@ -13,14 +13,16 @@ def start_process(name, **kwargs):
     
     script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH
     if name is "clock":
-        script += CLOCK_RUN_COMMAND + " " + CLOCK_PORT + " " + NUM_CLIENTS
-        CLOCK_PORT += 1
+        script += CLOCK_RUN_COMMAND + " " + str(current_clock_port) + " " + NUM_CLIENTS
+        global current_clock_port
+        current_clock_port += 1
     elif name is "client":
         client_num = kwargs['client_num']
         script += CLIENT_RUN_COMMAND + " " + SERVER_INFO + " " + SYSTEM_CONFIG + " " + str(client_num)
     elif name is "grid":
-        script += GRID_RUN_COMMAND + " " + SERVER_INFO + " " + GRID_PORT
-        GRID_PORT += 1
+        script += GRID_RUN_COMMAND + " " + SERVER_INFO + " " + str(current_grid_port)
+        global current_grid_port
+        current_grid_port += 1
     elif name is "drawer":
         if FOV == "1":
             script += DRAWER_RUN_COMMAND + " " + WI_SIZE + " " + WO_SIZE + " " + H_RADIUS + " 1 " + FOV_ANGLE + " " + FOV_RANGE
@@ -36,11 +38,11 @@ def start_process(name, **kwargs):
 
         # Save the IP/port info to server.info file
         if name is "clock":
-            to_append = "clock,{0}," + CLOCK_PORT
+            to_append = "clock,{0}," + str(current_clock_port)
         if name is "drawer":
             to_append = "drawer,{0}"
         if name is "grid":
-            to_append = "grid,{0}," + GRID_PORT
+            to_append = "grid,{0}," + str(current_grid_port)
         if name is "client":
             to_append = "client,{0}"
 
@@ -172,6 +174,10 @@ FOV_RANGE = configs[9]
 
 SERVER_INFO = "server.info"
 SERVER_INFO_FILE = open(SERVER_INFO, 'w', 0) # 0 means no buffer
+
+# copy the clock/port setting
+current_clock_port = int(CLOCK_PORT)
+current_grid_port = int(GRID_PORT)
 
 # Build all the code
 print "*** BUILDING BINARIES ***"
