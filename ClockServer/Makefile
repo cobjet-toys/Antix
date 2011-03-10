@@ -29,9 +29,9 @@ clock: common clock_depend clock_release_objects
 	$(shell cd $(clock_RELEASE_PATH)/; $(clock_COMPILER) -o $(clock_EXECUTABLE) $(clock_RELEASE_OBJ) $(clock_PWD)/$(ROOT_DIR)/build/release/libcommon.a )
 	@echo "Building clock COMPLETE --------------------------------------------------------------"
 
-clock_debug: clock_depend clock_debug_objects
+clock_debug: common_debug clock_depend clock_debug_objects
 	@echo "Building DEBUG -----------------------------------------------------------------------"
-	$(shell cd $(clock_DEBUG_PATH)/; $(clock_COMPILER) -g -o $(clock_EXECUTABLE) $(clock_DEBUG_OBJ) $(clock_PWD)/$(ROOT_DIR)/build/release/libcommon.a )
+	$(shell cd $(clock_DEBUG_PATH)/; $(clock_COMPILER) -g -o $(clock_EXECUTABLE) $(clock_DEBUG_OBJ) $(clock_PWD)/$(ROOT_DIR)/build/debug/libcommon.a )
 	@echo "Building DEBUG clock COMPLETE --------------------------------------------------------"
 
 clock_depend:
