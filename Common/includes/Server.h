@@ -16,8 +16,10 @@ class Server
 public:
     Server();
     virtual int handler(int fd) = 0;
+	virtual int handleNewConnection(int fd) = 0;
+	virtual int allConnectionReadyHandler() = 0;
     virtual int init(const char* port, int maxConnections=-1);
-	void start();
+	int start();
 	
 private:
 	int addHandler(int fd, unsigned int events, TcpConnection * connection);

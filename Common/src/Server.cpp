@@ -149,12 +149,15 @@ int Server::addHandler(int fd, unsigned int events, TcpConnection * connection)
     }
 }
 
-void Server::start()
+int Server::start()
 {
 	for (;;)
 	{
 		epoll_event * e = new epoll_event[10];
-		int nfd;		
+		
+		if (e == NULL) return -1;
+		
+		int nfd, l_ret;
 		nfd = epoll_wait(m_epfd, e, 10, 500);
         printf("nfd: %i %d\n", nfd, m_ready);
 
@@ -174,14 +177,18 @@ void Server::start()
 						{
 							printf("failed connecting to client.\n");
 							// @ todo -- attempt recovery
-							return;
+							return -1;
 						}
 						else
 						{
 							printf("A client connected.\n");
 							m_servers_connected += 1;
 							if (m_servers_total != -1 && m_servers_connected == m_servers_total) 
-                                m_ready = true;
+							{
+								m_ready = true;
+								if ((l_ret = this->allConnectionReadyHandler()) < 0) return l_ret;
+							}
+							if ((l_ret = this->handleNewConnection(fd)) < 0) return l_ret;
 						}
 					}
 				} else {
@@ -206,7 +213,7 @@ void Server::start()
 						{
 							if (handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL) != 0)
 							{
-								return;
+								return -1;
 							}
 						}
 					}
@@ -215,6 +222,8 @@ void Server::start()
 		}
         delete e;
 	}
+	
+	return 0;
 }
 
 int Server::setnonblock(int fd)
