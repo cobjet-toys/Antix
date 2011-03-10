@@ -1,5 +1,6 @@
 #include "RobotClient.h"
 #include "Messages.h"
+#include <string.h>
 
 using namespace Network;
 
@@ -35,15 +36,17 @@ int RobotClient::handler(int fd)
                 case(MSG_HEARTBEAT) :
                 {
                     printf("Received a heartbeat from the clock.\n");
-                    
                     Msg_HB l_HB;
 
                     //Receive the heartbeat message.
-                    l_Conn->recv(l_Buffer, l_HB.size);
+                    while (l_Conn->recv(l_Buffer, l_HB.size) != 0)
+                    {
+                        printf("waiting to rcv\n");
+                    }
 
                     //Unpack heartbeat message into our buffer.
                     unpack(l_Buffer, Msg_HB_format, &l_HB.hb);
-                    printf("Hearbeat character: %c\n", l_HB.hb);
+                    printf("Hearbeat character: %hd\n", l_HB.hb);
                      
                     //
                     //WORK GOES HERE--------------------------------------------------
@@ -58,7 +61,7 @@ int RobotClient::handler(int fd)
 
                     //Pack the sender and messege into the header message buffer.
                     if (pack(l_Buffer, Msg_header_format, 
-                                &l_Header.sender, &l_Header.message) != l_HB.size)
+                                &l_Header.sender, &l_Header.message) != l_Header.size)
                     {
                         printf("Failed to pack the header message\n");
                         return -1;
@@ -83,7 +86,7 @@ int RobotClient::handler(int fd)
                     
                     //Prepare to send heartbeat.
                     //Set heartbeat.
-                    l_HB.hb = '?';
+                    l_HB.hb = 9;
                    
                     //Pack the hearbeat into the header message buffer.
                     if (pack(l_Buffer, Msg_HB_format, l_HB.hb) != l_HB.size)
