@@ -1,59 +1,67 @@
-client_COMPILER = g++
+robot_COMPILER = g++
 
-client_SRC = 
-client_EXECUTABLE = client.bin
+robot_SRC = 
+robot_EXECUTABLE = robot.bin
 
 # ----- do not edit under this line unless you know what you are doing :)
 
 PWD = $(shell pwd)
-client_INCLUDE_PATH = $(PWD)/includes
-client_SRC_PATH = $(PWD)/src
+robot_INCLUDE_PATH = $(PWD)/includes
+robot_SRC_PATH = $(PWD)/src
 
-client_RELEASE_PATH = $(PWD)/build/release
-client_RELEASE_OBJ_PATH = $(client_RELEASE_PATH)/obj
+robot_RELEASE_PATH = $(PWD)/build/release
+robot_RELEASE_OBJ_PATH = $(robot_RELEASE_PATH)/obj
 
-client_DEBUG_PATH = $(PWD)/build/debug
-client_DEBUG_OBJ_PATH = $(client_DEBUG_PATH)/obj
+robot_DEBUG_PATH = $(PWD)/build/debug
+robot_DEBUG_OBJ_PATH = $(robot_DEBUG_PATH)/obj
 
-client_RELEASE_OBJ = $(addprefix $(client_RELEASE_OBJ_PATH)/, $(client_SRC:.cpp=.o))
-client_DEBUG_OBJ = $(addprefix $(client_DEBUG_OBJ_PATH)/, $(client_SRC:.cpp=.o))
-
-
+robot_RELEASE_OBJ = $(addprefix $(robot_RELEASE_OBJ_PATH)/, $(robot_SRC:.cpp=.o))
+robot_DEBUG_OBJ = $(addprefix $(robot_DEBUG_OBJ_PATH)/, $(robot_SRC:.cpp=.o))
 
 
-client: client_depend client_release_objects
-	@echo "Building RELEASE ----------------------"
-	$(shell cd $(client_RELEASE_PATH)/; $(client_COMPILER) -o $(client_EXECUTABLE) $(client_RELEASE_OBJ))
 
-client_debug: client_depend client_debug_objects
-	@echo "Building DEBUG ----------------------"
-	$(shell cd $(client_DEBUG_PATH)/; $(client_COMPILER) -g -o $(client_EXECUTABLE) $(client_DEBUG_OBJ))
 
-client_depend:
-	@echo "Compiling dependancy list  ----------------------"
-	$(client_COMPILER) -I$(client_INCLUDE_PATH)/ -M $(addprefix $(client_SRC_PATH)/, $(client_SRC)) > client_depends
+robot: robot_depend robot_release_objects
+	@echo "Building RELEASE --------------------------------------------------------------------------------"
+	$(shell cd $(robot_RELEASE_PATH)/; $(robot_COMPILER) -o $(robot_EXECUTABLE) $(robot_RELEASE_OBJ))
+	@echo "Building robot COMPLETE --------------------------------------------------------------"
 
-client_release_objects:
-	@echo "Building relase objects ----------------------"
-	$(shell cd $(client_RELEASE_OBJ_PATH); $(client_COMPILER) -c -I$(client_INCLUDE_PATH) $(addprefix $(client_SRC_PATH)/, $(client_SRC)))
+robot_debug: robot_depend robot_debug_objects
+	@echo "Building DEBUG ----------------------------------------------------------------------------------"
+	$(shell cd $(robot_DEBUG_PATH)/; $(robot_COMPILER) -g -o $(robot_EXECUTABLE) $(robot_DEBUG_OBJ))
+	@echo "Building DEBUG robot COMPLETE --------------------------------------------------------"
 
-client_debug_objects:
-	@echo "Building debug objects ----------------------"
-	$(shell cd $(client_DEBUG_OBJ_PATH); $(client_COMPILER) -c -I$(client_INCLUDE_PATH) $(addprefix $(client_SRC_PATH)/, $(client_SRC)))
+robot_depend:
+	@echo "Compiling robot dependancy list  -----------------------------------------------------"
+	$(robot_COMPILER) -I$(robot_INCLUDE_PATH)/ -M $(addprefix $(robot_SRC_PATH)/, $(robot_SRC)) > robot_depends
+	@echo "Compiling robot dependancy list COMPLETE ---------------------------------------------"
 
-clean:
-	@echo "Cleaning ALL ----------------------"
-	rm client_depends $(client_RELEASE_PATH)/$(client_EXECUTABLE) $(client_DEBUG_PATH)/$(client_EXECUTABLE) $(client_RELEASE_OBJ_PATH)/*.o $(client_DEBUG_OBJ_PATH)/*.o
 
-clean_release:
-	@echo "Cleaning release ----------------------"
-	rm client_depends $(client_RELEASE_PATH)/$(client_EXECUTABLE)  $(client_RELEASE_OBJ_PATH)/*.o 
+robot_release_objects:
+	@echo "Building robot release objects -------------------------------------------------------"
+	$(shell cd $(robot_RELEASE_OBJ_PATH); $(robot_COMPILER) -c -I$(robot_INCLUDE_PATH) $(addprefix $(robot_SRC_PATH)/, $(robot_SRC)))
+	@echo "Building {{PROJECT_NAEM}} release objects COMPLETE ----------------------------------------------"
 
-clean_debug:
-	@echo "Cleaning debug ----------------------"
-	rm client_depends $(client_DEBUG_PATH)/$(client_EXECUTABLE)  $(client_DEBUG_OBJ_PATH)/*.o
+robot_debug_objects:
+	@echo "Building robot debug objects ---------------------------------------------------------"
+	$(shell cd $(robot_DEBUG_OBJ_PATH); $(robot_COMPILER) -c -I$(robot_INCLUDE_PATH) $(addprefix $(robot_SRC_PATH)/, $(robot_SRC)))
+	@echo "Building robot debug objects COMPLETE ------------------------------------------------"
+robot_clean:
+	@echo "Cleaning robot ALL -------------------------------------------------------------------"
+	rm robot_depends $(robot_RELEASE_PATH)/$(robot_EXECUTABLE) $(robot_DEBUG_PATH)/$(robot_EXECUTABLE) $(robot_RELEASE_OBJ_PATH)/*.o $(robot_DEBUG_OBJ_PATH)/*.o
+	@echo "Cleaning robot ALL -------------------------------------------------------------------"
 
--include client_depends
+robot_clean_release:
+	@echo "Cleaning robot release ---------------------------------------------------------------"
+	rm robot_depends $(robot_RELEASE_PATH)/$(robot_EXECUTABLE)  $(robot_RELEASE_OBJ_PATH)/*.o 
+	@echo "Cleaning robot release COMPLETE ------------------------------------------------------"
+
+robot_clean_debug:
+	@echo "Cleaning robot debug ------------------------------------------------------------------"
+	rm robot_depends $(robot_DEBUG_PATH)/$(robot_EXECUTABLE)  $(robot_DEBUG_OBJ_PATH)/*.o
+	@echo "Cleaning robot debug COMPLETE ---------------------------------------------------------"
+
+-include robot_depends
 
 
 

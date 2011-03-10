@@ -22,36 +22,44 @@ grid_DEBUG_OBJ = $(addprefix $(grid_DEBUG_OBJ_PATH)/, $(grid_SRC:.cpp=.o))
 
 
 grid: grid_depend grid_release_objects
-	@echo "Building RELEASE ----------------------"
+	@echo "Building RELEASE --------------------------------------------------------------------------------"
 	$(shell cd $(grid_RELEASE_PATH)/; $(grid_COMPILER) -o $(grid_EXECUTABLE) $(grid_RELEASE_OBJ))
+	@echo "Building grid COMPLETE --------------------------------------------------------------"
 
 grid_debug: grid_depend grid_debug_objects
-	@echo "Building DEBUG ----------------------"
+	@echo "Building DEBUG ----------------------------------------------------------------------------------"
 	$(shell cd $(grid_DEBUG_PATH)/; $(grid_COMPILER) -g -o $(grid_EXECUTABLE) $(grid_DEBUG_OBJ))
+	@echo "Building DEBUG grid COMPLETE --------------------------------------------------------"
 
 grid_depend:
-	@echo "Compiling dependancy list  ----------------------"
+	@echo "Compiling grid dependancy list  -----------------------------------------------------"
 	$(grid_COMPILER) -I$(grid_INCLUDE_PATH)/ -M $(addprefix $(grid_SRC_PATH)/, $(grid_SRC)) > grid_depends
+	@echo "Compiling grid dependancy list COMPLETE ---------------------------------------------"
+
 
 grid_release_objects:
-	@echo "Building relase objects ----------------------"
+	@echo "Building grid release objects -------------------------------------------------------"
 	$(shell cd $(grid_RELEASE_OBJ_PATH); $(grid_COMPILER) -c -I$(grid_INCLUDE_PATH) $(addprefix $(grid_SRC_PATH)/, $(grid_SRC)))
+	@echo "Building {{PROJECT_NAEM}} release objects COMPLETE ----------------------------------------------"
 
 grid_debug_objects:
-	@echo "Building debug objects ----------------------"
+	@echo "Building grid debug objects ---------------------------------------------------------"
 	$(shell cd $(grid_DEBUG_OBJ_PATH); $(grid_COMPILER) -c -I$(grid_INCLUDE_PATH) $(addprefix $(grid_SRC_PATH)/, $(grid_SRC)))
-
-clean:
-	@echo "Cleaning ALL ----------------------"
+	@echo "Building grid debug objects COMPLETE ------------------------------------------------"
+grid_clean:
+	@echo "Cleaning grid ALL -------------------------------------------------------------------"
 	rm grid_depends $(grid_RELEASE_PATH)/$(grid_EXECUTABLE) $(grid_DEBUG_PATH)/$(grid_EXECUTABLE) $(grid_RELEASE_OBJ_PATH)/*.o $(grid_DEBUG_OBJ_PATH)/*.o
+	@echo "Cleaning grid ALL -------------------------------------------------------------------"
 
-clean_release:
-	@echo "Cleaning release ----------------------"
+grid_clean_release:
+	@echo "Cleaning grid release ---------------------------------------------------------------"
 	rm grid_depends $(grid_RELEASE_PATH)/$(grid_EXECUTABLE)  $(grid_RELEASE_OBJ_PATH)/*.o 
+	@echo "Cleaning grid release COMPLETE ------------------------------------------------------"
 
-clean_debug:
-	@echo "Cleaning debug ----------------------"
+grid_clean_debug:
+	@echo "Cleaning grid debug ------------------------------------------------------------------"
 	rm grid_depends $(grid_DEBUG_PATH)/$(grid_EXECUTABLE)  $(grid_DEBUG_OBJ_PATH)/*.o
+	@echo "Cleaning grid debug COMPLETE ---------------------------------------------------------"
 
 -include grid_depends
 

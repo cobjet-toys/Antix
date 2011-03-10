@@ -22,36 +22,44 @@ drawer_DEBUG_OBJ = $(addprefix $(drawer_DEBUG_OBJ_PATH)/, $(drawer_SRC:.cpp=.o))
 
 
 drawer: drawer_depend drawer_release_objects
-	@echo "Building RELEASE ----------------------"
+	@echo "Building RELEASE --------------------------------------------------------------------------------"
 	$(shell cd $(drawer_RELEASE_PATH)/; $(drawer_COMPILER) -o $(drawer_EXECUTABLE) $(drawer_RELEASE_OBJ))
+	@echo "Building drawer COMPLETE --------------------------------------------------------------"
 
 drawer_debug: drawer_depend drawer_debug_objects
-	@echo "Building DEBUG ----------------------"
+	@echo "Building DEBUG ----------------------------------------------------------------------------------"
 	$(shell cd $(drawer_DEBUG_PATH)/; $(drawer_COMPILER) -g -o $(drawer_EXECUTABLE) $(drawer_DEBUG_OBJ))
+	@echo "Building DEBUG drawer COMPLETE --------------------------------------------------------"
 
 drawer_depend:
-	@echo "Compiling dependancy list  ----------------------"
+	@echo "Compiling drawer dependancy list  -----------------------------------------------------"
 	$(drawer_COMPILER) -I$(drawer_INCLUDE_PATH)/ -M $(addprefix $(drawer_SRC_PATH)/, $(drawer_SRC)) > drawer_depends
+	@echo "Compiling drawer dependancy list COMPLETE ---------------------------------------------"
+
 
 drawer_release_objects:
-	@echo "Building relase objects ----------------------"
+	@echo "Building drawer release objects -------------------------------------------------------"
 	$(shell cd $(drawer_RELEASE_OBJ_PATH); $(drawer_COMPILER) -c -I$(drawer_INCLUDE_PATH) $(addprefix $(drawer_SRC_PATH)/, $(drawer_SRC)))
+	@echo "Building {{PROJECT_NAEM}} release objects COMPLETE ----------------------------------------------"
 
 drawer_debug_objects:
-	@echo "Building debug objects ----------------------"
+	@echo "Building drawer debug objects ---------------------------------------------------------"
 	$(shell cd $(drawer_DEBUG_OBJ_PATH); $(drawer_COMPILER) -c -I$(drawer_INCLUDE_PATH) $(addprefix $(drawer_SRC_PATH)/, $(drawer_SRC)))
-
-clean:
-	@echo "Cleaning ALL ----------------------"
+	@echo "Building drawer debug objects COMPLETE ------------------------------------------------"
+drawer_clean:
+	@echo "Cleaning drawer ALL -------------------------------------------------------------------"
 	rm drawer_depends $(drawer_RELEASE_PATH)/$(drawer_EXECUTABLE) $(drawer_DEBUG_PATH)/$(drawer_EXECUTABLE) $(drawer_RELEASE_OBJ_PATH)/*.o $(drawer_DEBUG_OBJ_PATH)/*.o
+	@echo "Cleaning drawer ALL -------------------------------------------------------------------"
 
-clean_release:
-	@echo "Cleaning release ----------------------"
+drawer_clean_release:
+	@echo "Cleaning drawer release ---------------------------------------------------------------"
 	rm drawer_depends $(drawer_RELEASE_PATH)/$(drawer_EXECUTABLE)  $(drawer_RELEASE_OBJ_PATH)/*.o 
+	@echo "Cleaning drawer release COMPLETE ------------------------------------------------------"
 
-clean_debug:
-	@echo "Cleaning debug ----------------------"
+drawer_clean_debug:
+	@echo "Cleaning drawer debug ------------------------------------------------------------------"
 	rm drawer_depends $(drawer_DEBUG_PATH)/$(drawer_EXECUTABLE)  $(drawer_DEBUG_OBJ_PATH)/*.o
+	@echo "Cleaning drawer debug COMPLETE ---------------------------------------------------------"
 
 -include drawer_depends
 

@@ -1,12 +1,11 @@
 common_COMPILER = g++
 
-common_SRC = Client.cpp Packer.cpp Server.cpp TcpConnection.cpp 
-common_LIBRARY = libcommon.a
+common_SRC = 
+common_EXECUTABLE = common.bin
 
 # ----- do not edit under this line unless you know what you are doing :)
 
-PWD = $(shell pwd)/$(ROOT_DIR)
-
+PWD = $(shell pwd)
 common_INCLUDE_PATH = $(PWD)/includes
 common_SRC_PATH = $(PWD)/src
 
@@ -22,37 +21,45 @@ common_DEBUG_OBJ = $(addprefix $(common_DEBUG_OBJ_PATH)/, $(common_SRC:.cpp=.o))
 
 
 
-libcommon.a: common_depend common_release_objects
-	@echo "Building COMMON LIBRARY ---------------------"
-	ar cvq $(common_RELEASE_PATH)/$(common_LIBRARY) $(common_RELEASE_OBJ)
+common: common_depend common_release_objects
+	@echo "Building RELEASE --------------------------------------------------------------------------------"
+	$(shell cd $(common_RELEASE_PATH)/; $(common_COMPILER) -o $(common_EXECUTABLE) $(common_RELEASE_OBJ))
+	@echo "Building common COMPLETE --------------------------------------------------------------"
 
-libcommon_debug.a: common_depend common_debug_objects
-	@echo "Building DEBUG COMMON LIBRARY ---------------"
-	ar cvq $(common_DEBUG_PATH)/$(common_LIBRARY) $(common_DEBUG_OBJ)
+common_debug: common_depend common_debug_objects
+	@echo "Building DEBUG ----------------------------------------------------------------------------------"
+	$(shell cd $(common_DEBUG_PATH)/; $(common_COMPILER) -g -o $(common_EXECUTABLE) $(common_DEBUG_OBJ))
+	@echo "Building DEBUG common COMPLETE --------------------------------------------------------"
 
 common_depend:
-	@echo "Compiling dependancy list  ------------------"
+	@echo "Compiling common dependancy list  -----------------------------------------------------"
 	$(common_COMPILER) -I$(common_INCLUDE_PATH)/ -M $(addprefix $(common_SRC_PATH)/, $(common_SRC)) > common_depends
+	@echo "Compiling common dependancy list COMPLETE ---------------------------------------------"
+
 
 common_release_objects:
-	@echo "Building relase objects ---------------------"
+	@echo "Building common release objects -------------------------------------------------------"
 	$(shell cd $(common_RELEASE_OBJ_PATH); $(common_COMPILER) -c -I$(common_INCLUDE_PATH) $(addprefix $(common_SRC_PATH)/, $(common_SRC)))
+	@echo "Building {{PROJECT_NAEM}} release objects COMPLETE ----------------------------------------------"
 
 common_debug_objects:
-	@echo "Building debug objects ----------------------"
+	@echo "Building common debug objects ---------------------------------------------------------"
 	$(shell cd $(common_DEBUG_OBJ_PATH); $(common_COMPILER) -c -I$(common_INCLUDE_PATH) $(addprefix $(common_SRC_PATH)/, $(common_SRC)))
-
+	@echo "Building common debug objects COMPLETE ------------------------------------------------"
 common_clean:
-	@echo "Cleaning ALL ----------------------"
-	rm common_depends $(common_RELEASE_PATH)/$(common_LIBRARY) $(common_DEBUG_PATH)/$(common_LIBRARY) $(common_RELEASE_OBJ_PATH)/*.o $(common_DEBUG_OBJ_PATH)/*.o
+	@echo "Cleaning common ALL -------------------------------------------------------------------"
+	rm common_depends $(common_RELEASE_PATH)/$(common_EXECUTABLE) $(common_DEBUG_PATH)/$(common_EXECUTABLE) $(common_RELEASE_OBJ_PATH)/*.o $(common_DEBUG_OBJ_PATH)/*.o
+	@echo "Cleaning common ALL -------------------------------------------------------------------"
 
 common_clean_release:
-	@echo "Cleaning release ----------------------"
-	rm common_depends $(common_RELEASE_PATH)/$(common_LIBRARY)  $(common_RELEASE_OBJ_PATH)/*.o 
+	@echo "Cleaning common release ---------------------------------------------------------------"
+	rm common_depends $(common_RELEASE_PATH)/$(common_EXECUTABLE)  $(common_RELEASE_OBJ_PATH)/*.o 
+	@echo "Cleaning common release COMPLETE ------------------------------------------------------"
 
 common_clean_debug:
-	@echo "Cleaning debug ----------------------"
-	rm common_depends $(common_DEBUG_PATH)/$(common_LIBRARY)  $(common_DEBUG_OBJ_PATH)/*.o
+	@echo "Cleaning common debug ------------------------------------------------------------------"
+	rm common_depends $(common_DEBUG_PATH)/$(common_EXECUTABLE)  $(common_DEBUG_OBJ_PATH)/*.o
+	@echo "Cleaning common debug COMPLETE ---------------------------------------------------------"
 
 -include common_depends
 
