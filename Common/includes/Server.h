@@ -16,7 +16,7 @@ class Server
 public:
     Server();
     virtual int handler(int fd) = 0;
-    virtual int init(const char* port);
+    virtual int init(const char* port, int maxConnections=-1);
 	void start();
 	
 private:

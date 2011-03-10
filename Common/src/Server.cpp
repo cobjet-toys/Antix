@@ -5,8 +5,8 @@
 #include <sys/socket.h>
 #include <sys/epoll.h>
 
-
 using namespace Network;
+
 
 Server::Server()
 {
@@ -14,10 +14,14 @@ Server::Server()
     m_Clients.clear();
     m_ServerConn = TcpConnection(); 
 	m_epfd = -1;
+	m_servers_total = 0;
+	m_servers_connected = 0;
 }
 
-int Server::init(const char* port)
+int Server::init(const char* port, int maxConnections)
 {
+	m_servers_total = maxConnections;
+	
     printf("Attempting to create a server socket on port: %s\n", port);
     m_epfd = epoll_create(10);
 	if (m_epfd < 0 ) return -1;
@@ -156,7 +160,7 @@ void Server::start()
 		{
 			if (e[i].data.fd == m_ServerConn.getSocketFd()) // new connection
 			{
-				if (m_servers_connected < m_servers_total)
+				if (m_servers_connected < m_servers_total || m_servers_total == -1)
 				{
 					TcpConnection * temp = m_ServerConn.accept();
 					if (temp != NULL)
@@ -173,6 +177,7 @@ void Server::start()
 						else
 						{
 							printf("A client connected.\n");
+							m_servers_connected += 1;
 						}
 					}
 				} else {
