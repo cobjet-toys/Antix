@@ -12,8 +12,6 @@ int RobotClient::handler(int fd)
 {
 	printf("handeling fd %i\n", fd);
 	//TcpConnection * l_curConnection = m_Clients[fd];
-    while (1)
-    {
-    }    
+     
     return 0;
 }
