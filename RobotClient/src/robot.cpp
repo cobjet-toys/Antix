@@ -13,15 +13,21 @@ const char usage[] = "Required arguments for the RobotClient:\n"
 int main(int argc, char** argv)
 {
 
-Network::RobotClient rclient;
+    if (argc <3)
+    {
+        printf("Specify IP and Port\n");
+        return -1;
+    }
 
-rclient.init();
+    Network::RobotClient rclient;
 
-//Connect to the clock
-rclient.initConnection("127.0.0.1","13337");
+    rclient.init();
 
-rclient.start();
+    //Connect to the clock
+    rclient.initConnection(argv[1], argv[2]);
 
+    rclient.start();
+/*
 char* server_info_file = NULL;
 char* system_config_file = NULL;
 int client_num = -1;
@@ -59,7 +65,7 @@ int client_num = -1;
 		puts( usage );
 		exit(-1); // error
 	}
-
+*/
 	//printf(usage);
     return 0;
 }

@@ -7,7 +7,7 @@
 namespace Network
 {
 	
-typedef std::map<int, TcpConnection*> TcpMap;
+typedef std::map<int, bool> clientMap;
 
 class ClockServer: public Server
 {
@@ -18,6 +18,7 @@ public:
 
 private:
 	uint16_t m_heartbeat;
+	clientMap m_clientMap; 
 };
 }
 
