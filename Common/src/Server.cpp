@@ -180,7 +180,8 @@ void Server::start()
 						{
 							printf("A client connected.\n");
 							m_servers_connected += 1;
-							if (m_servers_total != -1 && m_servers_connected == m_servers_total) m_ready = true;
+							if (m_servers_total != -1 && m_servers_connected == m_servers_total) 
+                                m_ready = true;
 						}
 					}
 				} else {

@@ -1,5 +1,5 @@
 #ifndef MESSAGES_H_
-#define MESSAGES_H
+#define MESSAGES_H_
 
 //New messages should be added to this header file.//Use int32_t for message members to ensure the same bit size on all machines.
 //All messages should contain a static const member named 'size'.
@@ -46,6 +46,7 @@ typedef struct
 	uint16_t message;
 	static const size_t size = 4;
 } Msg_header;
+static const char* Msg_header_format = "hh";
 
 // Assign An ID to a Controller
 // MSG_ASSIGN_ID = 0
@@ -59,10 +60,10 @@ typedef struct
 // MSG_HEARTBEAT = 1
 typedef struct
 {
-    uint16_t hb;
-    static const size_t size = 2;
+    char hb;
+    static const size_t size = 1;
 } Msg_HB;
-
+static const char* Msg_HB_format = "c";
 // Tells A GridServer To Initialize A Team With Robots And It's Client
 // Tell A Client To Connect To A GridServer And Control A Team
 // MSG_INITTEAM = 2
