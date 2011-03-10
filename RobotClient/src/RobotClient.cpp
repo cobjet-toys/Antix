@@ -43,7 +43,7 @@ int RobotClient::handler(int fd)
 
                     //Unpack heartbeat message into our buffer.
                     unpack(l_Buffer, Msg_HB_format, &l_HB.hb);
-                    printf("Hearbeat character: %c\n", l_HB.hb);
+                    printf("Hearbeat character: %d\n", l_HB.hb);
                      
                     //
                     //WORK GOES HERE--------------------------------------------------
@@ -83,7 +83,7 @@ int RobotClient::handler(int fd)
                     
                     //Prepare to send heartbeat.
                     //Set heartbeat.
-                    l_HB.hb = '?';
+                    l_HB.hb = 9;
                    
                     //Pack the hearbeat into the header message buffer.
                     if (pack(l_Buffer, Msg_HB_format, l_HB.hb) != l_HB.size)
