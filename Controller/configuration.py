@@ -8,14 +8,14 @@ CLIENT_BUILD_COMMAND = ""
 
 # Server settings
 GRID_RUN_COMMAND = "hostname"
-GRID_PORT = "13337"
+GRID_PORT = "13337" # for simplicity, every subsequent grid will use port +1
 # the controller will cd to antix Path + this  directory and call "make":
 GRID_BUILD_DIR = ""
 GRID_BUILD_COMMAND = ""
 
 # Clock settings
 CLOCK_RUN_COMMAND = "hostname"
-CLOCK_PORT = "13338"
+CLOCK_PORT = "13437" # for simplicity, every subseqent clock will use port +1
 # the controller will cd to antix Path + this  directory and call "make":
 CLOCK_BUILD_DIR = ""
 CLOCK_BUILD_COMMAND = ""
