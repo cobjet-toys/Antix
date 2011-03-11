@@ -119,7 +119,7 @@ int TcpConnection::send(unsigned char * message, int messageSize)
 		perror("Invalid addrinfo or socket");
 		return -2;
 	} 
-	printf("preparing to send\n");
+	//printf("preparing to send\n");
     int l_Total = 0, l_BytesLeft = messageSize, l_Sent = 0;
 
     while(l_Total < l_BytesLeft)
@@ -131,7 +131,7 @@ int TcpConnection::send(unsigned char * message, int messageSize)
             break;
         l_Total += l_Sent;
         l_BytesLeft -= l_Sent;
-		printf("send left = %i\n",l_BytesLeft);		
+		//printf("send left = %i\n",l_BytesLeft);		
     }
     
     return l_Sent==-1?-1:0;
@@ -139,25 +139,25 @@ int TcpConnection::send(unsigned char * message, int messageSize)
 
 int TcpConnection::recv(unsigned char * message, int messageSize)
 {
-    printf("Expected message size: %d\n", messageSize);
+    //printf("Expected message size: %d\n", messageSize);
 	if (m_socketfd == -1)
 	{
 		perror("Invalid addrinfo or socket");
 		return -2;
 	} 
-	printf("preparing to recv\n");	
+	//printf("preparing to recv\n");	
     int l_Total = 0, l_BytesLeft = messageSize, l_Rcvd = 0;
 
     while(l_Total < messageSize)
     {
         l_Rcvd = ::recv(m_socketfd, message+l_Total, l_BytesLeft, 0);
-        printf("Received %d bytes\n", l_Rcvd);
+        //printf("Received %d bytes\n", l_Rcvd);
         //Check for error.
         if (l_Rcvd == -1)
             break;
         l_Total += l_Rcvd;
         l_BytesLeft -= l_Rcvd;
-		printf("recv left = %i\n",l_BytesLeft);	
+		//printf("recv left = %i\n",l_BytesLeft);	
     }
 
     return l_Rcvd==-1?-1:0;	

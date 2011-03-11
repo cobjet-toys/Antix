@@ -24,6 +24,8 @@ private:
 	uint16_t m_heartbeat;
 	clientMap m_clientMap; 
 	clientList m_clientList;
+	uint16_t m_beat;
+	int m_responded;
 };
 }
 
