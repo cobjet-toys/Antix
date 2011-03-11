@@ -4,6 +4,7 @@
 #include "Client.h"
 #include "Messages.h"
 #include "Packer.h"
+#include <vector>
 
 namespace Network
 {
@@ -13,9 +14,11 @@ class RobotClient: public Client
 public:
     RobotClient();
     virtual int handler(int fd);
+    int processRobots();
+    int initGrid(const char * host, const char * port);
 
 private:
-	uint16_t m_heartbeat;
+	std::vector<int> m_Grids;
 };
 }
 

@@ -106,7 +106,7 @@ int Network::Client::initConnection(const char* host, const char* port)
 		return -1;
 	}
 	
-	return 0;
+	return fileDesc;
 
 }
 

@@ -36,7 +36,8 @@ enum
 	MSG_CLIENTBOUNDRY = 12,
 	MSG_DRAWROBOT = 13,
 	MSG_DRAWPUCK = 14,
-	MSG_INITDRAWER = 15
+	MSG_INITDRAWER = 15,
+    MSG_REQUESTSENSORDATA = 16
 };
 
 // Header Message to Identify What Kind Of Message Is Being Sent and Who It Came From
@@ -67,6 +68,14 @@ static const char* Msg_HB_format = "h";
 // Tells A GridServer To Initialize A Team With Robots And It's Client
 // Tell A Client To Connect To A GridServer And Control A Team
 // MSG_INITTEAM = 2
+
+typedef struct
+{
+    uint32_t id;
+    static const size_t size = 4;
+} Msg_RequestSensorData;
+static const char* Msg_RequestSensorData_format = "l";
+
 typedef struct
 {
 	uint32_t uId;					//ID Of The Gride Your Team Is Located In

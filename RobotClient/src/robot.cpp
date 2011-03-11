@@ -23,7 +23,10 @@ int main(int argc, char** argv)
 
     rclient.init();
 
-    //Connect to the clock
+    //TODO Get grid servers
+    //rclient.initGrid()
+
+    //Connect to the cloc
     rclient.initConnection(argv[1], argv[2]);
 
     rclient.start();

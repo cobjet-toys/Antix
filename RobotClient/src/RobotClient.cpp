@@ -12,7 +12,46 @@ static int Timesteps = 0;
 
 RobotClient::RobotClient():Client()
 {
-	m_heartbeat = 0;
+}
+
+int RobotClient::processRobots()
+{
+    Msg_RequestSensorData l_Req;
+    unsigned char l_Buffer[l_Req.size];
+
+    std::vector<int>::const_iterator l_GridEnd = m_Grids.end();
+    for (std::vector<int>::const_iterator it = m_Grids.begin(); it != l_GridEnd; it++)
+    {
+        l_Req.id = 123456;
+        if (pack(l_Buffer, Msg_RequestSensorData_format, l_Req.id) != l_Req.size)
+        {
+            DEBUGPRINT("Error packing sensor request message\n");
+            return -1;
+        }
+    
+        for (;;)
+        {
+            if (m_serverList[(*it)]->send(l_Buffer, l_Req.size) == 0)
+            {
+                DEBUGPRINT("Sent request for sensor data\n");
+                break;
+            }
+        }    
+    } 
+    return 0;
+}
+
+int RobotClient::initGrid(const char* host, const char* port)
+{
+    int l_GridFd = initConnection(host, port);
+
+    if (l_GridFd < 0)
+    {
+        DEBUGPRINT("Failed creating connection to a grid server\n");
+    }
+    m_Grids.push_back(l_GridFd);
+
+    return l_GridFd;
 }
 
 int RobotClient::handler(int fd)
@@ -78,6 +117,7 @@ int RobotClient::handler(int fd)
                     //
                     //WORK GOES HERE--------------------------------------------------
                     //
+                    processRobots();
 
                     //Prepare our 'header' message.
                     //Set the robot client as the sender
@@ -124,6 +164,15 @@ int RobotClient::handler(int fd)
             }
             break;
         case(SENDER_GRIDSERVER):
+            switch(l_Header.message)
+            {
+                case(MSG_ROBOTSENSORDATA) :
+                    {
+                        //
+                        //PROCESS SENSOR DATA
+                        //
+                    }
+            }
             break;
     }
 
