@@ -8,7 +8,7 @@ Network::Client::Client()
 
 int Network::Client::init()
 {
-	if ((m_epfd = epoll_create(10)) < 0)
+	if ((m_epfd = epoll_create(1000)) < 0)
 	{
 		if (DEBUG) printf("Could not create epoll");
 		return -1;
@@ -100,7 +100,7 @@ int Network::Client::initConnection(const char* host, const char* port)
 		if (DEBUG) printf("Could not set socket to non-blocking\n");
 	}
 	
-	if( addHandler(fileDesc, EPOLLET|EPOLLIN|EPOLLHUP, conn ) == -1)
+	if( addHandler(fileDesc, EPOLLET|EPOLLIN|EPOLLHUP|EPOLLPRI, conn ) == -1)
 	{
 		if (DEBUG) printf("Could not add handler to tcpConnection");
 		return -1;
@@ -149,22 +149,17 @@ int Network::Client::setnonblock(int fd)
 
 int Network::Client::start()
 {
+    epoll_event * e = new epoll_event[1000];
     for (;;)
 	{
-      	epoll_event * e = new epoll_event[10];
-		int nfd;		
+      	int nfd;		
 		nfd = epoll_wait(m_epfd, e, 1000, 0);
         //printf("nfd: %i\n", nfd);
         for (int i = 0; i < nfd; i++)
         {    
-	    	if (e[i].events & EPOLLRDHUP || e[i].events & EPOLLHUP || e[i].events & EPOLLERR)
+            if (e[i].events & EPOLLIN)
 	    	{
-	            printf("Client Hangup/Error \n");
-	    		handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL); // @todo add error checking
-	    	} 
-           else if (e[i].events & EPOLLIN) 
-           {
-		    	printf("Handling \n");
+	            printf("Handling \n");
 		    	int ret = handler(e[i].data.fd);
 		    	printf("Handler returned %i\n", ret);
 		    	if (ret < 0)
@@ -174,10 +169,17 @@ int Network::Client::start()
 				    	return -1;
 				    }
 			    }
+            } 
+           else if (e[i].events & EPOLLRDHUP || e[i].events & EPOLLHUP || e[i].events & EPOLLERR) 
+           {
+		    	printf("Client Hangup/Error \n");
+	    		handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL); // @todo add error checking
+
 		   }
         }
-        delete e;
     }
+    delete []e;
+
 	return 0;
 }
 
