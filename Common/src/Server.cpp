@@ -25,7 +25,7 @@ int Server::init(const char* port, int maxConnections)
 	if (maxConnections == -1) m_ready = true;
 	
     printf("Attempting to create a server socket on port: %s\n", port);
-    m_epfd = epoll_create(10);
+    m_epfd = epoll_create(1000);
 	if (m_epfd < 0 ) return -1;
     //Copy the port to m_Port.
     size_t l_PortSize = strlen(port);
@@ -125,7 +125,7 @@ int Server::init(const char* port, int maxConnections)
 	int fileDesc = m_ServerConn.getSocketFd();
 	
 	this->setnonblock(fileDesc); // @ todo check for errors
-	this->addHandler(fileDesc, EPOLLIN, &m_ServerConn); //@ todo check for errors
+	this->addHandler(fileDesc, EPOLLIN|EPOLLET, &m_ServerConn); //@ todo check for errors
 	
     printf("Server initialized and listening on port: %s\n", m_Port);
 	
@@ -151,15 +151,15 @@ int Server::addHandler(int fd, unsigned int events, TcpConnection * connection)
 
 int Server::start()
 {
+	epoll_event * e = new epoll_event[1000];
+	if (e == NULL) return -1;
+
 	for (;;)
 	{
-		epoll_event * e = new epoll_event[1000];
-		
-		if (e == NULL) return -1;
 		
 		int nfd, l_ret;
-		nfd = epoll_wait(m_epfd, e, 1000, 0);
-        //printf("nfd: %i %d\n", nfd, m_ready);
+		nfd = epoll_wait(m_epfd, e, 1000, -1);
+        printf("nfd: %i %d\n", nfd, m_ready);
 
 		for (int i = 0; i < nfd ; i++)
 		{
@@ -222,9 +222,8 @@ int Server::start()
 				}
 			}
 		}
-        delete e;
 	}
-	
+    delete [] e;
 	return 0;
 }
 

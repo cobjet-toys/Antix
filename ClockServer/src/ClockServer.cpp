@@ -120,11 +120,11 @@ int Network::ClockServer::allConnectionReadyHandler()
 	} else {
 		m_beat = 1;
 	}
-	//printf("beat = %u\n", m_beat);
+	printf("beat = %u\n", m_beat);
 	l_heartBeat.hb = m_beat;
 	
 	//printf("Total Clients to send Hb: %i\n",m_clientList.size());
-	
+
 	for(std::vector<int>::const_iterator it = m_clientList.begin(); it != l_End; it++)
 	{
 		//printf("Prepairing heartbeat\n");
@@ -143,31 +143,19 @@ int Network::ClockServer::allConnectionReadyHandler()
 			return -1; // didn't pack all bytes FAIL & ABORT!!
 		}
 		
-		for (i = 0; i < 10000; i++)
+		for (;;)
 		{
 			if (conn->send(msg, l_header.size) == 0) break;
 		}
-		
-		if (i == 100) 
-		{
-			printf("init failed to send header\n");
-			return -1; // failed to send msg
-		}
-		
+
 		if (pack(msg, Msg_HB_format, l_heartBeat.hb) != l_heartBeat.size)
 		{
 			return -1; // didn't pack all bytes FAIL & ABORT!!
 		}
 		
-		for (i = 0; i < 10000; i++)
+		for (;;)
 		{
 			if (conn->send(msg, l_heartBeat.size) == 0) break;
-		}
-		
-		if (i == 100) 
-		{
-			printf("init failed to send msg\n");
-			return -1; // failed to send msg
 		}
 		
 		//printf("Sent heartbeat %hd\n", l_heartBeat.hb);
