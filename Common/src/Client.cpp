@@ -153,8 +153,8 @@ int Network::Client::start()
 	{
       	epoll_event * e = new epoll_event[10];
 		int nfd;		
-		nfd = epoll_wait(m_epfd, e, 10, 500);
-        printf("nfd: %i\n", nfd);
+		nfd = epoll_wait(m_epfd, e, 10, 0);
+        //printf("nfd: %i\n", nfd);
         for (int i = 0; i < nfd; i++)
         {    
 	    	if (e[i].events & EPOLLRDHUP || e[i].events & EPOLLHUP || e[i].events & EPOLLERR)

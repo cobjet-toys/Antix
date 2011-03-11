@@ -21,7 +21,13 @@ int RobotClient::handler(int fd)
     TcpConnection *l_Conn =  m_serverList[fd];
         
     //Receive from the socket into our buffer.
-    l_Conn->recv(l_Buffer, l_Header.size);
+    for(;;)
+    {
+        if (l_Conn->recv(l_Buffer, l_Header.size) == 0)
+        {
+            printf("Received Header\n");
+        }
+    }
 
     //Unpack the buffer into the 'header' message.
     unpack(l_Buffer, Msg_header_format, &l_Header.sender, &l_Header.message); 
@@ -35,13 +41,17 @@ int RobotClient::handler(int fd)
                 //Message is heart beat.
                 case(MSG_HEARTBEAT) :
                 {
-                    printf("Received a heartbeat from the clock.\n");
+                    printf("Expecting to receive a heartbeat message from the clock.\n");
                     Msg_HB l_HB;
 
                     //Receive the heartbeat message.
-                    while (l_Conn->recv(l_Buffer, l_HB.size) != 0)
+                    for(;;)
                     {
-                        printf("waiting to rcv\n");
+                        if (l_Conn->recv(l_Buffer, l_HB.size) == 0)
+                        {
+                            printf("Received hearbeat\n");
+                        }
+
                     }
 
                     //Unpack heartbeat message into our buffer.
@@ -67,9 +77,8 @@ int RobotClient::handler(int fd)
                         return -1;
                     }
 
-                    //Try to send the header message 100x.
-                    int i ;
-                    for (i = 0; i < 100; i++)
+                    //Try to send the header message.
+                    for (;;)
                     {
                         if(l_Conn->send(l_Buffer, l_Header.size) == 0)
                         {
@@ -77,13 +86,7 @@ int RobotClient::handler(int fd)
                             break;
                         } 
                     }
-
-                    if (i == 100)
-                    {
-                        printf("Couldn't send the header.\n");
-                        return -1;
-                    }
-                    
+                   
                     //Prepare to send heartbeat.
                     //Set heartbeat.
                     l_HB.hb = 9;
@@ -96,19 +99,13 @@ int RobotClient::handler(int fd)
                     }
 
                     //Try to send the heartbeat message 100x.
-                    for (i = 0; i < 100; i++)
+                    for (;;)
                     {
                         if(l_Conn->send(l_Buffer, l_HB.size) == 0)
                         {
                             printf("Sent heartbeat.\n");
                             break;
                         } 
-                    }
-
-                    if (i == 100)
-                    {
-                        printf("Couldn't send the heartbeat.\n");
-                        return -1;
                     }
                 }
             }
