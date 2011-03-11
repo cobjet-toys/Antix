@@ -16,9 +16,14 @@ public:
     virtual int handler(int fd);
     int processRobots();
     int initGrid(const char * host, const char * port);
+    int initClock(const char * host, const char * port);
+    int sendHeaderMessage(TcpConnection* conn, int sender, int message);
 
 private:
 	std::vector<int> m_Grids;
+    uint16_t m_HeartBeat;
+    int m_ClockFd;
+    unsigned int m_ReadyGrids;
 };
 }
 
