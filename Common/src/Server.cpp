@@ -183,12 +183,13 @@ int Server::start()
 						{
 							printf("A client connected.\n");
 							m_servers_connected += 1;
+							if ((l_ret = this->handleNewConnection(fd)) < 0) return l_ret;
+							
 							if (m_servers_total != -1 && m_servers_connected == m_servers_total) 
 							{
 								m_ready = true;
 								if ((l_ret = this->allConnectionReadyHandler()) < 0) return l_ret;
-							}
-							if ((l_ret = this->handleNewConnection(fd)) < 0) return l_ret;
+							}							
 						}
 					}
 				} else {
