@@ -1,6 +1,7 @@
 #include "RobotClient.h"
 #include "Messages.h"
 #include <string.h>
+#include "Config.h"
 
 using namespace Network;
 
@@ -11,7 +12,7 @@ RobotClient::RobotClient():Client()
 
 int RobotClient::handler(int fd)
 {
-	printf("Handling file descriptor: %i\n", fd);
+	DEBUGPRINT("Handling file descriptor: %i\n", fd);
 
     //Create a 'header' message and buffer to receive into.
     Msg_header l_Header;
@@ -25,7 +26,8 @@ int RobotClient::handler(int fd)
     {
         if (l_Conn->recv(l_Buffer, l_Header.size) == 0)
         {
-            printf("Received Header\n");
+            DEBUGPRINT("Received Header\n");
+            break;
         }
     }
 
@@ -41,7 +43,7 @@ int RobotClient::handler(int fd)
                 //Message is heart beat.
                 case(MSG_HEARTBEAT) :
                 {
-                    printf("Expecting to receive a heartbeat message from the clock.\n");
+                    DEBUGPRINT("Expecting to receive a heartbeat message from the clock.\n");
                     Msg_HB l_HB;
 
                     //Receive the heartbeat message.
@@ -49,14 +51,15 @@ int RobotClient::handler(int fd)
                     {
                         if (l_Conn->recv(l_Buffer, l_HB.size) == 0)
                         {
-                            printf("Received hearbeat\n");
+                            DEBUGPRINT("Received hearbeat\n");
+                            break;
                         }
 
                     }
 
                     //Unpack heartbeat message into our buffer.
                     unpack(l_Buffer, Msg_HB_format, &l_HB.hb);
-                    printf("Hearbeat character: %hd\n", l_HB.hb);
+                    DEBUGPRINT("Hearbeat character: %hd\n", l_HB.hb);
                      
                     //
                     //WORK GOES HERE--------------------------------------------------
@@ -71,9 +74,9 @@ int RobotClient::handler(int fd)
 
                     //Pack the sender and messege into the header message buffer.
                     if (pack(l_Buffer, Msg_header_format, 
-                                &l_Header.sender, &l_Header.message) != l_Header.size)
+                                l_Header.sender, l_Header.message) != l_Header.size)
                     {
-                        printf("Failed to pack the header message\n");
+                        DEBUGPRINT("Failed to pack the header message\n");
                         return -1;
                     }
 
@@ -82,19 +85,15 @@ int RobotClient::handler(int fd)
                     {
                         if(l_Conn->send(l_Buffer, l_Header.size) == 0)
                         {
-                            printf("Sent message header.\n");
+                            DEBUGPRINT("Sent message header.\n");
                             break;
                         } 
                     }
                    
-                    //Prepare to send heartbeat.
-                    //Set heartbeat.
-                    l_HB.hb = 9;
-                   
                     //Pack the hearbeat into the header message buffer.
                     if (pack(l_Buffer, Msg_HB_format, l_HB.hb) != l_HB.size)
                     {
-                        printf("Failed to pack the HB message\n");
+                        DEBUGPRINT("Failed to pack the HB message\n");
                         return -1;
                     }
 
@@ -103,7 +102,7 @@ int RobotClient::handler(int fd)
                     {
                         if(l_Conn->send(l_Buffer, l_HB.size) == 0)
                         {
-                            printf("Sent heartbeat.\n");
+                            DEBUGPRINT("Sent heartbeat.\n");
                             break;
                         } 
                     }
