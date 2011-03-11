@@ -3,7 +3,12 @@
 #include <string.h>
 #include "Config.h"
 
+#include <time.h>
+
 using namespace Network;
+
+static time_t init_sec = time(NULL);
+static int Timesteps = 0;
 
 RobotClient::RobotClient():Client()
 {
@@ -12,6 +17,15 @@ RobotClient::RobotClient():Client()
 
 int RobotClient::handler(int fd)
 {
+    time_t curr_sec = time(NULL); 
+    if (curr_sec > init_sec)
+    {
+        printf("Number of timesteps: %d", Timesteps);
+        init_sec = time(NULL);
+        Timesteps = 0;
+    }
+    Timesteps++;
+
 	DEBUGPRINT("Handling file descriptor: %i\n", fd);
 
     //Create a 'header' message and buffer to receive into.
