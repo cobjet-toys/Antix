@@ -153,12 +153,12 @@ int Server::start()
 {
 	for (;;)
 	{
-		epoll_event * e = new epoll_event[10];
+		epoll_event * e = new epoll_event[1000];
 		
 		if (e == NULL) return -1;
 		
 		int nfd, l_ret;
-		nfd = epoll_wait(m_epfd, e, 10, 0);
+		nfd = epoll_wait(m_epfd, e, 1000, 0);
         //printf("nfd: %i %d\n", nfd, m_ready);
 
 		for (int i = 0; i < nfd ; i++)

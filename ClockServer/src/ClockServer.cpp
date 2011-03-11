@@ -120,7 +120,7 @@ int Network::ClockServer::allConnectionReadyHandler()
 	} else {
 		m_beat = 1;
 	}
-	printf("beat = %u\n", m_beat);
+	//printf("beat = %u\n", m_beat);
 	l_heartBeat.hb = m_beat;
 	
 	//printf("Total Clients to send Hb: %i\n",m_clientList.size());
@@ -158,8 +158,6 @@ int Network::ClockServer::allConnectionReadyHandler()
 		{
 			return -1; // didn't pack all bytes FAIL & ABORT!!
 		}
-		
-		printf("%i", l_heartBeat.size);
 		
 		for (i = 0; i < 10000; i++)
 		{
