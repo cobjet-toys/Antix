@@ -1,4 +1,5 @@
 #include "DrawServer.h"
+#include <string>
 
 using namespace Network;
 
@@ -6,13 +7,14 @@ DrawServer* DrawServer::m_instance = NULL;
 
 DrawServer::DrawServer()
 {
-    this->m_posDB = new AntixUtils::Logger();
-    if (this->m_posDB == NULL)
+    this->m_redisCli = new AntixUtils::Logger();
+    if (this->m_redisCli == NULL)
     {
         printf("Redis position DB is not initialized");
         return;
     }
-    this->m_posDB->setDataOnly(true);
+    
+    this->m_redisCli->setDataOnly(true);
 }
 
 DrawServer::~DrawServer() 
@@ -31,52 +33,87 @@ void DrawServer::init(int argc, char** argv)
 {
     this->m_windowSize = 600;
     this->m_worldSize = 1.0;
+    this->m_homeRadius = 1.0;
+    this->m_FOVEnabled = false;
 
-    int teamCount=1, puckCount=0, popCount=0;
-    DrawUtils::parseOptions(argc, argv, &teamCount, &puckCount, &popCount, 
-            &(this->m_windowSize), &(this->m_worldSize), &(this->m_FOVAngle), &(this->m_FOVRange));
-    this->m_teamRadius = 0.0;
-
-    /* Fake generate team data */
-    for(int i=0; i<teamCount; i++)
+    if (argc > 1)
     {
-        Game::Team *team = new Game::Team;
-        team->posX = i*100;
-        team->posY = i*100;
-        team->colR = i;
-        team->colG = i;
-        team->colB = i;
-        this->m_teams.push_back(team);
+        //<window_size> <world_size> <home_radius> <enable_FOV> [ <FOV_angle> <FOV_range> ]
+        this->m_windowSize = atoi(argv[1]);
+        this->m_worldSize = strtof(argv[2], NULL);
+        this->m_homeRadius = strtof(argv[3], NULL);
+        this->m_FOVEnabled = atoi(argv[4]);
+        if (this->m_FOVEnabled)
+        {
+            this->m_FOVAngle = strtof(argv[5], NULL);
+            this->m_FOVRange = strtof(argv[6], NULL);
+        }
     }
+
+    initTeams();
+}
+
+void DrawServer::initTeams()
+{
+    AntixUtils::LogItem * teamData;
+    this->m_redisCli->setLogKey(TEAM_DB_NAME);
+
+    while ((teamData = this->m_redisCli->blpop()) != NULL)
+    {
+        int teamID, colR, colG, colB;
+        float homeX, homeY;
+
+        sscanf(teamData->message.c_str(), TEAM_PATTERN, &teamID, &homeX, &homeY, &colR, &colG, &colB);
+        Game::Team * team = new Game::Team;
+        team->posX = homeX;
+        team->posY = homeY;
+        team->colR = colR;
+        team->colG = colG;
+        team->colB = colB;
+        this->m_teams[teamID] = team;
+    }
+
+    printf("Teams=%d\n", this->m_teams.size());
 }
 
 void DrawServer::update()
 {
     char logKey[16];
-    sprintf(logKey, "%s%d", POS_DB_NAME, (this->m_timestep % MAX_POS_KEYS));
-    this->m_posDB->setLogKey(logKey);
+    sprintf(logKey, "%s%d", POS_DB_NAME, (this->m_framestep % MAX_POS_KEYS));
+    this->m_redisCli->setLogKey(logKey);
     cout << "\n*** LogKey=" << logKey << endl;
 
     this->m_pucks.clear();
     this->m_robots.clear();
 
-    clock_t start = clock();
+    clock_t start = 0;
+    vector<AntixUtils::LogItem> items;
 
-    vector<AntixUtils::LogItem> items = this->m_posDB->logitems();
+    do
+    {
+        if (start != 0)
+        {
+            //TO-DO: is this thread-safe? how will it interact with openGL?
+            sleep(2);
+        }
+        start = clock();
+        items = this->m_redisCli->logitems();
+    } while(items.size() == 0);
+
     for(vector<AntixUtils::LogItem>::iterator it = items.begin(); it!=items.end(); it++)
     {
         const char* msgBuf = (*it).message.c_str();
         float posX, posY, orientation;
-        int team;
+        uint32_t id;
         char hasPuck;
 
-        sscanf(msgBuf, POS_PATTERN, &posX, &posY, &orientation, &team, &hasPuck);
-        if (team == 0)
+        sscanf(msgBuf, POS_PATTERN, &id, &posX, &posY, &orientation, &hasPuck);
+        if (id/TEAM_ID_SHIFT == 0)
         {
             Game::Puck *puck = new Game::Puck;
             puck->posX = posX;
             puck->posY = posY;
-            this->m_pucks.push_back(puck);
+            this->m_pucks[id] = puck;
         }
         else
         {
@@ -84,19 +121,22 @@ void DrawServer::update()
             robot->posX = posX;
             robot->posY = posY;
             robot->orientation = orientation;
-            robot->team = this->m_teams[team-1];
+            robot->team = this->m_teams[id/TEAM_ID_SHIFT];
             robot->hasPuck = hasPuck == 'T';
-            this->m_robots.push_back(robot);
+            this->m_robots[id] = robot;
         }
-        /*
-        printf("%s: %f %f %f %d %c\n",
-                (team==0?"Puck":"Robot"), posX, posY, orientation, team, hasPuck);
+        
+        printf("%s: %d %f %f %f %c\n",
+                (id==0?"Puck":"Robot"), id, posX, posY, orientation, hasPuck);
         //cout << "\tString=" << (*it).message << endl;
         //cout << "\tChar* =" << msgBuf << endl;
-         */
+         /**/
     }
 
+    this->m_redisCli->clear();
+
     double elapsed = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
-    cout << this->m_timestep << ": " << elapsed << "ms (Robots=" << 
-            this->m_robots.size() << ", Pucks=" << this->m_pucks.size() << ")" << endl;
+    printf("%d: %fms (Robots=%d, Pucks=%d)\n",
+            this->m_framestep, elapsed, this->m_robots.size(), this->m_pucks.size());
+    this->m_framestep++;
 }

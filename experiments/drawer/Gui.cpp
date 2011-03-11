@@ -1,4 +1,9 @@
 #include "Gui.h"
+#ifdef __linux
+#include <GL/glut.h>
+#elif __APPLE__
+#include <GLUT/glut.h>
+#endif
 
 
 void idleFunc()
@@ -18,24 +23,24 @@ void displayFunc()
     glLoadIdentity();    
 
     drawTeams();
-    //drawPucks();
-    //drawRobots();
+    drawPucks();
+    drawRobots();
 
     /*
     //Draw the pucks
     for (Game::PuckIter it = Game::Robotix::getInstance()->getFirstPuck();
             it != Game::Robotix::getInstance()->getLastPuck(); it++)
     {
-        (*it)->draw();
+        (*it).second->draw();
     }
     
     for (std::list<Game::Team*>::iterator it = Game::Robotix::getInstance()->getFirstTeam();
             it != Game::Robotix::getInstance()->getLastTeam();it++)
     {
-        (*it)->getHome()->draw();
+        (*it).second->getHome()->draw();
         
-                for (std::list<Game::Robot*>::iterator rt = (*it)->getFirstRobot();
-	    		rt != (*it)->getLastRobot(); rt++)
+                for (std::list<Game::Robot*>::iterator rt = (*it).second->getFirstRobot();
+	    		rt != (*it).second->getLastRobot(); rt++)
 	    {
             (*rt)->draw();
 	    }
@@ -43,12 +48,12 @@ void displayFunc()
      * */
 
     glutSwapBuffers();
-    //glutTimerFunc( 20, timerFunc, 0);
+    glutTimerFunc( 20, timerFunc, 0);
 }
 
 void drawPucks()
 {
-    glColor3f( 1,1,1 ); // green
+    glColor3f( 255, 255, 255 ); // white
 
     glPointSize( 1.0 );
 
@@ -64,8 +69,10 @@ void drawPucks()
     for (Game::PuckIter it = Network::DrawServer::getInstance()->getFirstPuck();
             it != Network::DrawServer::getInstance()->getLastPuck();it++)
     {
-        pts[2*i+0] = (*it)->posX;
-        pts[2*i+1] = (*it)->posY;
+        Game::Puck * puck = (*it).second;
+        
+        pts[2*i+0] = puck->posX;
+        pts[2*i+1] = puck->posY;
         i++;
     }
 
@@ -77,18 +84,20 @@ void drawPucks()
 void drawTeams()
 {
     float worldsize = Network::DrawServer::getInstance()->getWorldSize();
-    float radius = Network::DrawServer::getInstance()->getTeamRadius();
+    float radius = Network::DrawServer::getInstance()->getHomeRadius();
 
     for (Game::TeamIter it = Network::DrawServer::getInstance()->getFirstTeam();
             it != Network::DrawServer::getInstance()->getLastTeam();it++)
     {
-        glColor3f( (*it)->colR, (*it)->colG, (*it)->colB );
+        Game::Team * team = (*it).second;
 
-        GlDrawCircle( (*it)->posX, (*it)->posY, radius, 16 );
-        GlDrawCircle( (*it)->posX+worldsize, (*it)->posY, radius, 16 );
-        GlDrawCircle( (*it)->posX-worldsize, (*it)->posY, radius, 16 );
-        GlDrawCircle( (*it)->posX, (*it)->posY+worldsize, radius, 16 );
-        GlDrawCircle( (*it)->posX, (*it)->posY-worldsize, radius, 16 );
+        glColor3f( team->colR, team->colG, team->colB );
+
+        GlDrawCircle( team->posX, team->posY, radius, 16 );
+        GlDrawCircle( team->posX+worldsize, team->posY, radius, 16 );
+        GlDrawCircle( team->posX-worldsize, team->posY, radius, 16 );
+        GlDrawCircle( team->posX, team->posY+worldsize, radius, 16 );
+        GlDrawCircle( team->posX, team->posY-worldsize, radius, 16 );
     }
 }
 
@@ -96,7 +105,7 @@ void drawRobots()
 {
     int winsize = Network::DrawServer::getInstance()->getWindowSize();
     float worldsize = Network::DrawServer::getInstance()->getWorldSize();
-    float radius = Network::DrawServer::getInstance()->getTeamRadius();
+    float radius = Network::DrawServer::getInstance()->getHomeRadius();
     
     // if robots are smaller than 4 pixels across, draw them as points
     if( (radius * (double)winsize/(double)worldsize) < 2.0 )
@@ -117,12 +126,14 @@ void drawRobots()
         for (Game::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
                 it != Network::DrawServer::getInstance()->getLastRobot();it++)
         {
-            pts[2*i+0] = (*it)->posX;
-            pts[2*i+1] = (*it)->posY;
+            Game::Robot * robot = (*it).second;
 
-            colors[3*i+0] = (*it)->team->colR;
-            colors[3*i+1] = (*it)->team->colG;
-            colors[3*i+2] = (*it)->team->colB;
+            pts[2*i+0] = robot->posX;
+            pts[2*i+1] = robot->posY;
+
+            colors[3*i+0] = robot->team->colR;
+            colors[3*i+1] = robot->team->colG;
+            colors[3*i+2] = robot->team->colB;
 
             i++;
 
@@ -136,7 +147,7 @@ void drawRobots()
         for (Game::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
                 it != Network::DrawServer::getInstance()->getLastRobot();it++)
         {
-            //(*it)->Draw();
+            //(*it).second->Draw();
         }
     }
 
@@ -251,7 +262,7 @@ void initGraphics(int argc, char **argv)
     glutCreateWindow( argv[0] );
     glClearColor( 0.1, 0.1, 0.1, 1 );
     glutDisplayFunc( displayFunc );
-    //glutIdleFunc(idleFunc);
+    glutIdleFunc(idleFunc);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     

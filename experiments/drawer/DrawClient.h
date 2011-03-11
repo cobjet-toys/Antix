@@ -10,8 +10,9 @@ namespace Network
     class DrawClient {
 
 	public:
-	    DrawClient(int homes=1, int pucks=5, int homePop=10);
+	    DrawClient();
 	    virtual ~DrawClient();
+            void init(string db_host="localhost", int homes=1, int pucks=5, int homePop=10);
 	    void update();
 
 	private:

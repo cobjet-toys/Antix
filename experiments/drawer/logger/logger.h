@@ -19,6 +19,7 @@
 #define DEFAULT_PORT    6379
 #define DEFAULT_DBINDEX 0
 #define DEFAULT_LOG_KEY "log"
+#define DEFAULT_TIMEOUT 2
 
 
 using namespace std;
@@ -114,30 +115,20 @@ namespace AntixUtils
     class Logger
     {
     public:
-        Logger( const client::string_type & host = DEFAULT_HOST,
-                uint16_t port = DEFAULT_PORT,
-                client::int_type dbindex = DEFAULT_DBINDEX,
-                string logKey = DEFAULT_LOG_KEY,
-                int maxLogItems = -1,
-                bool clearLog = false) :
-            m_maxLogItems(maxLogItems)
+        Logger(string host = DEFAULT_HOST, uint16_t port = DEFAULT_PORT, int dbindex = DEFAULT_DBINDEX)
         {
             this->m_client = new client(host,port,dbindex);
-            if (this->m_client == NULL)
+            if (!this->m_client)
             {
                 cout << "Logger initialization failed. (HOST="
                         << host << ",PORT=" << port << ",DBINDEX=" << dbindex << ")" << endl;
                 exit(1);
             }
 
-            this->m_logKey = logKey;
+            this->m_logKey = DEFAULT_LOG_KEY;
+            this->m_maxLogItems = -1;
             this->m_len = this->m_client->llen(this->m_logKey);
-            if (clearLog)
-            {
-                clear();
-                this->m_len = this->m_client->llen(this->m_logKey);
-            }
-        }
+        }        
 
         void setLogKey(string newKey)
         {
@@ -172,11 +163,11 @@ namespace AntixUtils
             return append(new LogItem(message, this->m_dataOnly));
         }
 
-        int trim(int startIndex, int endIndex)
+        int trim(int remainingStartIndex, int remainingEndIndex)
         {
             try
             {
-                this->m_client->ltrim(this->m_logKey, startIndex, endIndex);
+                this->m_client->ltrim(this->m_logKey, remainingStartIndex, remainingEndIndex);
             } catch (redis_error & e)
             {
                 cout << "Error: Failed to trim log. <" << e.what() << ">" << endl;
@@ -189,6 +180,23 @@ namespace AntixUtils
         int clear()
         {
             return trim(this->m_len+1, this->m_len+1);
+        }
+
+        /**
+         * Deletes all the keys in the current database connection
+         **/
+        void flushall()
+        {
+            try
+            {
+                this->m_client->flushall();
+
+            } catch (redis_error & e)
+            {
+                cout << "Error: Failed to delete all keys from current DB. <" << e.what() << ">" << endl;
+            }
+
+            this->m_len = 0;
         }
 
         vector<LogItem> logitems()
@@ -206,6 +214,28 @@ namespace AntixUtils
             }
 
             return results;
+        }
+
+        LogItem* blpop()
+        {
+            try
+            {
+                string msg = this->m_client->blpop(this->m_logKey, DEFAULT_TIMEOUT);
+                if (msg != client::missing_value())
+                {
+                    return new LogItem(msg, this->m_dataOnly);
+                }
+            } catch (redis_error & e)
+            {
+                cout << "Error: Failed to pop an item from the list. <" << e.what() << ">" << endl;
+            }
+
+            return NULL;
+        }
+
+        int size()
+        {
+            return m_len;
         }
 
     private:

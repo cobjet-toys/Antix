@@ -9,8 +9,11 @@
 #define MILLISECS_IN_SECOND 1000
 
 #define POS_DB_NAME         "posDB"
-#define POS_PATTERN         "%f %f %f %d %c"
+#define TEAM_DB_NAME        "teamDB"
+#define POS_PATTERN         "%d %f %f %f %c"    /* <id posX posY orientation hasPuck> */
+#define TEAM_PATTERN        "%d %f %f %d %d %d" /* <id posX posY colR colG colB> */
 #define MAX_POS_KEYS        3
+#define TEAM_ID_SHIFT       1024
 
 
 namespace DrawUtils
@@ -21,17 +24,6 @@ namespace DrawUtils
     //sin
 
     //cos
-
-    void parseOptions(
-            int argc,
-            char** argv,
-            int* teamCount,
-            int* puckCount,
-            int* popCount,
-            int* winSize,
-            float* worldSize,
-            float* FOVAngle,
-            float* FOVRange);
 }
 
 #endif	/* _DUTILS_H */

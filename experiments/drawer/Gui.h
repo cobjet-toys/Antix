@@ -1,11 +1,6 @@
 #include "DrawServer.h"
 
 #include <math.h>
-#ifdef __linux
-#include <GL/glut.h>
-#elif __APPLE__
-#include <GLUT/glut.h>
-#endif
 
 
 void initGraphics(int argc, char **argv);

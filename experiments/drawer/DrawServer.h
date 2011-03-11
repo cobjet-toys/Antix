@@ -31,9 +31,9 @@ namespace Game
         bool hasPuck;
     };
     
-    typedef std::vector<Puck*>::iterator PuckIter;
-    typedef std::vector<Robot*>::iterator RobotIter;
-    typedef std::vector<Team*>::iterator TeamIter;
+    typedef std::map<int, Puck*>::iterator PuckIter;
+    typedef std::map<int, Robot*>::iterator RobotIter;
+    typedef std::map<int, Team*>::iterator TeamIter;
 
 }
 
@@ -47,13 +47,14 @@ namespace Network
 	    virtual ~DrawServer();
             static DrawServer* getInstance();
             void init(int argc, char** argv);
+            void initTeams();
 	    void update();
 
             int getWindowSize() { return this->m_windowSize; }
             float getWorldSize() { return this->m_worldSize; }
             float getFOVAngle() { return this->m_FOVAngle; }
             float getFOVRange() { return this->m_FOVRange; }
-            float getTeamRadius() { return this->m_teamRadius; }
+            float getHomeRadius() { return this->m_homeRadius; }
             bool getFOVEnabled() { return this->m_FOVEnabled; }
 
             Game::TeamIter getFirstTeam() { return this->m_teams.begin(); }
@@ -68,18 +69,19 @@ namespace Network
 
 	private:
             static DrawServer* m_instance;
-            vector<Game::Puck*> m_pucks;
-            vector<Game::Robot*> m_robots;
-            vector<Game::Team*> m_teams;
+
+            std::map<int, Game::Puck*> m_pucks;
+            std::map<int, Game::Robot*> m_robots;
+            std::map<int, Game::Team*> m_teams;
             int m_windowSize;
             float m_worldSize;
             float m_FOVAngle;
             float m_FOVRange;
-            float m_teamRadius;
+            float m_homeRadius;
             bool m_FOVEnabled;
 
-            uint32_t m_timestep;
-	    AntixUtils::Logger* m_posDB;
+            uint32_t m_framestep;
+	    AntixUtils::Logger* m_redisCli;
     };
 }
 

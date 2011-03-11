@@ -41,21 +41,21 @@ CLIENT_HDR = $(BASIC_HDR)
 
 # ------------------------------ MAKE ARGS ------------------------------
 
-all: drawer client
+all: DrawServer client
 
 clean: clean_drawer clean_client
 
-drawer: $(DRAWER_HDR) $(DRAWER_SRC)
+DrawServer: $(DRAWER_HDR) $(DRAWER_SRC)
 	$(CC) $(DRAWER_CXXFLAGS) $(DRAWER_LIBS) $(INCLUDE) -DREDIS -o $@ $(DRAWER_SRC) $(LOGLIBS)
 
 client: $(CLIENT_HDR) $(CLIENT_SRC)
 	$(CC) $(INCLUDE) -DREDIS -o $@ $(CLIENT_SRC) $(LOGLIBS)
 
 clean_drawer:
-	rm drawer
+	rm DrawServer
 
 clean_client:
 	rm client
 
 anet.o:			logger/anet.c logger/fmacros.h logger/anet.h
-rhash.o:		logger/redisclient.h logger/logger.h
+logger.o:		logger/redisclient.h logger/logger.h

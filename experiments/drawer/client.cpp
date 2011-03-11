@@ -5,23 +5,16 @@
  */
 int main(int argc, char** argv)
 {
-    int m_TotalTeamCount=0, m_TotalPuckCount=0, m_RobotPopCount=0, m_WindowSize=0;
-    float m_WorldSize=0, m_FOV=0, m_SensorRange=0;
+    Network::DrawClient * dCli = new Network::DrawClient();
     
-    DrawUtils::parseOptions(argc, argv, &m_TotalTeamCount, &m_TotalPuckCount,
-            &m_RobotPopCount, &m_WindowSize, &m_WorldSize, &m_FOV, &m_SensorRange);
-
-    Network::DrawClient * dCli;
-    if (argc == 1)
-    {
-        dCli = new Network::DrawClient();
-    }
-    else
-    {
-        dCli = new Network::DrawClient(m_TotalTeamCount, m_TotalPuckCount, m_RobotPopCount);
-    }
-
-    dCli->update();    
+    //fake extract drawer address from server.info
+    string dbhost = argc == 1? "localhost" : argv[1];
+    int homes = argc == 1? 1 : atoi(argv[2]);
+    int pucks = argc == 1? 5 : atoi(argv[3]);
+    int homePop = argc == 1? 10 : atoi(argv[4]);
+    dCli->init(dbhost, homes, pucks, homePop);
+    
+    dCli->update();
 
     return (EXIT_SUCCESS);
 }
