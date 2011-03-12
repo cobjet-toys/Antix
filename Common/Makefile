@@ -1,6 +1,6 @@
 common_COMPILER = g++
 
-common_SRC = Client.cpp Server.cpp TcpConnection.cpp Packer.cpp 
+common_SRC = Client.cpp Server.cpp TcpConnection.cpp Packer.cpp Position.cpp Robot.cpp Puck.cpp Team.cpp Home.cpp GameObject.cpp
 common_LIBRARY = libcommon.a
 
 # ----- do not edit under this line unless you know what you are doing :)
@@ -19,7 +19,7 @@ common_DEBUG_OBJ_PATH = $(common_DEBUG_PATH)/obj
 common_RELEASE_OBJ = $(addprefix $(common_RELEASE_OBJ_PATH)/, $(common_SRC:.cpp=.o))
 common_DEBUG_OBJ = $(addprefix $(common_DEBUG_OBJ_PATH)/, $(common_SRC:.cpp=.o))
 
-
+common_REDIS_PATH = $(common_PWD)/Redis
 
 
 common: common_depend common_release_objects

@@ -65,11 +65,15 @@ int GridServer::handler(int fd)
 					unsigned char l_msgSizeBuff;
 					
                     
-					if (l_curConnection->recv(, msgSize.size))
+					if (l_curConnection->recv(l_msgSizeBuff, msgSize.size))
 					{
 						DEBUGPRINT("Request for robots failed\n");
 						break;
 					}
+					
+					int numRobots;
+					
+					unpack(l_msgSizeBuff, "l", &numRobots);
 					
 					/*if (l_curConnection->recv(l_Buffer, l_Req.size) == 0)
 					{

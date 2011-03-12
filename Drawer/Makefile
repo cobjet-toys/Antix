@@ -3,6 +3,7 @@ drawer_COMPILER = g++
 drawer_SRC = 
 drawer_EXECUTABLE = drawer.bin
 
+
 # ----- do not edit under this line unless you know what you are doing :)
 
 PWD = $(shell pwd)
@@ -18,8 +19,29 @@ drawer_DEBUG_OBJ_PATH = $(drawer_DEBUG_PATH)/obj
 drawer_RELEASE_OBJ = $(addprefix $(drawer_RELEASE_OBJ_PATH)/, $(drawer_SRC:.cpp=.o))
 drawer_DEBUG_OBJ = $(addprefix $(drawer_DEBUG_OBJ_PATH)/, $(drawer_SRC:.cpp=.o))
 
+# ----------------------------- GLUT VARS -----------------------------
+# this should work on Linux with MESA
+OS := $(shell uname -s)
 
+ifeq ($(OS),Linux)
+GLUTLIBS = -L/usr/X11R6/lib -lGLU -lGL -lglut -lX11 -lXext
+GLUTFLAGS = -I/usr/local/include/GL
+endif
 
+# this works on Mac OS X
+ifeq ($(OS),Darwin)
+GLUTFLAGS = -framework OpenGL -framework GLUT
+endif
+
+# ----------------------------- REDIS VARS -----------------------------
+
+LOGLIBNAME = redis/libredisclient.a
+LOGLIBS = $(LOGLIBNAME) -lstdc++ -lpthread -lboost_thread-mt
+LOGCLIENTOBJS = anet.o
+
+LOGHDR = redis/redisclient.h redis/redislist.h
+
+# ----------------------------------------------------------------------
 
 drawer: drawer_depend drawer_release_objects
 	@echo "Building RELEASE --------------------------------------------------------------------------------"
