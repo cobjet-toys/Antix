@@ -175,13 +175,13 @@ int Server::start()
 						this->setnonblock(fd); // @ todo check for errors
 						if( this->addHandler(fd, EPOLLIN|EPOLLET|EPOLLRDHUP, temp) != 0 )
 						{
-							//printf("failed connecting to client.\n");
+							printf("failed connecting to client.\n");
 							// @ todo -- attempt recovery
 							return -1;
 						}
 						else
 						{
-							//printf("A client connected.\n");
+							printf("A client connected.\n");
 							m_servers_connected += 1;
 							if ((l_ret = this->handleNewConnection(fd)) < 0) return l_ret;
 							
@@ -200,7 +200,7 @@ int Server::start()
 			{
 				if (e[i].events & EPOLLRDHUP || e[i].events & EPOLLHUP || e[i].events & EPOLLERR)
 				{
-				    printf("Client Hangup/Error \n");
+				    printf("Client Hangup/Error\n");
 					handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL); // @todo add error checking
 					continue;
 				} 

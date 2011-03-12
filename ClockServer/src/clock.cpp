@@ -7,7 +7,7 @@ int main(int argc, char ** argv)
 {
 	if (argc < 3) 
 	{
-		printf("Invalid arguments: specify a port\n");
+		printf("Usage: ./clock.bin <clock_port> <num_clients>\n");
 		return -1;
 	}
 	Network::ClockServer serv;
