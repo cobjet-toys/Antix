@@ -1,6 +1,6 @@
 #include "Robot.h"
 #include <math.h>
-#include "Math.h"
+#include "MathAux.h"
 #include <stdlib.h>
 #include <stdio.h>
 
