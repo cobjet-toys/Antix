@@ -101,22 +101,20 @@ int RobotClient::handler(int fd)
 
     //Create a 'header' message and buffer to receive into.
     Msg_header l_Header;
-    unsigned char l_Buffer[l_Header.size];
+    unsigned char l_Buffer[69];
 
     //Get our TCPConnection for this socket.
     TcpConnection *l_Conn =  m_serverList[fd];
-        
+       
     //Receive from the socket into our buffer.
-    for(;;)
+    if (l_Conn->recv(l_Buffer, l_Header.size) < 0)
     {
-        if (l_Conn->recv(l_Buffer, l_Header.size) == 0)
-        {
-            DEBUGPRINT("Received Header\n");
-            break;
-        }
+        DEBUGPRINT("Error receiving header.\n");
+        return -1;
     }
 
     //Unpack the buffer into the 'header' message.
+    DEBUGPRINT("unpacking message \n");
     unpack(l_Buffer, Msg_header_format, &l_Header.sender, &l_Header.message); 
     DEBUGPRINT("Received message %d from %d\n", l_Header.message, l_Header.sender);
     switch(l_Header.sender)
@@ -131,38 +129,39 @@ int RobotClient::handler(int fd)
                     time_t curr_sec = time(NULL); 
                     if (curr_sec > init_sec)
                     {
-                        printf("Number of timesteps: %d", Timesteps);
+                        printf("Number of timesteps: %d\n", Timesteps);
                         init_sec = time(NULL);
                         Timesteps = 0;
                    }
                    Timesteps++;
 
                    DEBUGPRINT("Expecting to receive a heartbeat message from the clock.\n");
-                    Msg_HB l_HB;
+                   Msg_HB l_HB;
 
                     //Receive the heartbeat message.
-                    for(;;)
+                    if (l_Conn->recv(l_Buffer+l_Header.size, l_HB.size) == -1)
                     {
-                        if (l_Conn->recv(l_Buffer, l_HB.size) == 0)
-                        {
-                            DEBUGPRINT("Received hearbeat\n");
-                            break;
-                        }
-
+                        DEBUGPRINT("Error receiving heartbeat.\n");
+                        return -1;
                     }
 
                     //Unpack heartbeat message into our buffer.
-                    unpack(l_Buffer, Msg_HB_format, &l_HB.hb);
+                    unpack(l_Buffer+l_Header.size, Msg_HB_format, &l_HB.hb);
                     DEBUGPRINT("Hearbeat character: %hd\n", l_HB.hb);
                     
                     m_HeartBeat = l_HB.hb; 
                     //
                     //WORK GOES HERE--------------------------------------------------
                     //
-                    if (processRobots() != 0)
+                    /*if (processRobots() != 0)
                     {
                         DEBUGPRINT("Error processing robots");
-                    }
+                    }*/
+
+                    l_Header.sender = SENDER_CLIENT;
+                    l_Header.message = MSG_HEARTBEAT;
+                    pack(l_Buffer, "hhh",l_Header.sender, l_Header.message, l_HB.hb);
+                    l_Conn->send(l_Buffer, l_Header.size+l_HB.size);           
                }
             }
             break;

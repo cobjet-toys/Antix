@@ -2,6 +2,7 @@
 #include "Messages.h"
 #include "Packer.h"
 #include <string.h>
+#include "Config.h"
 
 Network::ClockServer::ClockServer()
 {
@@ -35,7 +36,7 @@ int Network::ClockServer::handler(int fd)
 	//printf("About to receive header\n");
 	if (l_Conn->recv(l_Buffer, l_Header.size) == -1)
 	{
-		printf("Could not receive\n");
+		DEBUGPRINT("Could not receive\n");
 		return -1;
 	}
 	//printf("Unpacking header\n");
@@ -52,17 +53,17 @@ int Network::ClockServer::handler(int fd)
                 //Message is heart beat.
                 case(MSG_HEARTBEAT) :
                 {
-					printf("Receiving heartbeat from robot client\n");
+					DEBUGPRINT("Receiving heartbeat from robot client\n");
 					if (l_Conn->recv(l_Buffer+l_Header.size, l_heartBeat.size) == -1)
 					{
-						printf("Could not receive\n");
+						DEBUGPRINT("Could not receive\n");
 						return -1;
 					}
 					
-					printf("Unpack the heartbeat\n");
+					DEBUGPRINT("Unpack the heartbeat\n");
 					unpack(l_Buffer+l_Header.size, Msg_HB_format, &l_heartBeat.hb);
 					
-					printf("Heartbeat character is %d", l_heartBeat.hb);
+					DEBUGPRINT("Heartbeat character is %d", l_heartBeat.hb);
                     if (m_beat == l_heartBeat.hb && m_clientMap[fd] == true)
 					{
 						m_responded++;
@@ -113,7 +114,7 @@ int Network::ClockServer::allConnectionReadyHandler()
 	} else {
 		m_beat = 1;
 	}
-	printf("beat = %u\n", m_beat);
+	DEBUGPRINT("beat = %u\n", m_beat);
 	l_heartBeat.hb = m_beat;
 	
 	//printf("Total Clients to send Hb: %i\n",m_clientList.size());
@@ -127,7 +128,7 @@ int Network::ClockServer::allConnectionReadyHandler()
 		
 		if (conn == NULL) 
 		{
-			printf("Conn = NULL\n");
+			DEBUGPRINT("Conn = NULL\n");
 			return -1;
 		}
 		int l_packed ;
@@ -135,7 +136,7 @@ int Network::ClockServer::allConnectionReadyHandler()
 		{
 			return -1; // didn't pack all bytes FAIL & ABORT!!
 		}
-		printf("%i packed\n", l_packed);
+		DEBUGPRINT("%i packed\n", l_packed);
 
 		if (conn->send(msg, l_header.size+l_heartBeat.size) == 0);
 		
