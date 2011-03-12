@@ -130,6 +130,8 @@ int GridServer::handler(int fd)
 			{
 		    		
 			    case MSG_ASSIGN_ID:
+				{
+					Msg_header l_msgHeader = {SENDER_GRIDSERVER, MSG_ASSIGN_ID};
 				    Msg_uId l_uId;
 					memset(msg, 0, l_uId.size);
 							
@@ -154,7 +156,7 @@ int GridServer::handler(int fd)
 							
 					return 0;
 					break;
-						
+				}		
 			    default:
 					printf("ERROR: no matching msg handler for CONTROLLER\n");
 					return 0; // no event handler for this call
@@ -195,7 +197,7 @@ int GridServer::handler(int fd)
 			break;
 		
 	}
-	delete msg;
+	//delete msg;	//Not requried, using heap memeory, the program will automatically clean it up when it ends. Unless you use 'new', you should not call delete.
     return 0;
 }
 
