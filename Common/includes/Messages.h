@@ -69,6 +69,12 @@ static const char* Msg_HB_format = "h";
 // Tell A Client To Connect To A GridServer And Control A Team
 // MSG_INITTEAM = 2
 
+typedef struct{
+	uint16_t sizeOfMsg;
+	static const size_t size = 2;
+} Msg_RequestSizeMsg;
+static const char* Msg_RequestSizeMsg_format = "l"; 
+
 typedef struct
 {
     uint32_t id;
