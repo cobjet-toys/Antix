@@ -151,7 +151,6 @@ int TcpConnection::recv(unsigned char * message, int messageSize)
     while(l_Total < messageSize)
     {
         l_Rcvd = ::recv(m_socketfd, message+l_Total, l_BytesLeft, 0);
-        //printf("Received %d bytes\n", l_Rcvd);
         //Check for error.
         if (l_Rcvd == -1)
             break;
