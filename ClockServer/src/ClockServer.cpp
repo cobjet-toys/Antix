@@ -23,23 +23,22 @@ int Network::ClockServer::handler(int fd)
 
     //Create a 'header' message and buffer to receive into.
     Msg_header l_Header;
-    unsigned char l_Buffer[l_Header.size];
-	memset(&l_Header, 0, l_Header.size);
-	memset(&l_Buffer, 0, l_Header.size);
+	Msg_HB l_heartBeat;
+    unsigned char l_Buffer[l_Header.size + l_heartBeat.size];
+	
+	memset(&l_Buffer, 0, l_Header.size+l_heartBeat.size);
 
     //Get our TCPConnection for this socket.
     TcpConnection *l_Conn =  m_Clients[fd];
         
     //Receive from the socket into our buffer.
-	for (;;)
+	//printf("About to receive header\n");
+	if (l_Conn->recv(l_Buffer, l_Header.size) == -1)
 	{
-		if (l_Conn->recv(l_Buffer, l_Header.size) == 0)
-		{
-			//printf("Recieved Header\n");
-			break;
-		}
+		printf("Could not receive\n");
+		return -1;
 	}
-	
+	//printf("Unpacking header\n");
 
     //Unpack the buffer into the 'header' message.
     unpack(l_Buffer, Msg_header_format, &l_Header.sender, &l_Header.message); 
@@ -53,24 +52,18 @@ int Network::ClockServer::handler(int fd)
                 //Message is heart beat.
                 case(MSG_HEARTBEAT) :
                 {
-                    //printf("Received a heartbeat from the Client.\n");
-                    Msg_HB l_HB;
-
-                    //Receive the heartbeat message.
-					for (;;)
+					printf("Receiving heartbeat from robot client\n");
+					if (l_Conn->recv(l_Buffer+l_Header.size, l_heartBeat.size) == -1)
 					{
-						if (l_Conn->recv(l_Buffer, l_HB.size) == 0)
-						{
-							//printf("Recieved heartbeat\n");
-							break;
-						}
+						printf("Could not receive\n");
+						return -1;
 					}
-
-                    //Unpack heartbeat message into our buffer.
-                    unpack(l_Buffer, Msg_HB_format, &l_HB.hb);
-                   // printf("Hearbeat character: %hd\n", l_HB.hb);  
-
-                    if (m_beat == l_HB.hb && m_clientMap[fd] == true)
+					
+					printf("Unpack the heartbeat\n");
+					unpack(l_Buffer+l_Header.size, Msg_HB_format, &l_heartBeat.hb);
+					
+					printf("Heartbeat character is %d", l_heartBeat.hb);
+                    if (m_beat == l_heartBeat.hb && m_clientMap[fd] == true)
 					{
 						m_responded++;
 						m_clientMap[fd] = false;
@@ -109,7 +102,7 @@ int Network::ClockServer::allConnectionReadyHandler()
 	Msg_header l_header;
 	Msg_HB l_heartBeat;
 	
-	unsigned char msg[l_header.size];
+	unsigned char msg[l_header.size + l_heartBeat.size];
 	
 	l_header.sender = SENDER_CLOCK;
 	l_header.message = MSG_HEARTBEAT;
@@ -137,26 +130,14 @@ int Network::ClockServer::allConnectionReadyHandler()
 			printf("Conn = NULL\n");
 			return -1;
 		}
-		
-		if (pack(msg, Msg_header_format, l_header.sender, l_header.message) != l_header.size)
+		int l_packed ;
+		if ((l_packed = pack(msg, "hhh", l_header.sender, l_header.message, l_heartBeat.hb )) != l_header.size+l_heartBeat.size)
 		{
 			return -1; // didn't pack all bytes FAIL & ABORT!!
 		}
-		
-		for (;;)
-		{
-			if (conn->send(msg, l_header.size) == 0) break;
-		}
+		printf("%i packed\n", l_packed);
 
-		if (pack(msg, Msg_HB_format, l_heartBeat.hb) != l_heartBeat.size)
-		{
-			return -1; // didn't pack all bytes FAIL & ABORT!!
-		}
-		
-		for (;;)
-		{
-			if (conn->send(msg, l_heartBeat.size) == 0) break;
-		}
+		if (conn->send(msg, l_header.size+l_heartBeat.size) == 0);
 		
 		//printf("Sent heartbeat %hd\n", l_heartBeat.hb);
 		m_clientMap[fd] = true;

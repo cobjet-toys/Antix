@@ -200,7 +200,7 @@ int Server::start()
 			{
 				if (e[i].events & EPOLLRDHUP || e[i].events & EPOLLHUP || e[i].events & EPOLLERR)
 				{
-				    //printf("Client Hangup/Error \n");
+				    printf("Client Hangup/Error \n");
 					handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL); // @todo add error checking
 					continue;
 				} 
