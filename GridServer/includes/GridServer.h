@@ -12,7 +12,9 @@ class GridServer : public Server
 public:
     GridServer();
     virtual int handler(int fd);
-	
+    virtual int handleNewConnection(int fd);
+	virtual int allConnectionReadyHandler();
+
 private:
 	uint32_t m_uId;
     uint32_t m_hb_rcvd;

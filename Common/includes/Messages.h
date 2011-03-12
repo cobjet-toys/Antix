@@ -119,10 +119,10 @@ typedef struct
 	float xPosition;	
 	float yPosition;		
 	//uint16_t teamID;	//Team Of Robot Detected
-	bool hasPuck;
+	char hasPuck;
 	static const size_t size = 13;
 } Msg_RobotSensorData;
-
+static const char* Msg_RobotSensorData_format = "lffc";
 // GridServer Sends Client RobotSensorData
 // MSG_PUCKSENSORDATA = 6
 typedef struct
