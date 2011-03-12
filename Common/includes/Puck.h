@@ -1,8 +1,8 @@
 #ifndef PUCK_H_
 #define PUCK_H_
 
-#include "Game/GameObject.h"
-#include "Math/Position.h"
+#include "GameObject.h"
+#include "Position.h"
 
 namespace Game
 {

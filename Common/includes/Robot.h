@@ -1,12 +1,12 @@
 #ifndef ROBOT_H_
 #define ROBOT_H_
 
-#include "Math/Speed.h"
-#include "Game/Puck.h"
-#include "Game/Home.h"
-#include "Game/Robot.h"
-#include "Game/GameObject.h"
-#include "Game/VisibleObject.h"
+#include "Speed.h"
+#include "Puck.h"
+#include "Home.h"
+#include "Robot.h"
+#include "GameObject.h"
+#include "VisibleObject.h"
 #include <list>
 
 namespace Game

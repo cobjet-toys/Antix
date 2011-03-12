@@ -1,5 +1,5 @@
-#include "Game/Team.h"
-#include "Game/Game.h"
+#include "Team.h"
+#include "Game.h"
 
 using namespace Game;
 
@@ -7,6 +7,8 @@ unsigned int Team::m_RobotPopCount = 0;
 
 Team::Team()
 {
+
+    /* TODO Fill in logically
     //Position a random home location;
     Math::Position* l_HomePosition = Math::Position::randomPosition(Robotix::getInstance()->getWorldSize()); 
     m_Home = new Home( l_HomePosition );
@@ -29,6 +31,7 @@ Team::Team()
 
     //Generate a random team color;
     m_Color = GUI::Color::getRandomColor();
+    */
 }
 
 Team::~Team()
@@ -55,11 +58,3 @@ std::list<Robot*>::iterator Team::getFirstRobot()
 std::list<Robot*>::iterator Team::getLastRobot()
 {
     return m_Robots.end();
-}
-
-
-const GUI::Color* Team::getColor() const
-{
-    return m_Color;
-}
-

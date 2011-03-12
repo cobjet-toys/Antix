@@ -1,8 +1,8 @@
 #ifndef HOME_H_
 #define HOME_H_
 
-#include "Math/Position.h"
-#include "Game/GameObject.h"
+#include "Position.h"
+#include "GameObject.h"
 
 namespace Game
 {
@@ -23,7 +23,6 @@ public:
      */
     const float& getRadius() const;
 
-    virtual void draw();
 private:
     /**
      * All homes have the same radius.

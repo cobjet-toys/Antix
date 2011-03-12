@@ -1,13 +1,11 @@
 #ifndef TEAM_H_
 #define TEAM_H_
 
-#include "Game/Robot.h"
-#include "Game/Home.h"
+#include "Robot.h"
+#include "Home.h"
 #include <list>
 
-#include "GUI/Color.h"
 
-//TODO: We only need color when graphics are enabled.
 
 namespace Game
 {
@@ -35,21 +33,11 @@ public:
     Home* getHome();
 
     /**
-     * Get the color for this team.
-     */
-    const GUI::Color* getColor()const;
-
-    /**
      * Iterators for our collection of robots.
      */
     std::list<Robot*>::iterator getFirstRobot();
     std::list<Robot*>::iterator getLastRobot();
 private:
-
-    /**
-     * Color of the team.
-     */
-    GUI::Color* m_Color;
 
     /**
      * Home location.

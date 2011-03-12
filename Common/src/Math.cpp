@@ -1,4 +1,4 @@
-#include "Math/Math.h"
+#include "Math.h"
 #include <math.h>
 
 using namespace Math;

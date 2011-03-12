@@ -1,4 +1,4 @@
-#include "Math/Position.h"
+#include "Position.h"
 #include <stdlib.h>
 
 using namespace Math;

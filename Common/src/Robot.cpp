@@ -1,7 +1,6 @@
-#include "Game/Robot.h"
+#include "Robot.h"
 #include <math.h>
-#include "Math/Math.h"
-#include "Game/Game.h"
+#include "Math.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -62,6 +61,7 @@ void Robot::updatePosition()
     }
 }
 
+/* TODO: Add to GridGame
 void Robot::updateSensors()
 {
     //Clear our collection of visible objets.
@@ -77,7 +77,7 @@ void Robot::updateSensors()
     
     //Check every robot in the world, and determine if it is in range.
     //If it is, push it into our visible robots collection. 
-   /* for (RobotIter it = Robotix::getInstance()->getFirstRobot();
+    for (RobotIter it = Robotix::getInstance()->getFirstRobot();
             it != Robotix::getInstance()->getLastRobot(); it++)
     {
         Robot *l_Other = *it;
@@ -111,7 +111,7 @@ void Robot::updateSensors()
 
         //The robot is in our range and FOV, add it to visible robots.
         m_VisibleRobots.push_back(VisibleRobotPtr(l_Other, l_Range, l_RelHeading));
-    }*/
+    }
 
     //Check every puck in the world, and determine if it's in range.
     //If it is, push it into our visible puck collection.
@@ -146,7 +146,9 @@ void Robot::updateSensors()
     }
      
 }
+*/
 
+/*
 void Robot::updateController()
 {
     float l_HeadingError = 0.0;
@@ -275,6 +277,7 @@ bool Robot::Pickup()
     }
     return false;
 }
+*/
 
 void Robot::printInfo()
 {
@@ -298,7 +301,3 @@ float Robot::getY()
 }
 
 
-void Robot::draw()
-{
-    DrawPoint();
-}

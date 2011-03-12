@@ -1,4 +1,4 @@
-#include "Game/Puck.h"
+#include "Puck.h"
 
 using namespace Game;
 
@@ -14,9 +14,4 @@ bool Puck::isHeld()
 void Puck::toggleHeld()
 {
     m_Held = !m_Held;
-}
-
-void Puck::draw()
-{
-    DrawPoint();
 }

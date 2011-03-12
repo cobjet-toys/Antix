@@ -1,12 +1,7 @@
 #ifndef GAMEOBJECT_H_
 #define GAMEOBJECT_H_
-#include "Math/Position.h"
+#include "Position.h"
 
-#ifdef __linux
-#include <GL/glut.h>
-#elif __APPLE__
-#include <GLUT/glut.h> 
-#endif
 
 using namespace Math;
 
@@ -28,15 +23,11 @@ public:
      */
     virtual ~GameObject();
 
-    virtual void draw() = 0;
     /**
      * Return the current object position.
      */
     Position* getPosition();
 
-protected:
-    void DrawCircle( double x, double y, double r, double count );
-    void DrawPoint();
 
 private:
     /**
