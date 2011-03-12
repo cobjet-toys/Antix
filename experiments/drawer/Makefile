@@ -14,24 +14,24 @@ endif
 
 # ----------------------------- REDIS VARS -----------------------------
 
-# logger macros
-LOGLIBNAME = logger/libredisclient.a
+LOGLIBNAME = redis/libredisclient.a
 LOGLIBS = $(LOGLIBNAME) -lstdc++ -lpthread -lboost_thread-mt
 LOGCLIENTOBJS = anet.o
 
-LOGHDR = logger/redisclient.h logger/logger.h
+LOGHDR = redis/redisclient.h redis/redislist.h
 
 # ----------------------------- MAKE CONFIG -----------------------------
 
 CC = g++
-INCLUDE = -I"logger/"
-BASIC_HDR = $(LOGHDR) dutils.h
+INCLUDE = -I"redis/" -I"Common/"
+BASIC_SRC = dutils.cpp Common/Position.cpp Common/Robot.cpp Common/Puck.cpp Common/Team.cpp Common/Home.cpp Common/GameObject.cpp Common/Speed.cpp
+BASIC_HDR = $(LOGHDR) dutils.h Common/Position.h Common/Robot.h Common/Puck.h Common/Team.h Common/Home.h Common/GameObject.h Common/Speed.h
 
 # ----------------------------- DRAWER FILES ----------------------------
 
 DRAWER_CXXFLAGS = -g -Wall -O3 $(GLUTFLAGS)
 DRAWER_LIBS =  -g -lm $(GLUTLIBS)
-DRAWER_SRC = DrawServer.cpp drawer.cpp dutils.cpp Gui.cpp
+DRAWER_SRC = $(BASIC_SRC) DrawServer.cpp drawer.cpp Gui.cpp
 DRAWER_HDR = $(BASIC_HDR) Gui.h
 
 # ----------------------------- CLIENT FILES ----------------------------
@@ -57,5 +57,4 @@ clean_drawer:
 clean_client:
 	rm client
 
-anet.o:			logger/anet.c logger/fmacros.h logger/anet.h
-logger.o:		logger/redisclient.h logger/logger.h
+anet.o:			redis/anet.c redis/fmacros.h redis/anet.h

@@ -2,7 +2,7 @@
 #ifndef _DRAWCLIENT_H
 #define	_DRAWCLIENT_H
 
-#include "logger/logger.h"
+#include "redis/redislist.h"
 #include "dutils.h"
 
 namespace Network

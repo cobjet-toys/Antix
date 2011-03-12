@@ -26,29 +26,28 @@ void displayFunc()
     drawPucks();
     drawRobots();
 
-    /*
-    //Draw the pucks
-    for (Game::PuckIter it = Game::Robotix::getInstance()->getFirstPuck();
-            it != Game::Robotix::getInstance()->getLastPuck(); it++)
-    {
-        (*it).second->draw();
-    }
-    
-    for (std::list<Game::Team*>::iterator it = Game::Robotix::getInstance()->getFirstTeam();
-            it != Game::Robotix::getInstance()->getLastTeam();it++)
-    {
-        (*it).second->getHome()->draw();
-        
-                for (std::list<Game::Robot*>::iterator rt = (*it).second->getFirstRobot();
-	    		rt != (*it).second->getLastRobot(); rt++)
-	    {
-            (*rt)->draw();
-	    }
-    }
-     * */
-
     glutSwapBuffers();
     glutTimerFunc( 20, timerFunc, 0);
+}
+
+void drawTeams()
+{
+    float worldsize = Network::DrawServer::getInstance()->getWorldSize();
+    float radius = Network::DrawServer::getInstance()->getHomeRadius();
+
+    for (Network::DrawServer::TeamIter it = Network::DrawServer::getInstance()->getFirstTeam();
+            it != Network::DrawServer::getInstance()->getLastTeam();it++)
+    {
+        Math::Position * homePos = (*it).second->getHome()->getPosition();
+
+        glColor3f( 255, 255,255 );
+
+        GlDrawCircle( homePos->getX(), homePos->getY(), radius, 16 );
+        GlDrawCircle( homePos->getX()+worldsize, homePos->getY(), radius, 16 );
+        GlDrawCircle( homePos->getX()-worldsize, homePos->getY(), radius, 16 );
+        GlDrawCircle( homePos->getX(), homePos->getY()+worldsize, radius, 16 );
+        GlDrawCircle( homePos->getX(), homePos->getY()-worldsize, radius, 16 );
+    }
 }
 
 void drawPucks()
@@ -66,39 +65,19 @@ void drawPucks()
     glVertexPointer( 2, GL_FLOAT, 0, &pts[0] );
 
     int i=0;
-    for (Game::PuckIter it = Network::DrawServer::getInstance()->getFirstPuck();
+    for (Network::DrawServer::PuckIter it = Network::DrawServer::getInstance()->getFirstPuck();
             it != Network::DrawServer::getInstance()->getLastPuck();it++)
-    {
-        Game::Puck * puck = (*it).second;
+    {    
+        Math::Position * puckPos = (*it).second->getPosition();
         
-        pts[2*i+0] = puck->posX;
-        pts[2*i+1] = puck->posY;
+        pts[2*i+0] = puckPos->getX();
+        pts[2*i+1] = puckPos->getY();
         i++;
     }
 
     glDrawArrays( GL_POINTS, 0, len );
 
     glPointSize( 2.0 );   
-}
-
-void drawTeams()
-{
-    float worldsize = Network::DrawServer::getInstance()->getWorldSize();
-    float radius = Network::DrawServer::getInstance()->getHomeRadius();
-
-    for (Game::TeamIter it = Network::DrawServer::getInstance()->getFirstTeam();
-            it != Network::DrawServer::getInstance()->getLastTeam();it++)
-    {
-        Game::Team * team = (*it).second;
-
-        glColor3f( team->colR, team->colG, team->colB );
-
-        GlDrawCircle( team->posX, team->posY, radius, 16 );
-        GlDrawCircle( team->posX+worldsize, team->posY, radius, 16 );
-        GlDrawCircle( team->posX-worldsize, team->posY, radius, 16 );
-        GlDrawCircle( team->posX, team->posY+worldsize, radius, 16 );
-        GlDrawCircle( team->posX, team->posY-worldsize, radius, 16 );
-    }
 }
 
 void drawRobots()
@@ -108,9 +87,11 @@ void drawRobots()
     float radius = Network::DrawServer::getInstance()->getHomeRadius();
     
     // if robots are smaller than 4 pixels across, draw them as points
-    if( (radius * (double)winsize/(double)worldsize) < 2.0 )
+    if (1)
+    //if( (radius * (double)winsize/(double)worldsize) < 2.0 )
     {
-        const size_t len( Network::DrawServer::getInstance()->getRobotsCount() );
+        const size_t len( Network::DrawServer::getInstance()->getRobotsCount() ); 
+    	
         // keep this buffer around between calls for speed
         static std::vector<GLfloat> pts;
         static std::vector<GLfloat> colors;
@@ -123,20 +104,26 @@ void drawRobots()
         glColorPointer( 3, GL_FLOAT, 0, &colors[0] );
 
         int i=0;
-        for (Game::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
+        for (Network::DrawServer::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
                 it != Network::DrawServer::getInstance()->getLastRobot();it++)
         {
-            Game::Robot * robot = (*it).second;
+        	if (!(*it).second)
+        	{
+        		printf("No robot @ %d", (*it).first);
+        		continue;
+        	}
+        	
+            Math::Position * robotPos = (*it).second->getPosition();
+            assert(robotPos);
 
-            pts[2*i+0] = robot->posX;
-            pts[2*i+1] = robot->posY;
+            pts[2*i+0] = robotPos->getX();
+            pts[2*i+1] = robotPos->getY();
 
-            colors[3*i+0] = robot->team->colR;
-            colors[3*i+1] = robot->team->colG;
-            colors[3*i+2] = robot->team->colB;
+            colors[3*i+0] = 255;
+            colors[3*i+1] = 255;
+            colors[3*i+2] = 255;
 
             i++;
-
         }
 
         glDrawArrays( GL_POINTS, 0, len );
@@ -144,10 +131,16 @@ void drawRobots()
     }
     else 
     {
-        for (Game::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
+        for (Network::DrawServer::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
                 it != Network::DrawServer::getInstance()->getLastRobot();it++)
         {
-            //(*it).second->Draw();
+        	if (!(*it).second)
+        	{
+        		printf("No robot @ %d", (*it).first);
+        		continue;
+        	}
+        	
+            (*it).second->draw();
         }
     }
 
@@ -229,28 +222,6 @@ void GlDrawCircle( double x, double y, double r, double count )
 		glVertex2f( x + sin(a) * r, y + cos(a) * r );
 	glEnd();
 }
-
-
-/*
-void drawHome(Game::Home* home, const GUI::Color* color)
-{
-    
-    glColor3f(color->getR(), color->getG(), color->getB());
-   
- 
-    float xloc = home->getPosition()->getX();
-    float yloc = home->getPosition()->getY();
-    float radius = home->getRadius();
-    float worldsize = Game::Robotix::getInstance()->getWorldSize();
-
-    GlDrawCircle( xloc, yloc, radius, 16 );
-	GlDrawCircle( xloc+worldsize, yloc, radius, 16 );
-	GlDrawCircle( xloc-worldsize, yloc, radius, 16 );
-	GlDrawCircle( xloc, yloc+worldsize, radius, 16 );
-	GlDrawCircle( xloc, yloc-worldsize, radius, 16 );
-		
-}
- */
 
 
 void initGraphics(int argc, char **argv)

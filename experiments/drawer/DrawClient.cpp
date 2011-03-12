@@ -28,7 +28,7 @@ void DrawClient::init(string db_host, int homes, int pucks, int homePop)
     this->posDB->setLogKey(TEAM_DB_NAME);
     for(int i=0; i<homes; i++)
     {
-        int team_id = i;
+        int team_id = i+1;
         float posX = i*10;
         float posY = posX;
         int colR = 255;
