@@ -1,4 +1,5 @@
 #include "Client.h"
+//#include "Config.h"
 
 Network::Client::Client()
 {
@@ -159,9 +160,9 @@ int Network::Client::start()
         {    
             if (e[i].events & EPOLLIN)
 	    	{
-	            printf("Handling \n");
+	            //DEBUGPRINT("Handling \n");
 		    	int ret = handler(e[i].data.fd);
-		    	printf("Handler returned %i\n", ret);
+		    	//printf("Handler returned %i\n", ret);
 		    	if (ret < 0)
 			    {
 			        if (handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL) != 0)
@@ -172,7 +173,7 @@ int Network::Client::start()
             } 
            else if (e[i].events & EPOLLRDHUP || e[i].events & EPOLLHUP || e[i].events & EPOLLERR) 
            {
-		    	printf("Client Hangup/Error \n");
+		    //	DEBUGPRINT("Client Hangup/Error \n");
 	    		handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL); // @todo add error checking
 
 		   }

@@ -159,7 +159,7 @@ int Server::start()
 		
 		int nfd, l_ret;
 		nfd = epoll_wait(m_epfd, e, 1000, -1);
-        printf("nfd: %i %d\n", nfd, m_ready);
+        //printf("nfd: %i %d\n", nfd, m_ready);
 
 		for (int i = 0; i < nfd ; i++)
 		{

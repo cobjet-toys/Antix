@@ -34,7 +34,7 @@ int Network::ClockServer::handler(int fd)
 	DEBUGPRINT("About to receive header\n");
 	if (l_Conn->recv(l_Buffer, l_Header.size) == -1)
 	{
-		printf("Could not receive\n");
+		DEBUGPRINT("Could not receive\n");
 		return -1;
 	}
 
@@ -124,7 +124,7 @@ int Network::ClockServer::allConnectionReadyHandler()
 		
 		if (conn == NULL) 
 		{
-			printf("Conn = NULL\n");
+			DEBUGPRINT("Conn = NULL\n");
 			return -1;
 		}
 		int l_packed ;
@@ -132,7 +132,7 @@ int Network::ClockServer::allConnectionReadyHandler()
 		{
 			return -1; // didn't pack all bytes FAIL & ABORT!!
 		}
-		printf("%i packed\n", l_packed);
+		DEBUGPRINT("%i packed\n", l_packed);
 
 		if (conn->send(msg, l_header.size+l_heartBeat.size) == 0);
 		
