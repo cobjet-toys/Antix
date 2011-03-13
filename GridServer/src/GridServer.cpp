@@ -10,6 +10,9 @@ GridServer::GridServer():Server()
     m_hb_rcvd = 0;
 
     gridGameInstance = new GridGame();
+    std::vector<robot_info>* robot_info_vector;
+    gridGameInstance->randomizeTeam(1, 1000, robot_info_vector);
+    gridGameInstance->printRobotPopulation();
 
 }
 int GridServer::handleNewConnection(int fd)
