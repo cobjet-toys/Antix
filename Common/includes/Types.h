@@ -12,8 +12,6 @@
 
 using std::string;
 
-namespace Antix
-{
 
 const string DEFAULT_REDIS_PORT = "6379";
 
@@ -25,6 +23,34 @@ typedef std::vector<string> StringList;
 typedef ConnectionList::iterator ConListIterator;
 typedef std::map<uid, std::vector<TeamGridPair> > ClientList;
 
-}
+typedef struct{
+    int robotid;
+    float x;
+    float y;
+} sensed_item;
+
+typedef struct{
+    int action;
+    float speed;
+    float angle;
+} action;
+
+typedef struct{
+    float x_pos;
+    float y_pos;
+    float speed;
+    float angle;
+    int puck_id;
+} action_results;
+
+typedef struct{
+    unsigned int id;
+    float x_pos;
+    float y_pos;
+    float speed;
+    float angle;
+    int puck_id;
+} robot_info;
+
 
 #endif // __TYPES_H__

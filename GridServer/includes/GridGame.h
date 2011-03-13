@@ -5,6 +5,7 @@
 #include "Puck.h"
 #include "Robot.h"
 #include "MathAux.h"
+#include "Types.h"
 #include <list>
 #include <vector>
 #include <map>
@@ -12,37 +13,6 @@
 
 typedef std::vector<Game::Robot*>::iterator RobotIter;
 typedef std::vector<Game::Puck*>::iterator PuckIter;
-
-
-typedef struct{
-    int robotid;
-    float x;
-    float y;
-} sensed_item;
-
-typedef struct{
-    int action;
-    float speed;
-    float angle;
-} action;
-
-typedef struct{
-    float x_pos;
-    float y_pos;
-    float speed;
-    float angle;
-    int puck_id;
-} action_results;
-
-typedef struct{
-    unsigned int id;
-    float x_pos;
-    float y_pos;
-    float speed;
-    float angle;
-    int puck_id;
-} robot_info;
-
 
 class GridGame
 {
@@ -54,14 +24,14 @@ public:
      GridGame();
     
     /**
-     * Sorts the robot population
-     */
-    void sortRobots();
-
-    /**
      * Dtor. Delete the pucks and teams.
      */
     ~GridGame();
+
+    /**
+     * Sorts the robot population
+     */
+    void sortRobots();
 
     /**
     * Receives a team id and team size and creates all robot with the ids

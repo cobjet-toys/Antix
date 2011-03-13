@@ -26,6 +26,8 @@ GridGame::GridGame()
     robot_SensorRange = 0.1;
     robot_PickupRange = robot_SensorRange/5.0;
 
+    printf("\n%d\n", robot_FOV);
+
     //Home radius.
     home_Radius = 0.1;
     WorldSize = 1.0;
