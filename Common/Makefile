@@ -24,7 +24,7 @@ common_REDIS_PATH = $(common_PWD)/Redis
 
 common: common_depend common_release_objects
 	@echo "Building RELEASE --------------------------------------------------------------------------------"
-	ar cvq $(common_RELEASE_PATH)/$(common_LIBRARY) $(common_RELEASE_OBJ)
+	ar cvq $(common_RELEASE_PATH)/$(common_LIBRARY) $(common_RELEASE_OBJ) anet.o
 	@echo "Building common COMPLETE --------------------------------------------------------------"
 
 common_debug: common_depend common_debug_objects
@@ -63,6 +63,4 @@ common_clean_debug:
 	@echo "Cleaning common debug COMPLETE ---------------------------------------------------------"
 
 -include common_depends
-
-
 
