@@ -24,31 +24,38 @@ int main(int argc, char** argv)
     ConnectionList robot_clients;
     ConnectionPair clock_server;
     ConnectionPair draw_server;
+    ClientList clients;
     
-    Antix::parseServerFile(server_fn, grid_servers, robot_clients, clock_server, draw_server); 
-    cout << grid_servers[0].first << " " << grid_servers[0].second << endl;
-    cout << clock_server.first << " " << clock_server.second << endl;
-    cout << draw_server.first << endl;
-    cout << robot_clients[0].first << endl;
-
-/*
+    Antix::parseServerFile(server_fn,grid_servers,robot_clients, clock_server, draw_server); 
+    Antix::parseConfigFile(config_fn,clients);
+    
     Network::RobotClient rclient;
-
     rclient.init();
-
-    //TODO Get grid servers
-
+    
+    // Connect to all the grid servers
     for(ConListIterator iter = grid_servers.begin();
         iter != grid_servers.end();
         iter++)
     {
-        //rclient.initGrid( (*iter).first, (*iter).second);
+        rclient.initGrid( (*iter).first.c_str(), (*iter).second.c_str() );
+    }
+    
+    for( ClientList::iterator iter = clients.begin();
+         iter != clients.end();
+         iter++)
+    {
+        std::vector< TeamGridPair > pairs = iter->second;
+        for(int i = 0; i < pairs.size(); i++)
+        {
+            cout << "TeamNum: " << pairs[i].first;
+            cout << "\tGridNum: " << pairs[i].second << endl;;
+        }
     }
 
-    //Connect to the clock
-    //rclient.initClock(clock_server.first, clock_server.second);
 
-    //rclient.start();
-*/
+    //Connect to the clock
+    rclient.initClock(clock_server.first.c_str(), clock_server.second.c_str());
+    rclient.start();
+
     return 0;
 }
