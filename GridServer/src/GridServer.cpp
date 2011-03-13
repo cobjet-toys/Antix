@@ -10,8 +10,6 @@ GridServer::GridServer():Server()
     m_hb_rcvd = 0;
 
     gridGameInstance = new GridGame();
-    printf("finished gameinstance");
-    exit(0);
 
 }
 int GridServer::handleNewConnection(int fd)
