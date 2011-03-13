@@ -32,7 +32,7 @@ public:
      */
     Robot(Math::Position *pos, Home* home);
     
-    Robot(Math::Position *pos);
+    Robot(Math::Position *pos, float FOV, float Radius, float PickupRange, float SensorRange);
     
     /**
      * Delete position object.

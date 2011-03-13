@@ -30,7 +30,14 @@ GridGame::GridGame()
 
     //Home radius.
     home_Radius = 0.1;
-    WorldSize = 1.0;
+
+    m_WorldSize = 10;
+	m_NumGrids = 2;
+    m_GridId = 1;
+
+    m_Population.clear();
+    
+
 
     /*
     //Generate pucks at random locations.
@@ -99,6 +106,32 @@ void GridGame::sortRobots()
     }
 }
 
+int GridGame::randomizeTeam(int team_id, int team_size, std::vector<robot_info>* robot_info_vector)
+{
+
+		team_size = 1000;
+
+		int firstid = team_id*team_size;
+		int lastid = firstid + team_size - 1;
+
+        std::vector<robot_info> l_robot_info_vector;
+
+		for (int i = firstid; i <= lastid; i++)
+		{
+			Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
+       		Game::Robot* l_Robot = new Robot(l_RobotPosition, robot_FOV, robot_Radius, robot_PickupRange, robot_SensorRange);
+			addRobotToPop(l_Robot);
+
+            robot_info temp;
+            temp.id = i;
+            temp.x_pos = l_RobotPosition->getX();
+            temp.y_pos = l_RobotPosition->getY();
+
+            l_robot_info_vector.push_back(temp);
+		}
+        robot_info_vector = &l_robot_info_vector;
+}
+
 void GridGame::addRobotToPop(Robot* robot)
 {
     this->m_Population.push_back(robot);
@@ -129,3 +162,13 @@ RobotIter GridGame::getLastRobot()
 {
     return m_Population.end();
 }
+
+void GridGame::printRobotPopulation(){
+
+	for (int i = 0; i < m_Population.size(); i++){
+		
+		m_Population[i]->printInfo();
+
+	}
+}
+

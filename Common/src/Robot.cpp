@@ -18,10 +18,16 @@ Robot::Robot(Math::Position *pos,  Home* home):GameObject(pos), m_PuckHeld(NULL)
     m_Speed = new Math::Speed();
 }
 
-Robot::Robot(Math::Position *pos):GameObject(pos), m_PuckHeld(NULL)
+Robot::Robot(Math::Position *pos, float FOV, float Radius, float PickupRange, float SensorRange):GameObject(pos), m_PuckHeld(NULL)
 {
     m_LastPickup = new Math::Position();
     m_Speed = new Math::Speed();
+
+    m_FOV = FOV;
+    m_Radius = Radius;
+    m_PickupRange = PickupRange;
+    m_SensorRange = SensorRange;
+
 }
 
 Robot::~Robot()

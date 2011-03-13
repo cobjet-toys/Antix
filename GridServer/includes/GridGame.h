@@ -1,5 +1,5 @@
-#ifndef GAME_H_
-#define GAME_H_
+#ifndef GRIDGAME_H_
+#define GRIDGAME_H_
 
 #include "Team.h"
 #include "Puck.h"
@@ -37,7 +37,7 @@ public:
     * Receives a team id and team size and creates all robot with the ids
     * based on the team id. ie team id = 2, team_size= 100, result is robotid range 200-299
     */
-    std::vector<robot_info> randomizeTeam(int team_id, int team_size);
+    int randomizeTeam(int team_id, int team_size, std::vector<robot_info>* robot_info_vector);
 
     /**
      * Interface function to Network layer for registering a robot.
@@ -79,6 +79,7 @@ public:
      */
     void addRobotToPop(Game::Robot* robot);
 
+    void printRobotPopulation();
 
 private:
 
@@ -102,9 +103,6 @@ private:
     //Sorted list of robots; 
     std::vector<Game::Robot*> m_XPos;
 
-    //The max size of our world.
-    float m_WorldSize;
-
     //Returns the max window size.
     unsigned int m_WindowSize;
 
@@ -116,7 +114,11 @@ private:
 
     //Home radius.
     float home_Radius;
-    float WorldSize;
+
+    // Total world size
+    float m_WorldSize;
+    int m_NumGrids;
+    int m_GridId;
 
 
 };
