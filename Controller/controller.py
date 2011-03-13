@@ -20,8 +20,8 @@ def start_process(name, **kwargs):
         client_num = kwargs['client_num']
         script += CLIENT_RUN_COMMAND + " " + PATH + "Controller/" + SERVER_INFO + " " + PATH + "Controller/" + SYSTEM_CONFIG + " " + str(client_num)
     elif name is "grid":
-        #script += GRID_RUN_COMMAND + " " + SERVER_INFO + " " + str(current_grid_port)
-        script += GRID_RUN_COMMAND + " " + str(current_grid_port)
+        script += GRID_RUN_COMMAND + " " + SERVER_INFO + " " + str(current_grid_port)
+        #script += GRID_RUN_COMMAND + " " + str(current_grid_port)
         global current_grid_port
         current_grid_port += 1
     elif name is "drawer":
