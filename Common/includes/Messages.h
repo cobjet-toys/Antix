@@ -257,7 +257,7 @@ static const char * Msg_sensedObjectGroupHeader_format = "lh";
 typedef struct{
     uint32_t robotid;
     uint32_t x;
-    uint32 y;
+    uint32_t y;
 	static const size_t size = 12;
 } Msg_sensedObjectGroupItem;
 static const char * Msg_sensedObjectGroupItem_format = "lll";
