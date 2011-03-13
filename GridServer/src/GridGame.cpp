@@ -2,7 +2,7 @@
 #include "Robot.h"
 #include "Team.h"
 #include "Position.h"
-#include "Math.h"
+#include "MathAux.h"
 
 
 #include <time.h>
@@ -24,14 +24,15 @@ GridGame::GridGame()
     robot_FOV = Math::dtor(90.0);
     robot_Radius = 0.01;
     robot_SensorRange = 0.1;
-    robot_PickupRange = robot_SensorRange/5.0);
+    robot_PickupRange = robot_SensorRange/5.0;
 
     //Home radius.
     home_Radius = 0.1;
     WorldSize = 1.0;
 
+    /*
     //Generate pucks at random locations.
-    for (uint i = 0; i <m_TotalPuckCount; i++)
+    for (uint i = 0; i <robot_TotalPuckCount; i++)
     {
        //Get a random location.
        Math::Position* l_PuckPos = Math::Position::randomPosition(m_WorldSize);
@@ -53,6 +54,9 @@ GridGame::GridGame()
         std::ostringstream s;
         s << "Home=" << m_TotalTeamCount << ", Population=" << Team::m_RobotPopCount;
     }
+
+    */
+
 }
 
 GridGame::~GridGame()
@@ -60,7 +64,7 @@ GridGame::~GridGame()
     //Note: The delete of the robot population is the responsiblity of the team object.
    
     //Delete the teams.
-    for(std::list<Team*>::iterator it = m_Teams.begin(); it != m_Teams.end(); it++)
+    for(std::vector<Team*>::iterator it = m_Teams.begin(); it != m_Teams.end(); it++)
     {
         delete (*it);
     }
@@ -99,16 +103,6 @@ void GridGame::addRobotToPop(Robot* robot)
     this->m_XPos.push_back(robot);
 }
 
-GridGame* GridGame::getInstance()
-{
-    if (!m_Instance)
-    {
-        m_Instance = new GridGame();
-    }
-
-    return m_Instance;
-}
-
 const float& GridGame::getWorldSize() const
 {
     return m_WorldSize;
@@ -122,16 +116,6 @@ PuckIter GridGame::getFirstPuck()
 PuckIter GridGame::getLastPuck()
 {
     return m_Pucks.end();
-}
-
-std::list<Team*>::iterator GridGame::getFirstTeam()
-{
-    return m_Teams.begin();
-}
-
-std::list<Team*>::iterator GridGame::getLastTeam()
-{
-    return m_Teams.end();
 }
 
 RobotIter GridGame::getFirstRobot()

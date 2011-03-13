@@ -1,6 +1,6 @@
 common_COMPILER = g++
 
-common_SRC = Client.cpp	Home.cpp Packer.cpp Puck.cpp Server.cpp TcpConnection.cpp GameObject.cpp Math.cpp Position.cpp Robot.cpp Speed.cpp Team.cpp 
+common_SRC = Client.cpp	Home.cpp Packer.cpp Puck.cpp Server.cpp TcpConnection.cpp GameObject.cpp MathAux.cpp Position.cpp Robot.cpp Speed.cpp Team.cpp 
 common_LIBRARY = libcommon.a
 
 # ----- do not edit under this line unless you know what you are doing :)

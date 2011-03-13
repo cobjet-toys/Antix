@@ -3,51 +3,55 @@
 
 #include "Team.h"
 #include "Puck.h"
+#include "Robot.h"
+#include "MathAux.h"
 #include <list>
 #include <vector>
 #include <map>
 #include <stdint.h>
 
-typedef std::vector<Robot*>::iterator RobotIter;
-typedef std::vector<Puck*>::iterator PuckIter;
+typedef std::vector<Game::Robot*>::iterator RobotIter;
+typedef std::vector<Game::Puck*>::iterator PuckIter;
 
 
 typedef struct{
     int robotid;
     float x;
     float y;
-} sensed_item
+} sensed_item;
 
 typedef struct{
     int action;
     float speed;
     float angle;
-} action
+} action;
 
 typedef struct{
     float x_pos;
     float y_pos;
-    int speed;
+    float speed;
     float angle;
     int puck_id;
-} action_results
+} action_results;
 
 typedef struct{
-    int teamid;
+    unsigned int id;
     float x_pos;
     float y_pos;
-    float robot_x;
-    float robot_y;
-} team_start
+    float speed;
+    float angle;
+    int puck_id;
+} robot_info;
 
-class RobotGame
+
+class GridGame
 {
 public:
     /**
      * All initializatoin of the game happens here.
      * Config options etc...
      */
-    void init(int argc, char** argv);
+     GridGame();
     
     /**
      * Sorts the robot population
@@ -57,34 +61,34 @@ public:
     /**
      * Dtor. Delete the pucks and teams.
      */
-    ~RobotGame();
+    ~GridGame();
 
     /**
     * Receives a team id and team size and creates all robot with the ids
     * based on the team id. ie team id = 2, team_size= 100, result is robotid range 200-299
     */
-    vector<team_start> randomizeTeam(int team_id, int team_size);
+    std::vector<robot_info> randomizeTeam(int team_id, int team_size);
 
     /**
      * Interface function to Network layer for registering a robot.
      */
-    int registerRobot(action robots);
+    int registerRobot(robot_info robots);
 
     /**
      * Interface function to Network layer for unregistering a robot.
      */
-    int unregisterRobot(action robot);
+    int unregisterRobot(int robot);
 
     /**
      * Interface function to Network layer for returning sensor data for a list of robots
      * for a set of robots on a client
      */
-    int returnSensorData(vector<int>* robot_ids_from_client, map<int><vector<sensed_item>>* sensed_items_map);
+    int returnSensorData(std::vector<int>* robot_ids_from_client, std::map<int, std::vector<sensed_item> >* sensed_items_map);
 
     /**
      * Interface function to Network layer for processing actions for each robot.
      */
-    int processAction(map<int><action>* robot_actions, map<int><action>* results);
+    int processAction(std::map<int, action>* robot_actions, std::map<int, action>* results);
 
     /**
      * Return the max world size.
@@ -103,42 +107,30 @@ public:
      * Add a robot to the general population.
      * Used when a team is initialized.
      */
-    void addRobotToPop(Robot* robot);
+    void addRobotToPop(Game::Robot* robot);
 
-    /**
-     * Singleton instance that allows access anywhere Game.h is included.
-     */
-    static RobotGame* getInstance();
 
-    /**
-     * Redis client logging-wrapper instance.
-     */
 private:
-
-    /**
-     * Instance of our game.
-     */
-    static RobotGame* m_Instance;
 
     /**
      * List of teams.
      */
-    std::vector<Team*> m_Teams;
+    std::vector<Game::Team*> m_Teams;
     
     /**
      * List of pucks.
      */
-    std::vector<Puck*> m_Pucks;
+    std::vector<Game::Puck*> m_Pucks;
 
     /**
      * List of all available robots.
      */
-    std::vector<Robot*> m_Population;
+    std::vector<Game::Robot*> m_Population;
 
     //O(1) lookup of our sorted vector;     
-    std::map<Robot*, int> m_XRobs;
+    std::map<Game::Robot*, int> m_XRobs;
     //Sorted list of robots; 
-    std::vector<Robot*> m_XPos;
+    std::vector<Game::Robot*> m_XPos;
 
     //The max size of our world.
     float m_WorldSize;
@@ -147,14 +139,14 @@ private:
     unsigned int m_WindowSize;
 
     //Robot configurations.
-    float robot_FOV = Math::dtor(90.0);
-    float robot_Radius = 0.01;
-    float robot_SensorRange = 0.1;
-    float robot_PickupRange = robot_SensorRange/5.0);
+    float robot_FOV;
+    float robot_Radius;
+    float robot_SensorRange;
+    float robot_PickupRange;
 
     //Home radius.
-    float home_Radius = 0.1;
-    float WorldSize = 1.0;
+    float home_Radius;
+    float WorldSize;
 
 
 };
