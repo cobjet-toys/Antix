@@ -4,9 +4,9 @@
 #define DEBUG
 
 #ifdef RELEASE 
-#define DEBUGPRINT printf
-#else
 #define DEBUGPRINT(format, args...) ((void)0)
+#else
+#define DEBUGPRINT printf
 #endif
 
 #endif
