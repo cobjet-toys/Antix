@@ -1,9 +1,7 @@
 #include "Team.h"
-#include "Game.h"
 
 using namespace Game;
 
-unsigned int Team::m_RobotPopCount = 0;
 
 Team::Team()
 {
@@ -36,6 +34,7 @@ Team::Team()
 
 Team::~Team()
 {
+/*
     //Delete our robots.
     for (std::list<Robot*>::iterator it = m_Robots.begin(); it != m_Robots.end(); it++)
     {
@@ -43,6 +42,7 @@ Team::~Team()
     }
     delete m_Color;
     delete m_Home;
+*/
 }
 
 Home* Team::getHome()
@@ -50,11 +50,3 @@ Home* Team::getHome()
     return m_Home;
 }
 
-std::list<Robot*>::iterator Team::getFirstRobot()
-{
-    return m_Robots.begin();
-}
-
-std::list<Robot*>::iterator Team::getLastRobot()
-{
-    return m_Robots.end();
