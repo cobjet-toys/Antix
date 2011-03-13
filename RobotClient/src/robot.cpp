@@ -26,8 +26,8 @@ int main(int argc, char** argv)
     ConnectionPair draw_server;
     ClientList clients;
     
-    Antix::parseServerFile(server_fn,grid_servers,robot_clients, clock_server, draw_server); 
-    Antix::parseConfigFile(config_fn,clients);
+    parseServerFile(server_fn,grid_servers,robot_clients, clock_server, draw_server); 
+    parseConfigFile(config_fn,clients);
     
     Network::RobotClient rclient;
     rclient.init();
@@ -59,3 +59,4 @@ int main(int argc, char** argv)
 
     return 0;
 }
+
