@@ -22,7 +22,7 @@ void DrawClient::init(string db_host, int homes, int pucks, int homePop)
     this->posDB->setDataOnly(true);
     this->m_totalHomes = homes;
     this->m_totalPucks = pucks;
-    this->m_totalRobots = homePop;
+    this->m_totalRobots = 1000000;//homePop;
 
     /* Push fake team data */
     this->posDB->setLogKey(TEAM_DB_NAME);
@@ -48,15 +48,26 @@ void DrawClient::update()
     cout << "*** Objects=" << (this->m_totalRobots + this->m_totalPucks) << endl;
     cout << "*** Steps=" << 3 << endl << endl;
 
-    for(uint32_t j=0; j<3; j++)
+    // Creates an array of random values, to draw the pucks -- TEMPORARY TESTING -- //
+    srand(time(NULL));
+    float randPuckVals[this->m_totalPucks * 2];
+    for(int i = 0; i < this->m_totalPucks * 2; i++){randPuckVals[i] = (float)(rand()%600);}
+    // Creates an array of random values for robot positions -- TEMPORARY TESTING -- //
+    srand(time(NULL));
+    //float robotOrientation[this->m_totalRobots];
+    //for(int i = 0; i < this->m_totalRobots; i++){robotPosition[i] = (float)(rand()%100)/100;}
+    float robotPosition[this->m_totalRobots][2];
+    for(int i = 0; i < this->m_totalRobots; i++){for(int j = 0; j < 2; j++){robotPosition[i][j] = (float)(rand()%600);}}
+
+    for(uint32_t j=0; j<100; j++)
     {
         char logKey[8];
-        sprintf(logKey, "%s%d", POS_DB_NAME, j%MAX_POS_KEYS);
+        //sprintf(logKey, "%s%d", POS_DB_NAME, j%MAX_POS_KEYS);
         this->posDB->setLogKey(logKey);
-        cout << "\n*** LogKey=" << logKey << endl;
+        //cout << "\n*** LogKey=" << logKey << endl;
 
         clock_t start = clock();
-        for(int i=0; i<(this->m_totalRobots); i++)
+        for(int i=0; i < this->m_totalRobots; i++)
         {
             char buf[64];
             int id;
@@ -64,29 +75,35 @@ void DrawClient::update()
             float posX, posY, orientation;
 
             bzero(buf, 64);
-            id=i+1024;
-            posX=(float)i*10+j*5;
-            posY=i*15+j*3;
+            id = i + 1024;
+
+            // Computes robots altered position (Random)
+            robotPosition[i][0] += float((rand()%200)-100)/50;
+            robotPosition[i][1] += float((rand()%200)-100)/50;               
+
+            posX = robotPosition[i][0];//(float)i*10+j*5;
+            posY = robotPosition[i][1];//i*15+j*3;
+            //posX = (float)i*10+j*5;
+            //posY = i*15+j*3;
             orientation = 1.0;
-            hasPuck=i%2==0?'T':'F';
+            hasPuck = i%2 == 0 ? 'T':'F';
 
             sprintf(buf, POS_PATTERN, id, posX, posY, orientation, hasPuck);
-            cout << buf << endl;
+            //cout << buf << endl;
             this->posDB->append(string(buf));
         }
 
-        int x = this->m_totalRobots;        /* used to fake <x,y> of puck */
-        for(int i=0; i<(this->m_totalPucks); i++)
+        for(int i=0; i < this->m_totalPucks; i++)
         {
             char buf[64];
             float posX, posY;
 
             bzero(buf, 64);
-            posX=(float)i+x;
-            posY=posX;
+            posX = randPuckVals[(2*i)];
+            posY = randPuckVals[(2*i) + 1];
 
-            sprintf(buf, POS_PATTERN, 0, posX, posY, 0.0, 'F');
-            cout << buf << endl;
+            sprintf(buf, POS_PATTERN, i, posX, posY, 0.0, 'F');
+            //cout << buf << endl;
             this->posDB->append(string(buf));
         }
 

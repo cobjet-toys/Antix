@@ -131,7 +131,7 @@ void DrawServer::update()
         	else
         	{
         		this->m_pucks[id]->getPosition()->setX(posX);
-        		this->m_pucks[id]->getPosition()->setX(posY);        		
+        		this->m_pucks[id]->getPosition()->setY(posY);        		
         	}
         }
         else
@@ -150,7 +150,7 @@ void DrawServer::update()
         	else
         	{
         		this->m_robots[id]->getPosition()->setX(posX);
-        		this->m_robots[id]->getPosition()->setX(posY);        		
+        		this->m_robots[id]->getPosition()->setY(posY);        		
         	}
             
             //this->m_robots[id]->m_PuckHeld = hasPuck == 'T';

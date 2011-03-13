@@ -12,7 +12,7 @@
 #define TEAM_DB_NAME        "teamDB"
 #define POS_PATTERN         "%d %f %f %f %c"    /* <id posX posY orientation hasPuck> */
 #define TEAM_PATTERN        "%d %f %f %d %d %d" /* <id posX posY colR colG colB> */
-#define MAX_POS_KEYS        3
+#define MAX_POS_KEYS        100
 #define TEAM_ID_SHIFT       1024
 
 #endif	/* _DUTILS_H */
