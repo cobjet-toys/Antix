@@ -4,6 +4,7 @@
 #include "Server.h"
 #include "Messages.h"
 #include "Packer.h"
+#include "GridGame.h"
 
 namespace Network
 {
@@ -13,11 +14,12 @@ public:
     GridServer();
     virtual int handler(int fd);
     virtual int handleNewConnection(int fd);
-	virtual int allConnectionReadyHandler();
+    virtual int allConnectionReadyHandler();
 
 private:
-	uint32_t m_uId;
+    uint32_t m_uId;
     uint32_t m_hb_rcvd;
+    GridGame* gridGameInstance;	
 };
 }
 

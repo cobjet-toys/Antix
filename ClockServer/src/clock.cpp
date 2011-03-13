@@ -5,6 +5,7 @@
 
 int main(int argc, char ** argv)
 {
+    setbuf(stdout, NULL);
 	if (argc < 3) 
 	{
 		printf("Usage: ./clock.bin <clock_port> <num_clients>\n");

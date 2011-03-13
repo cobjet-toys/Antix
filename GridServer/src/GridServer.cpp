@@ -7,6 +7,9 @@ GridServer::GridServer():Server()
 {
     m_uId = -1;
     m_hb_rcvd = 0;
+
+    gridGameInstance = new GridGame();
+
 }
 int GridServer::handleNewConnection(int fd)
 {

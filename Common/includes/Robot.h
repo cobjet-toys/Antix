@@ -30,10 +30,9 @@ public:
     /**
      * Initialize robot at position 'pos' with home 'home'.
      */
-    /**
-     * TODO: Change home to team.
-     */
     Robot(Math::Position *pos, Home* home);
+    
+    Robot(Math::Position *pos);
     
     /**
      * Delete position object.
@@ -101,7 +100,11 @@ public:
 
     static float& getFOV();
 
-    virtual void draw();
+    /*
+     * ID of the robot
+     */
+    int id;
+
 
 private: 
     /**
