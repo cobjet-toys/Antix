@@ -1,20 +1,20 @@
 # Configuration settings for controller
 
 # Client settings
-CLIENT_RUN_COMMAND = "RobotClient/robot.bin"
+CLIENT_RUN_COMMAND = "RobotClient/build/release/robot.bin"
 # the controller will cd to antix Path + this  directory and call "make":
 CLIENT_BUILD_DIR = "RobotClient/"
 CLIENT_BUILD_COMMAND = "make robot"
 
 # Server settings
-GRID_RUN_COMMAND = "GridServer/grid.bin"
+GRID_RUN_COMMAND = "GridServer/build/release/grid.bin"
 GRID_PORT = "13337" # for simplicity, every subsequent grid will use port +1
 # the controller will cd to antix Path + this  directory and call "make":
 GRID_BUILD_DIR = "GridServer/"
 GRID_BUILD_COMMAND = "make grid"
 
 # Clock settings
-CLOCK_RUN_COMMAND = "ClockServer/clock.bin"
+CLOCK_RUN_COMMAND = "ClockServer/build/release/clock.bin"
 CLOCK_PORT = "13437" # for simplicity, every subseqent clock will use port +1
 # the controller will cd to antix Path + this  directory and call "make":
 CLOCK_BUILD_DIR = "ClockServer/"
