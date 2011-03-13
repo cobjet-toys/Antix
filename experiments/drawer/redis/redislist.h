@@ -14,6 +14,7 @@
 #include <string>
 #include <time.h>
 #include <unistd.h>
+#include "../dutils.h"
 
 #define DEFAULT_HOST    "localhost"
 #define DEFAULT_PORT    6379
@@ -201,6 +202,9 @@ namespace AntixUtils
 
         vector<LogItem> logitems()
         {
+            // Start clock (for testing purposes) //
+            clock_t start = clock();
+
             client::string_vector items;
             int len = this->m_client->lrange(this->m_logKey, 0, -1, items);
 
@@ -212,6 +216,10 @@ namespace AntixUtils
                 item.rprint(items[i]);
                 results.push_back(item);
             }
+  
+            // Print time in (ms) that it took to fetch data 
+            double elapsed = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
+            //printf("Fetch: %fms\n", elapsed);
 
             return results;
         }

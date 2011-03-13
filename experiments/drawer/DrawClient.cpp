@@ -22,7 +22,7 @@ void DrawClient::init(string db_host, int homes, int pucks, int homePop)
     this->posDB->setDataOnly(true);
     this->m_totalHomes = homes;
     this->m_totalPucks = pucks;
-    this->m_totalRobots = 1000000;//homePop;
+    this->m_totalRobots = 1000;//homePop;
 
     /* Push fake team data */
     this->posDB->setLogKey(TEAM_DB_NAME);
@@ -53,7 +53,6 @@ void DrawClient::update()
     float randPuckVals[this->m_totalPucks * 2];
     for(int i = 0; i < this->m_totalPucks * 2; i++){randPuckVals[i] = (float)(rand()%600);}
     // Creates an array of random values for robot positions -- TEMPORARY TESTING -- //
-    srand(time(NULL));
     //float robotOrientation[this->m_totalRobots];
     //for(int i = 0; i < this->m_totalRobots; i++){robotPosition[i] = (float)(rand()%100)/100;}
     float robotPosition[this->m_totalRobots][2];
@@ -62,7 +61,7 @@ void DrawClient::update()
     for(uint32_t j=0; j<100; j++)
     {
         char logKey[8];
-        //sprintf(logKey, "%s%d", POS_DB_NAME, j%MAX_POS_KEYS);
+        sprintf(logKey, "%s%d", POS_DB_NAME, j%MAX_POS_KEYS);
         this->posDB->setLogKey(logKey);
         //cout << "\n*** LogKey=" << logKey << endl;
 

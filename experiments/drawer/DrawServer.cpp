@@ -101,6 +101,13 @@ void DrawServer::update()
 
     items = this->m_redisCli->logitems();
     
+    // Print time in (ms) that it took to fetch data 
+    double elapsed = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
+    printf("Fetch   %d: %fms (Robots=%d, Pucks=%d)\n",
+            this->m_framestep, elapsed, this->m_robots.size(), this->m_pucks.size());
+    
+    start = clock();
+    
     if (items.size() == 0)
     {
     	cout << "No items in " << logKey << endl;
@@ -124,34 +131,36 @@ void DrawServer::update()
         	continue;
         }
         
-        if (id/TEAM_ID_SHIFT == 0)
+        if(id/TEAM_ID_SHIFT == 0)
         {
             if (!this->m_pucks[id])
-            	this->m_pucks[id] = new Game::Puck(pos);
-        	else
-        	{
-        		this->m_pucks[id]->getPosition()->setX(posX);
-        		this->m_pucks[id]->getPosition()->setY(posY);        		
-        	}
+            {
+            	  this->m_pucks[id] = new Game::Puck(pos);
+            }
+          	else
+          	{
+          		  this->m_pucks[id]->getPosition()->setX(posX);
+          		  this->m_pucks[id]->getPosition()->setY(posY);        		
+          	}
         }
         else
         {
-        	if (!this->m_robots[id])
-        	{
-        		if (!this->m_teams[id/TEAM_ID_SHIFT])    
-        		{
-        			printf("no home for %d", id/TEAM_ID_SHIFT);
-        			continue;
-        		}         			
-    			this->m_robots[id] = new Game::Robot(
-        		pos, this->m_teams[id/TEAM_ID_SHIFT]->getHome());
-        	}
-            	
-        	else
-        	{
-        		this->m_robots[id]->getPosition()->setX(posX);
-        		this->m_robots[id]->getPosition()->setY(posY);        		
-        	}
+          	if (!this->m_robots[id])
+          	{
+            		if (!this->m_teams[1])//id/TEAM_ID_SHIFT])    
+            		{
+            			  printf("no home for %d", 1);//id/TEAM_ID_SHIFT);
+            			  continue;
+            		}         			
+      			    this->m_robots[id] = new Game::Robot(
+          		  pos, this->m_teams[1]->getHome());//id/TEAM_ID_SHIFT]->getHome());
+          	}
+              	
+          	else
+          	{
+            		this->m_robots[id]->getPosition()->setX(posX);
+            		this->m_robots[id]->getPosition()->setY(posY);        		
+          	}
             
             //this->m_robots[id]->m_PuckHeld = hasPuck == 'T';
         }
@@ -165,9 +174,10 @@ void DrawServer::update()
 
     //this->m_redisCli->clear();
 
-    double elapsed = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
-    printf("%d: %fms (Robots=%d, Pucks=%d)\n",
-            this->m_framestep, elapsed, this->m_robots.size(), this->m_pucks.size());
+    // Print time in (ms) that it took to process data
+    double elapsed2 = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
+    printf("Process %d: %fms (Robots=%d, Pucks=%d)\n",
+            this->m_framestep, elapsed2, this->m_robots.size(), this->m_pucks.size());
     
     //check for overflow
     this->m_framestep++;
