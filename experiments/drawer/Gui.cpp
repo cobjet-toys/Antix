@@ -20,11 +20,20 @@ void displayFunc()
 {
     glClear( GL_COLOR_BUFFER_BIT );
     glMatrixMode (GL_MODELVIEW);
-    glLoadIdentity();    
+    glLoadIdentity();
+
+    /*const size_t len(Network::DrawServer::getInstance()->getRobotsCount());
+    printf("robot count: %d", len);
+    for (Network::DrawServer::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
+         it != Network::DrawServer::getInstance()->getLastRobot();it++)
+    {
+         		printf("Whhaohha");
+    }*/
 
     drawTeams();
     drawPucks();
     drawRobots();
+    //drawTest();
 
     glutSwapBuffers();
     glutTimerFunc( 20, timerFunc, 0);
@@ -32,32 +41,33 @@ void displayFunc()
 
 void drawTeams()
 {
+    unsigned int winsize = Network::DrawServer::getInstance()->getWindowSize();
     float worldsize = Network::DrawServer::getInstance()->getWorldSize();
     float radius = Network::DrawServer::getInstance()->getHomeRadius();
 
     for (Network::DrawServer::TeamIter it = Network::DrawServer::getInstance()->getFirstTeam();
-            it != Network::DrawServer::getInstance()->getLastTeam();it++)
+         it != Network::DrawServer::getInstance()->getLastTeam(); it++)
     {
         Math::Position * homePos = (*it).second->getHome()->getPosition();
 
-        glColor3f( 255, 255,255 );
+        glColor3f(255, 255, 255);
 
-        GlDrawCircle( homePos->getX(), homePos->getY(), radius, 16 );
-        GlDrawCircle( homePos->getX()+worldsize, homePos->getY(), radius, 16 );
-        GlDrawCircle( homePos->getX()-worldsize, homePos->getY(), radius, 16 );
-        GlDrawCircle( homePos->getX(), homePos->getY()+worldsize, radius, 16 );
-        GlDrawCircle( homePos->getX(), homePos->getY()-worldsize, radius, 16 );
+        GlDrawCircle(homePos->getX()/winsize, homePos->getY()/winsize, radius/winsize, 16);
+        //GlDrawCircle( homePos->getX()+worldsize, homePos->getY(), radius, 16 );
+        //GlDrawCircle( homePos->getX()-worldsize, homePos->getY(), radius, 16 );
+        //GlDrawCircle( homePos->getX(), homePos->getY()+worldsize, radius, 16 );
+        //GlDrawCircle( homePos->getX(), homePos->getY()-worldsize, radius, 16 );
     }
 }
 
 void drawPucks()
 {
-    glColor3f( 255, 255, 255 ); // white
+    glColor3f(255, 255, 255); // WHITE
 
-    glPointSize( 1.0 );
+    glPointSize(4.0);
 
     // pack the puck points into a vertex array for fast rendering
-    const size_t len( Network::DrawServer::getInstance()->getPucksCount());
+    /*const size_t len( Network::DrawServer::getInstance()->getPucksCount());
 
     // keep this buffer around between calls for speed
     static std::vector<GLfloat> pts;
@@ -78,19 +88,33 @@ void drawPucks()
     glDrawArrays( GL_POINTS, 0, len );
 
     glPointSize( 2.0 );   
+    */   
+
+    unsigned int winsize = Network::DrawServer::getInstance()->getWindowSize();
+
+    glBegin(GL_POINTS);
+    for (Network::DrawServer::PuckIter it = Network::DrawServer::getInstance()->getFirstPuck();
+            it != Network::DrawServer::getInstance()->getLastPuck();it++)
+    {    
+        Math::Position * puckPos = (*it).second->getPosition(); 
+        glVertex2f(puckPos->getX()/winsize, puckPos->getY()/winsize);
+    }
+    glEnd();
 }
 
 void drawRobots()
 {
-    int winsize = Network::DrawServer::getInstance()->getWindowSize();
+    unsigned int winsize = Network::DrawServer::getInstance()->getWindowSize();
     float worldsize = Network::DrawServer::getInstance()->getWorldSize();
     float radius = Network::DrawServer::getInstance()->getHomeRadius();
+
+    glColor3f(255, 255, 255);
     
     // if robots are smaller than 4 pixels across, draw them as points
-    if (1)
     //if( (radius * (double)winsize/(double)worldsize) < 2.0 )
+    if(true)
     {
-        const size_t len( Network::DrawServer::getInstance()->getRobotsCount() ); 
+        /*const size_t len( Network::DrawServer::getInstance()->getRobotsCount()); 
     	
         // keep this buffer around between calls for speed
         static std::vector<GLfloat> pts;
@@ -103,15 +127,15 @@ void drawRobots()
         glEnableClientState( GL_COLOR_ARRAY );
         glColorPointer( 3, GL_FLOAT, 0, &colors[0] );
 
-        int i=0;
+        int i = 0;
         for (Network::DrawServer::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
-                it != Network::DrawServer::getInstance()->getLastRobot();it++)
+             it != Network::DrawServer::getInstance()->getLastRobot();it++)
         {
-        	if (!(*it).second)
-        	{
-        		printf("No robot @ %d", (*it).first);
-        		continue;
-        	}
+          	/*if (!(*it).second)
+          	{
+            		printf("No robot @ %d", (*it).first);
+            		continue;
+          	}
         	
             Math::Position * robotPos = (*it).second->getPosition();
             assert(robotPos);
@@ -125,9 +149,42 @@ void drawRobots()
 
             i++;
         }
+        glEnd();
 
         glDrawArrays( GL_POINTS, 0, len );
-        glDisableClientState( GL_COLOR_ARRAY );
+        glDisableClientState( GL_COLOR_ARRAY );*/
+
+        const size_t len(Network::DrawServer::getInstance()->getRobotsCount());
+        char buf[40];
+        sprintf(buf, "robot count: %d", len);
+        drawText(buf, 5.0f, 585.0f);
+
+        glBegin(GL_POINTS);
+        int i = 0;
+        for (Network::DrawServer::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
+             it != Network::DrawServer::getInstance()->getLastRobot();it++)
+        {
+            char buf[40];
+            sprintf(buf, "No robot @ %d", (*it).first);
+            drawText(buf, 5.0f, 570.0f);
+
+            if (!(*it).second)
+          	{
+                printf("No robot @ %d", (*it).first);
+            		continue;
+          	}
+
+ 	          Math::Position * robotPos = (*it).second->getPosition();
+            glVertex2f(robotPos->getX()/winsize, robotPos->getY()/winsize);
+
+            /*if(i == 0)
+            {
+                
+            }*/
+
+            i++;
+        }
+        glEnd();
     }
     else 
     {
@@ -146,7 +203,33 @@ void drawRobots()
 
 }
 
-    /*
+void drawText(char* text, float x, float y)
+{
+    unsigned int winsize = Network::DrawServer::getInstance()->getWindowSize();
+    void* font = GLUT_BITMAP_9_BY_15;
+    glRasterPos2f(x/winsize, y/winsize);
+    while(*text) 
+    {
+        glutBitmapCharacter(font, *text);
+        text++;
+    }
+}
+
+void drawTest()
+{
+    glColor3f( 0, 0, 255 ); // BLUE
+
+    glPointSize(5.0);
+
+    glBegin(GL_POINTS);
+	  for (size_t i = 0; i < 5; i++)
+    {    
+       glVertex2f(0.1*i, 0.1*i);
+    }
+    glEnd();
+}
+
+/*
 void drawRobot(Game::Robot* robot, const GUI::Color* color )
 {
     glPushMatrix();

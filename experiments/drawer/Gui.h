@@ -10,6 +10,8 @@ void displayFunc();
 void drawPucks();
 void drawTeams();
 void drawRobots();
+void drawText(char* text, float x, float y);
+void drawTest();
 //void drawRobot(Game::Robot* robot, const GUI::Color* color);
 //void drawHome(Game::Home* home, const GUI::Color* color);
 void mousFunc(int button, int state, int x, int y);

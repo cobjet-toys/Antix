@@ -22,7 +22,7 @@ DrawServer::DrawServer()
     this->m_FOVEnabled = false;
     this->m_FOVAngle = 0.0;
     this->m_FOVRange = 0.0;
-    this->m_homeRadius = 1.0;
+    this->m_homeRadius = 20.0;
     this->m_framestep = 0;
 }
 
@@ -80,7 +80,7 @@ void DrawServer::initTeams()
     
     if (this->m_teams.size() == 0)
     {
-    	Math::Position *homePos = new Math::Position(10.0, 10.0, 0.0);
+    	Math::Position *homePos = new Math::Position(55.0, 150.0, 0.0);
         Game::Home * home = new Game::Home(homePos);        
         this->m_teams[1] = new Game::Team();
         this->m_teams[1]->m_Home = home;
@@ -157,8 +157,8 @@ void DrawServer::update()
             //this->m_robots[id]->m_PuckHeld = hasPuck == 'T';
         }
         
-        printf("%s: %d %f %f %f %c\n",
-                (id==0?"Puck":"Robot"), id, posX, posY, orientation, hasPuck);
+        //printf("%s: %d %f %f %f %c\n",
+        //        (id==0?"Puck":"Robot"), id, posX, posY, orientation, hasPuck);
         //cout << "\tString=" << (*it).message << endl;
         //cout << "\tChar* =" << msgBuf << endl;
          /**/
