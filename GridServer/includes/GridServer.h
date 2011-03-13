@@ -18,6 +18,7 @@ public:
 private:
 	uint32_t m_uId;
     uint32_t m_hb_rcvd;
+	//GridGame gridGameInstance;
 };
 }
 

@@ -236,5 +236,30 @@ typedef struct
 	static const size_t size = 17;
 } Msg_InitDrawer;
 
+//------------------------------- DO NOT DELETE THESE
+
+//receive 
+typedef struct{
+	uint32_t id;
+	static const size_t size = 4;
+} Msg_robotSensorRequestRobotId;
+static const char * Msg_robotSensorRequestRobotId_format = "l";
+
+// Send 
+typedef struct{
+	uint32_t id;
+	uint16_t objectCount;
+	static const size_t size = 6;
+} Msg_sensedObjectGroupHeader;
+static const char * Msg_sensedObjectGroupHeader_format = "lh";
+
+
+typedef struct{
+    uint_32 robotid;
+    uint_32 x;
+    uint_32 y;
+	static const size_t size = 12;
+} Msg_sensedObjectGroupItem;
+static const char * Msg_sensedObjectGroupItem_format = "lll";
 
 #endif

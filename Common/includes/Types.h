@@ -24,7 +24,7 @@ typedef ConnectionList::iterator ConListIterator;
 typedef std::map<uid, std::vector<TeamGridPair> > ClientList;
 
 typedef struct{
-    int robotid;
+    unsigned int robotid;
     float x;
     float y;
 } sensed_item;
@@ -40,7 +40,7 @@ typedef struct{
     float y_pos;
     float speed;
     float angle;
-    int puck_id;
+    unsigned int puck_id;
 } action_results;
 
 typedef struct{
@@ -49,7 +49,7 @@ typedef struct{
     float y_pos;
     float speed;
     float angle;
-    int puck_id;
+    unsigned int puck_id;
 } robot_info;
 
 

@@ -1,5 +1,8 @@
 #include "GridServer.h"
 #include "Config.h"
+#include "Types.h"
+#include <map>
+#include <vector>
 
 using namespace Network;
 
@@ -43,7 +46,11 @@ int GridServer::handler(int fd)
 	}
 	
 	DEBUGPRINT("Receiving message from client\n");
-	unpack(msg, "hh", &sender, &msgType);
+	if (unpack(msg, "hh", &sender, &msgType) != l_header.size)
+	{
+		DEBUGPRINT("Could not unpack message header.\n");
+		return 0;
+	}
 	DEBUGPRINT("%u, %u\n", sender, msgType);
 	
 	if (sender == -1 || msgType == -1) return -1; // bad messages
@@ -56,26 +63,65 @@ int GridServer::handler(int fd)
             {
                 case (MSG_REQUESTSENSORDATA):
 					
-                    Msg_RobotSensorData l_RoboData; //BULLSHIT sensor data
-                    Msg_header l_Header = {SENDER_GRIDSERVER, MSG_ROBOTSENSORDATA};
-					
-
 					Msg_RequestSizeMsg msgSize;
 					
-                    unsigned char l_Buffer[l_RoboData.size];
-					unsigned char l_msgSizeBuff;
+					unsigned char l_msgSizeBuff[msgSize.size];
 					
                     
-					if (l_curConnection->recv(l_msgSizeBuff, msgSize.size))
+					if (l_curConnection->recv(l_msgSizeBuff, msgSize.size) == -1)
 					{
 						DEBUGPRINT("Request for robots failed\n");
-						break;
+						return -1;
 					}
 					
-					int numRobots;
+					int numRobots=0;
 					
-					unpack(l_msgSizeBuff, "l", &numRobots);
+					if (unpack(l_msgSizeBuff, Msg_RequestSizeMsg_format, &numRobots) != msgSize.size)
+					{
+						DEBUGPRINT("Numbur of robots could not be determined\n");
+						return -1;
+					}
 					
+					if (numRobots <= 0)
+					{
+						DEBUGPRINT("Requested sensor data for <=0 Robots. Game error.");
+						return -1;
+					}
+					
+					DEBUGPRINT("Client has requested %i robot's sensor data: ", %numRobots);
+					
+					vector<int> robot_ids;
+					robot_ids.erase();
+					
+					Msg_RequestSensorData l_robotId;
+					unsigned char l_robotIdBuff[l_robotId.size * numRobots];
+					
+					
+					for (int i = 0; i < numRobots; i++)
+					{
+						if (l_curConnection->recv(l_robotIdBuff+(l_robotId.size * i), l_robotId.size) == -1)
+						{
+							DEBUGPRINT("Could not get robot id for returnSensorData\n");
+							return 0;
+						}
+						unsigned int id;
+						if (unpack(l_robotIdBuff+(l_robotId.size * i),Msg_robotSensorRequestRobotId_format, &id) != l_robotId.size)
+						{
+							return -1;
+						}
+						robot_ids.push_back(id);
+					}
+
+					
+
+					//gridGameInstance.returnSensorData(vector<unsigned int>* robot_ids, map<unsigned int, vector<sensed_item> >* sensed_items_map);
+
+
+					
+
+					std::map<int, vector<sensed_item> > * sensed_items_map = new std::map<int, vector<sensed_item> >;
+					
+					//std::map<int>::const_iterator it = 
 					
                 break;
             }
