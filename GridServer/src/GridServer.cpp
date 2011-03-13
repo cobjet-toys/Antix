@@ -25,53 +25,61 @@ int GridServer::allConnectionReadyHandler()
 int GridServer::handler(int fd)
 {
 	TcpConnection * l_curConnection = m_Clients[fd];
+	
 	if (l_curConnection == NULL)
     {
 		return -1; // no such socket descriptor
 	}
-	Msg_header l_msgHeader;
 	
-	unsigned char * msg = new unsigned char[20];
-	memset(msg, 0, l_msgHeader.size);
+	Msg_header l_header;
+	
+	unsigned char msg[l_header.size];
+	
+	memset(msg, 0, l_header.size);
 	
 	uint16_t sender=-1, msgType =-1;
 	
-	if (l_curConnection->recv(msg, (int)l_msgHeader.size) != 0)
+	if (l_curConnection->recv(msg, l_header.size) != 0)
 	{
+		DEBUGPRINT("Failed to recv message\n");
 		return -1; // recv failed
 	}
 	
-	printf("Receiving message from client\n");
+	DEBUGPRINT("Receiving message from client\n");
 	unpack(msg, "hh", &sender, &msgType);
-	printf("%u, %u\n", sender, msgType);
+	DEBUGPRINT("%u, %u\n", sender, msgType);
+	
 	if (sender == -1 || msgType == -1) return -1; // bad messages
 	
 	switch (sender)
 	{
         case SENDER_CLIENT:
+			
             switch(msgType)
             {
                 case (MSG_REQUESTSENSORDATA):
-                    Msg_RobotSensorData l_RoboData = {2, 0.5, 0.5, '1'}; //BULLSHIT sensor data
-
+					
+                    Msg_RobotSensorData l_RoboData; //BULLSHIT sensor data
                     Msg_header l_Header = {SENDER_GRIDSERVER, MSG_ROBOTSENSORDATA};
                     Msg_RequestSensorData l_Req;
-
+					Msg_RequestSizeMsg msgSize;
+					
                     unsigned char l_Buffer[l_RoboData.size];
-
-                   //
-                    //Receive the id of the requested object.
-                    //
+					unsigned char l_msgSizeBuff;
+					
                     
-                    //Receive the heartbeat message.
-                    for(;;)
-                    {
-                        if (l_curConnection->recv(l_Buffer, l_Req.size) == 0)
-                        {
-                            DEBUGPRINT("Received request for sensor info\n");
-                            break;
-                        }
-                    }
+					if (l_curConnection->recv(msg, l_Req.size))
+					{
+						DEBUGPRINT("Request for robots failed\n");
+						break;
+					}
+					
+					/*if (l_curConnection->recv(l_Buffer, l_Req.size) == 0)
+					{
+						DEBUGPRINT("Received request for sensor info\n");
+						break;
+					}
+                    
 
                     //Unpack heartbeat message into our buffer.
                     unpack(l_Buffer, Msg_RequestSensorData_format, &l_Req.id);
@@ -111,7 +119,7 @@ int GridServer::handler(int fd)
                             DEBUGPRINT("Sent RoboSensor message x.\n");
                             break;
                         } 
-                    }
+                    }*/
                 break;
             }
             break;
@@ -121,6 +129,8 @@ int GridServer::handler(int fd)
 			{
 		    		
 			    case MSG_ASSIGN_ID:
+				{
+					Msg_header l_msgHeader = {SENDER_GRIDSERVER, MSG_ASSIGN_ID};
 				    Msg_uId l_uId;
 					memset(msg, 0, l_uId.size);
 							
@@ -145,7 +155,7 @@ int GridServer::handler(int fd)
 							
 					return 0;
 					break;
-						
+				}		
 			    default:
 					printf("ERROR: no matching msg handler for CONTROLLER\n");
 					return 0; // no event handler for this call
@@ -186,7 +196,7 @@ int GridServer::handler(int fd)
 			break;
 		
 	}
-	delete msg;
+	//delete msg;	//Not requried, using heap memeory, the program will automatically clean it up when it ends. Unless you use 'new', you should not call delete.
     return 0;
 }
 

@@ -20,30 +20,26 @@ Network::ClockServer::~ClockServer()
 
 int Network::ClockServer::handler(int fd)
 {
-	//printf("handle %i\n", fd);
-
-    //Create a 'header' message and buffer to receive into.
-    Msg_header l_Header;
+	//Create a 'header' message and buffer to receive into.
+	Msg_header l_Header;
 	Msg_HB l_heartBeat;
-    unsigned char l_Buffer[l_Header.size + l_heartBeat.size];
-	
+	unsigned char l_Buffer[l_Header.size + l_heartBeat.size];
+
 	memset(&l_Buffer, 0, l_Header.size+l_heartBeat.size);
 
     //Get our TCPConnection for this socket.
     TcpConnection *l_Conn =  m_Clients[fd];
         
     //Receive from the socket into our buffer.
-	//printf("About to receive header\n");
+	DEBUGPRINT("About to receive header\n");
 	if (l_Conn->recv(l_Buffer, l_Header.size) == -1)
 	{
 		DEBUGPRINT("Could not receive\n");
 		return -1;
 	}
-	//printf("Unpacking header\n");
 
-    //Unpack the buffer into the 'header' message.
     unpack(l_Buffer, Msg_header_format, &l_Header.sender, &l_Header.message); 
-	//printf("Sender: %d Message: %d\n", l_Header.sender, l_Header.message);
+	DEBUGPRINT("Sender: %d Message: %d\n", l_Header.sender, l_Header.message);
     switch(l_Header.sender)
     {
         //Message is from clock.
@@ -82,7 +78,7 @@ int Network::ClockServer::handler(int fd)
 
 int Network::ClockServer::handleNewConnection(int fd)
 {
-	//printf("Adding new Client: %i\n", fd);
+	DEBUGPRINT("Adding new Client: %i\n", fd);
 	m_clientMap[fd] = false;
 	m_clientList.push_back(fd);
 	return 0;
@@ -91,7 +87,7 @@ int Network::ClockServer::handleNewConnection(int fd)
 int Network::ClockServer::allConnectionReadyHandler()
 {
 	m_responded = 0;
-	//printf("All Clients ready\n");
+	DEBUGPRINT("All Clients ready\n");
 	
 	std::vector<int>::const_iterator l_End = m_clientList.end();
 	
@@ -117,11 +113,11 @@ int Network::ClockServer::allConnectionReadyHandler()
 	DEBUGPRINT("beat = %u\n", m_beat);
 	l_heartBeat.hb = m_beat;
 	
-	//printf("Total Clients to send Hb: %i\n",m_clientList.size());
+	DEBUGPRINT("Total Clients to send Hb: %i\n",m_clientList.size());
 
 	for(std::vector<int>::const_iterator it = m_clientList.begin(); it != l_End; it++)
 	{
-		//printf("Prepairing heartbeat\n");
+		DEBUGPRINT("Prepairing heartbeat\n");
 		i = 0;
 		fd = (*it);
 		conn = m_Clients[fd];
@@ -140,7 +136,7 @@ int Network::ClockServer::allConnectionReadyHandler()
 
 		if (conn->send(msg, l_header.size+l_heartBeat.size) == 0);
 		
-		//printf("Sent heartbeat %hd\n", l_heartBeat.hb);
+		DEBUGPRINT("Sent heartbeat %hd\n", l_heartBeat.hb);
 		m_clientMap[fd] = true;
 	}
 	

@@ -18,7 +18,7 @@ def start_process(name, **kwargs):
         current_clock_port += 1
     elif name is "client":
         client_num = kwargs['client_num']
-        script += CLIENT_RUN_COMMAND + " " + SERVER_INFO + " " + SYSTEM_CONFIG + " " + str(client_num)
+        script += CLIENT_RUN_COMMAND + " " + PATH + "Controller/" + SERVER_INFO + " " + PATH + "Controller/" + SYSTEM_CONFIG + " " + str(client_num)
     elif name is "grid":
         script += GRID_RUN_COMMAND + " " + SERVER_INFO + " " + str(current_grid_port)
         global current_grid_port
