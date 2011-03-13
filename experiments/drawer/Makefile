@@ -24,7 +24,7 @@ LOGHDR = redis/redisclient.h redis/redislist.h
 
 CC = g++
 INCLUDE = -I"redis/" -I"Common/"
-BASIC_SRC = dutils.cpp Common/Position.cpp Common/Robot.cpp Common/Puck.cpp Common/Team.cpp Common/Home.cpp Common/GameObject.cpp Common/Speed.cpp
+BASIC_SRC = Common/Position.cpp Common/Robot.cpp Common/Puck.cpp Common/Team.cpp Common/Home.cpp Common/GameObject.cpp Common/Speed.cpp
 BASIC_HDR = $(LOGHDR) dutils.h Common/Position.h Common/Robot.h Common/Puck.h Common/Team.h Common/Home.h Common/GameObject.h Common/Speed.h
 
 # ----------------------------- DRAWER FILES ----------------------------
@@ -36,7 +36,7 @@ DRAWER_HDR = $(BASIC_HDR) Gui.h
 
 # ----------------------------- CLIENT FILES ----------------------------
 
-CLIENT_SRC = DrawClient.cpp client.cpp dutils.cpp
+CLIENT_SRC = DrawClient.cpp client.cpp
 CLIENT_HDR = $(BASIC_HDR)
 
 # ------------------------------ MAKE ARGS ------------------------------

@@ -6,9 +6,19 @@
 #endif
 
 
+void printRobots()
+{
+	printf("printRobots()\n");
+	for (Network::DrawServer::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
+             it != Network::DrawServer::getInstance()->getLastRobot();it++)
+        {
+        	printf("%d: %d\n", (*it).first, (*it).second != 0);
+        }
+}
+
 void idleFunc()
 {
-    Network::DrawServer::getInstance()->update();
+    Network::DrawServer::getInstance()->update();   
 }
 
 void timerFunc(int dummy)
@@ -17,18 +27,13 @@ void timerFunc(int dummy)
 }
 
 void displayFunc()
-{
+{    
+    printf("displayFunc()::");
+    printRobots();
+    
     glClear( GL_COLOR_BUFFER_BIT );
     glMatrixMode (GL_MODELVIEW);
     glLoadIdentity();
-
-    /*const size_t len(Network::DrawServer::getInstance()->getRobotsCount());
-    printf("robot count: %d", len);
-    for (Network::DrawServer::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
-         it != Network::DrawServer::getInstance()->getLastRobot();it++)
-    {
-         		printf("Whhaohha");
-    }*/
 
     drawTeams();
     drawPucks();
@@ -161,21 +166,18 @@ void drawRobots()
 
         glBegin(GL_POINTS);
         int i = 0;
+        
         for (Network::DrawServer::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
              it != Network::DrawServer::getInstance()->getLastRobot();it++)
         {
-            char buf[40];
-            sprintf(buf, "No robot @ %d", (*it).first);
-            drawText(buf, 5.0f, 570.0f);
+			if (!(*it).second)
+			{
+				printf("No robot @ %d\n", (*it).first);
+				continue;
+			}
 
-            if (!(*it).second)
-          	{
-                printf("No robot @ %d", (*it).first);
-            		continue;
-          	}
-
- 	          Math::Position * robotPos = (*it).second->getPosition();
-            glVertex2f(robotPos->getX()/winsize, robotPos->getY()/winsize);
+			Math::Position * robotPos = (*it).second->getPosition();
+			glVertex2f(robotPos->getX()/winsize, robotPos->getY()/winsize);
 
             /*if(i == 0)
             {

@@ -29,8 +29,8 @@ void DrawClient::init(string db_host, int homes, int pucks, int homePop)
     for(int i=0; i<homes; i++)
     {
         int team_id = i+1;
-        float posX = i*10;
-        float posY = posX;
+        float posX = 55.0;
+        float posY = 150.0;
         int colR = 255;
         int colG = 255;
         int colB = 255;
@@ -65,8 +65,8 @@ void DrawClient::update()
 
             bzero(buf, 64);
             id=i+1024;
-            posX=(float)i;
-            posY=posX;
+            posX=(float)i*10+j*5;
+            posY=i*15+j*3;
             orientation = 1.0;
             hasPuck=i%2==0?'T':'F';
 

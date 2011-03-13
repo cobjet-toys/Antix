@@ -142,10 +142,9 @@ void DrawServer::update()
         		{
         			printf("no home for %d", id/TEAM_ID_SHIFT);
         			continue;
-        			
-        			this->m_robots[id] = new Game::Robot(
-            		pos, this->m_teams[id/TEAM_ID_SHIFT]->getHome());
-        		} 
+        		}         			
+    			this->m_robots[id] = new Game::Robot(
+        		pos, this->m_teams[id/TEAM_ID_SHIFT]->getHome());
         	}
             	
         	else

@@ -15,15 +15,4 @@
 #define MAX_POS_KEYS        3
 #define TEAM_ID_SHIFT       1024
 
-
-namespace DrawUtils
-{
-    float rtod( const float& r );
-    float dtor( const float& d);
-
-    //sin
-
-    //cos
-}
-
 #endif	/* _DUTILS_H */
