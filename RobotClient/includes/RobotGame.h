@@ -18,8 +18,8 @@ public:
     RobotGame();
     ~RobotGame();
 
-    // Randomize a team on the grid
-    int intitializeTeam(int teamid, map<int, robot_info>* robots);
+    // Compile grid to team mapping
+    int intitializeTeam(map<int, vector<int> >* team_mapping);
 
     // Register and UnRegister robots from a particular grid
     int registerRobot(int fd, robot_info robot);
@@ -36,7 +36,7 @@ public:
 private:
 
     //Map of file descriptors to Grids 
-    map<int, int> m_gridMap;
+    //map<int, int> m_gridMap;
 
     //Map of grid ids to Robot *'s
     map<int, vector<Robot*> > m_Robots;
