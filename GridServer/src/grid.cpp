@@ -2,6 +2,7 @@
 
 int main(int argc, char ** argv)
 {
+    setbuf(stdout, NULL);
 	Network::GridServer grid;
 	if (argc < 2) 
 	{
