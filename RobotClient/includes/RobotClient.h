@@ -5,6 +5,7 @@
 #include "Messages.h"
 #include "Packer.h"
 #include <vector>
+#include <map>
 
 namespace Network
 {
@@ -26,6 +27,7 @@ private:
     uint16_t m_HeartBeat;
     int m_ClockFd;
     unsigned int m_ReadyGrids;
+    
 };
 }
 
