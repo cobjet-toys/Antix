@@ -70,10 +70,10 @@ static const char* Msg_HB_format = "h";
 // MSG_INITTEAM = 2
 
 typedef struct{
-	uint16_t sizeOfMsg; //THIS IS THE NUMBER OF OBJECTS WE ARE REQUESTING
+	uint16_t msgSize; //THIS IS THE NUMBER OF OBJECTS WE ARE REQUESTING
 	static const size_t size = 2;
-} Msg_RequestSizeMsg;
-static const char* Msg_RequestSizeMsg_format = "l"; 
+} Msg_RequestMsgSize;
+static const char* Msg_RequestMsgSize_format = "h"; 
 
 typedef struct
 {
