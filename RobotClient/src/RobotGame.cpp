@@ -1,7 +1,10 @@
 #include "RobotGame.h"
+#include "Team.h"
 
 RobotGame::RobotGame()
 {
+    // instantiate team objects with range of robots
+    // the teams number is given in the config
 
 }
 
@@ -10,7 +13,8 @@ RobotGame::~RobotGame()
 
 }
 
-int RobotGame::intitializeTeam(int teamid, map<int, robot_info>* robots)
+// Compile grid to team mapping
+int RobotGame::intitializeTeam(map<int, vector<int> >* team_mapping)
 {
 
     return 0;
