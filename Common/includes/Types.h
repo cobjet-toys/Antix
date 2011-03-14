@@ -24,7 +24,7 @@ typedef ConnectionList::iterator ConListIterator;
 typedef std::map<uid, std::vector<TeamGridPair> > ClientList;
 
 typedef struct{
-    int robotid;
+    unsigned int id;
     float x;
     float y;
 } sensed_item;

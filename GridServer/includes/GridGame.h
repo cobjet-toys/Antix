@@ -42,18 +42,18 @@ public:
     /**
      * Interface function to Network layer for registering a robot.
      */
-    int registerRobot(robot_info robots);
+    int registerRobot(robot_info robot);
 
     /**
      * Interface function to Network layer for unregistering a robot.
      */
-    int unregisterRobot(int robot);
+    int unregisterRobot(unsigned int robot);
 
-    /**
+    /*
      * Interface function to Network layer for returning sensor data for a list of robots
      * for a set of robots on a client
      */
-    int returnSensorData(std::vector<int>* robot_ids_from_client, std::map<int, std::vector<sensed_item> >* sensed_items_map);
+    int returnSensorData(std::vector<int> robot_ids_from_client, std::map<int, std::vector<sensed_item> >* sensed_items_map);
 
     /**
      * Interface function to Network layer for processing actions for each robot.
@@ -94,9 +94,10 @@ private:
     std::vector<Game::Puck*> m_Pucks;
 
     /**
-     * List of all available robots.
+     * List and map of all available robots.
      */
     std::vector<Game::Robot*> m_Population;
+
 
     //O(1) lookup of our sorted vector;     
     std::map<Game::Robot*, int> m_XRobs;
@@ -119,6 +120,8 @@ private:
     float m_WorldSize;
     int m_NumGrids;
     int m_GridId;
+
+    int m_PuckTotal;
 
 
 };

@@ -17,6 +17,9 @@ public:
      */
     Puck(Position* pos);
 
+    Puck(Position* pos, int puck_id);
+
+
     /**
      * Returns true if the puck is held, false otherwise.
      */
@@ -26,6 +29,18 @@ public:
      * Toggle the status of the puck.
      */
     void toggleHeld();
+
+    /**
+     * Get X coordinate of robot.
+     */
+    float getX();
+
+    /**
+     * Get Y coordinate of robot.
+     */
+    float getY();
+    
+    unsigned int id;
     
 private:
     /**

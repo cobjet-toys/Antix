@@ -21,10 +21,6 @@ typedef VisibleObject<Robot*> VisibleRobotPtr;
 
 class Robot : public GameObject
 {
-/**
- * Individual robot class.
- */
-friend class Robotix;
 
 public:
     /**
@@ -32,7 +28,7 @@ public:
      */
     Robot(Math::Position *pos, Home* home);
     
-    Robot(Math::Position *pos, float FOV, float Radius, float PickupRange, float SensorRange);
+    Robot(Math::Position *pos, int id, float FOV, float Radius, float PickupRange, float SensorRange);
     
     /**
      * Delete position object.
@@ -103,7 +99,7 @@ public:
     /*
      * ID of the robot
      */
-    int id;
+    unsigned int m_id;
 
 
 private: 
@@ -130,8 +126,8 @@ private:
     /**
      * Collection of visible objects, resets at every update.
      */
-    std::list<VisiblePuckPtr> m_VisiblePucks;
-    std::list<VisibleRobotPtr> m_VisibleRobots;
+    std::list< VisiblePuckPtr > m_VisiblePucks;
+    std::list< VisibleRobotPtr > m_VisibleRobots;
 
     /**
      * FOV of any robot.

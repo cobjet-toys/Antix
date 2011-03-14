@@ -35,21 +35,25 @@ GridGame::GridGame()
 	m_NumGrids = 2;
     m_GridId = 1;
 
+    m_PuckTotal = 10000;
+
     m_Population.clear();
+
+    int high_puck_range = (m_PuckTotal/m_NumGrids)*m_GridId;
+    int low_puck_range = (m_PuckTotal/m_NumGrids)*(m_GridId-1);
     
-
-
-    /*
     //Generate pucks at random locations.
-    for (uint i = 0; i <robot_TotalPuckCount; i++)
+    for (uint i = low_puck_range; i <= high_puck_range; i++)
     {
        //Get a random location.
-       Math::Position* l_PuckPos = Math::Position::randomPosition(m_WorldSize);
+       Math::Position* l_PuckPos = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
 
        //Create the puck.
-       Puck* l_Puck = new Puck(l_PuckPos);
+       Puck* l_Puck = new Puck(l_PuckPos, i);
        m_Pucks.push_back( l_Puck );
     }
+
+    /*
   
     //Generate the teams. 
     for (uint i = 0; i < m_TotalTeamCount; i++)
@@ -73,10 +77,10 @@ GridGame::~GridGame()
     //Note: The delete of the robot population is the responsiblity of the team object.
    
     //Delete the teams.
-    for(std::vector<Team*>::iterator it = m_Teams.begin(); it != m_Teams.end(); it++)
-    {
-        delete (*it);
-    }
+    //for(std::vector<Team*>::iterator it = m_Teams.begin(); it != m_Teams.end(); it++)
+    //{
+    //    delete (*it);
+    //}
 
     //Delete the pucks.
     for(PuckIter it = m_Pucks.begin(); it != m_Pucks.end(); it++)
@@ -109,8 +113,7 @@ void GridGame::sortRobots()
 int GridGame::randomizeTeam(int team_id, int team_size, std::vector<robot_info>* robot_info_vector)
 {
 
-		team_size = 1000;
-
+        // get range of robot ids based on team id and team size
 		int firstid = team_id*team_size;
 		int lastid = firstid + team_size - 1;
 
@@ -119,7 +122,7 @@ int GridGame::randomizeTeam(int team_id, int team_size, std::vector<robot_info>*
 		for (int i = firstid; i <= lastid; i++)
 		{
 			Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
-       		Game::Robot* l_Robot = new Robot(l_RobotPosition, robot_FOV, robot_Radius, robot_PickupRange, robot_SensorRange);
+       		Game::Robot* l_Robot = new Robot(l_RobotPosition, i, robot_FOV, robot_Radius, robot_PickupRange, robot_SensorRange);
 			addRobotToPop(l_Robot);
 
             robot_info temp;
@@ -132,8 +135,89 @@ int GridGame::randomizeTeam(int team_id, int team_size, std::vector<robot_info>*
         robot_info_vector = &l_robot_info_vector;
 }
 
+int GridGame::registerRobot(robot_info robot)
+{
+    // create a new position object for the new robot
+    Math::Position* l_RobotPosition = new Position(robot.x_pos, robot.y_pos, robot.angle);
+
+    // create new robot based on info from robot_info struct
+    Game::Robot* l_Robot = new Robot(l_RobotPosition, robot.id, robot_FOV, robot_Radius, robot_PickupRange, robot_SensorRange);
+			
+    // add robot to the population
+    addRobotToPop(l_Robot);
+
+    //TODO: Sort robots at this point?
+
+}
+
+int GridGame::unregisterRobot(unsigned int robotid)
+{
+
+    std::vector<Robot*>::iterator end = m_Population.end();
+   
+    for(std::vector<Robot*>::iterator it = m_Population.begin(); it != end; it++)
+    {
+        if ((**it).m_id == robotid){
+            printf("Found %d robot!", robotid);
+            this->m_Population.erase(it);
+        }
+
+    }
+
+    //TODO: Sort robots at this point?
+
+}
+
+int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<int, std::vector<sensed_item> >* sensed_items_map)
+{
+
+    std::vector<Robot*>::iterator populationend = m_Population.end();
+    std::vector<Puck*>::iterator puckend = m_Pucks.end();
+    // TODO: Currently returning all items on grid. Will be optimized to only send what is around
+    //       its bounding box
+    std::vector<sensed_item>  l_sensed_items;
+    for(std::vector<Robot*>::iterator robotit = m_Population.begin(); robotit != populationend; robotit++){
+                sensed_item tempsensed;
+                tempsensed.id = (**robotit).m_id;
+                tempsensed.x = (*robotit)->getX();
+                tempsensed.y = (*robotit)->getY();
+                l_sensed_items.push_back(tempsensed);
+    }
+    for(std::vector<Puck*>::iterator puckit = m_Pucks.begin(); puckit != puckend; puckit++){
+                sensed_item tempsensed;
+                tempsensed.id = (**puckit).id;
+                tempsensed.x = (*puckit)->getX();
+                tempsensed.y = (*puckit)->getY();
+                l_sensed_items.push_back(tempsensed);
+    }
+    
+
+    // TODO: Implement with hash key to robot value being index of robot population in vector
+    //       that way, we don't have to iterate through the nested forloop to find the robots
+    typedef std::pair<int, std::vector<sensed_item> > RobotPair;
+    std::map<int, std::vector<sensed_item> > l_sensed_items_map;
+  
+
+    std::vector<int>::iterator clientend = robot_ids_from_client.end();
+
+    for(std::vector<int>::iterator it = robot_ids_from_client.begin(); it != clientend; it++)
+    {
+        for(std::vector<Robot*>::iterator robotit = m_Population.begin(); robotit != populationend; robotit++)
+            if ( (**robotit).m_id == (*it)  )
+            {
+                l_sensed_items_map.insert(RobotPair( (**robotit).m_id , l_sensed_items ));
+            }
+    }
+
+    sensed_items_map = &l_sensed_items_map;
+
+}
+
+
+
 void GridGame::addRobotToPop(Robot* robot)
 {
+
     this->m_Population.push_back(robot);
     this->m_XPos.push_back(robot);
 }

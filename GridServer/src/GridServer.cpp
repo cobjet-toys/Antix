@@ -1,5 +1,6 @@
 #include "GridServer.h"
 #include "Config.h"
+#include "Types.h"
 #include <stdlib.h>
 
 using namespace Network;
@@ -9,9 +10,18 @@ GridServer::GridServer():Server()
     m_uId = -1;
     m_hb_rcvd = 0;
 
+    robot_info newrobot;
+    newrobot.id = 400;
+    newrobot.x_pos = 5;
+    newrobot.y_pos = 5;
+
     gridGameInstance = new GridGame();
     std::vector<robot_info>* robot_info_vector;
-    gridGameInstance->randomizeTeam(1, 1000, robot_info_vector);
+    gridGameInstance->randomizeTeam(1, 100, robot_info_vector);
+    gridGameInstance->randomizeTeam(2, 100, robot_info_vector);
+    gridGameInstance->printRobotPopulation();
+    gridGameInstance->unregisterRobot(200);
+    gridGameInstance->registerRobot(newrobot);
     gridGameInstance->printRobotPopulation();
 
 }
