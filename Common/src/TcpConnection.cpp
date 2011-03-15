@@ -122,13 +122,15 @@ int TcpConnection::send(unsigned char * message, int messageSize)
 	//printf("preparing to send\n");
     int l_Total = 0, l_BytesLeft = messageSize, l_Sent = 0;
 
-    while(l_Total < l_BytesLeft)
+    while(l_Total < messageSize)
     {
         l_Sent = ::send(m_socketfd, message+l_Total, l_BytesLeft, 0);
         //Check for error.
         if (l_Sent == -1)
-            printf("Error: %s\n", strerror(errno));
-            break;
+		{
+            //printf("Error: %s\n", strerror(errno));
+            continue;
+		}
         l_Total += l_Sent;
         l_BytesLeft -= l_Sent;
 		//printf("send left = %i\n",l_BytesLeft);		
@@ -153,7 +155,7 @@ int TcpConnection::recv(unsigned char * message, int messageSize)
         l_Rcvd = ::recv(m_socketfd, message+l_Total, l_BytesLeft, 0);
         //Check for error.
         if (l_Rcvd == -1)
-            break;
+            continue;
         l_Total += l_Rcvd;
         l_BytesLeft -= l_Rcvd;
 		//printf("recv left = %i\n",l_BytesLeft);	
