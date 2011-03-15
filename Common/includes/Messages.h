@@ -91,7 +91,7 @@ typedef struct{
 	uint32_t id;
 	uint16_t objectCount;
 	static const size_t size = 6;
-} Msg_sensedObjectGroupHeader;
+} Msg_SensedObjectGroupHeader;
 static const char * Msg_SensedObjectGroupHeader_format = "lh";
 
 // USED
@@ -100,7 +100,7 @@ typedef struct{
     uint32_t x;
     uint32_t y;
 	static const size_t size = 12;
-} Msg_sensedObjectGroupItem;
+} Msg_SensedObjectGroupItem;
 static const char * Msg_SensedObjectGroupItem_format = "lll";
 
 typedef struct{ // USED
