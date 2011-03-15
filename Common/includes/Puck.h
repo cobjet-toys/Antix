@@ -17,7 +17,7 @@ public:
      */
     Puck(Position* pos);
 
-    Puck(Position* pos, int puck_id);
+    Puck(Position* pos, unsigned int puck_id);
 
 
     /**
@@ -30,17 +30,7 @@ public:
      */
     void toggleHeld();
 
-    /**
-     * Get X coordinate of robot.
-     */
-    float getX();
-
-    /**
-     * Get Y coordinate of robot.
-     */
-    float getY();
     
-    unsigned int id;
     
 private:
     /**

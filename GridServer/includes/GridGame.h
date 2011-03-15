@@ -11,9 +11,6 @@
 #include <map>
 #include <stdint.h>
 
-typedef std::vector<Game::Robot*>::iterator RobotIter;
-typedef std::vector<Game::Puck*>::iterator PuckIter;
-
 class GridGame
 {
 public:
@@ -29,15 +26,15 @@ public:
     ~GridGame();
 
     /**
-     * Sorts the robot population
+     * Sorts the population
      */
-    void sortRobots();
+    void sortPopulation();
 
     /**
     * Receives a team id and team size and creates all robot with the ids
     * based on the team id. ie team id = 2, team_size= 100, result is robotid range 200-299
     */
-    int randomizeTeam(int team_id, int team_size, std::vector<robot_info>* robot_info_vector);
+    int initializeTeam(std::vector<int> team_ids, std::vector<robot_info>* robot_info_vector);
 
     /**
      * Interface function to Network layer for registering a robot.
@@ -65,44 +62,44 @@ public:
      */
     const float& getWorldSize() const;
 
-    //Used for iterating over our collections.
-    PuckIter getFirstPuck();
-    PuckIter getLastPuck();
-
-    //Robot iterating
-    RobotIter getFirstRobot();
-    RobotIter getLastRobot();
-
     /**
      * Add a robot to the general population.
      * Used when a team is initialized.
      */
-    void addRobotToPop(Game::Robot* robot);
+    int addObjectToPop(Game::GameObject* object);
 
-    void printRobotPopulation();
+    int removeObjectFromPop(Game::GameObject* object);
+
+    int removeObjectFromPop(int objectid);
+
+    void printPopulation();
 
 private:
 
     /**
-     * List of teams.
-     */
-    std::vector<Game::Team*> m_Teams;
-    
-    /**
      * List of pucks.
      */
-    std::vector<Game::Puck*> m_Pucks;
+    //std::vector<Game::Puck*> m_Pucks;
 
     /**
      * List and map of all available robots.
      */
-    std::vector<Game::Robot*> m_Population;
+    std::vector<Game::GameObject*> m_Population;
+
+    /**
+     * List and map of all available robots.
+     */
+    //std::vector<Game::GameObject*> m_SortedObjects;
+
+    //O(1) lookup of robots by id;     
+    std::map<int, Game::GameObject*> m_MapPopulation;
 
 
     //O(1) lookup of our sorted vector;     
-    std::map<Game::Robot*, int> m_XRobs;
-    //Sorted list of robots; 
-    std::vector<Game::Robot*> m_XPos;
+    std::map<Game::GameObject*, int> m_YObjects;
+
+    // read an ID
+    int readId(int id);
 
     //Returns the max window size.
     unsigned int m_WindowSize;

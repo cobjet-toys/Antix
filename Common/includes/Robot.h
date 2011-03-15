@@ -28,7 +28,7 @@ public:
      */
     Robot(Math::Position *pos, Home* home);
     
-    Robot(Math::Position *pos, int id, float FOV, float Radius, float PickupRange, float SensorRange);
+    Robot(Math::Position *pos, unsigned int id, float FOV, float Radius, float PickupRange, float SensorRange);
     
     /**
      * Delete position object.
@@ -64,10 +64,6 @@ public:
      */
     bool Pickup();
 
-    /**
-     * Print data about the robot.
-     */
-    void printInfo();
 
     /**
      * Get X coordinate of robot.
@@ -96,10 +92,6 @@ public:
 
     static float& getFOV();
 
-    /*
-     * ID of the robot
-     */
-    unsigned int m_id;
 
 
 private: 

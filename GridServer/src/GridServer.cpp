@@ -15,14 +15,18 @@ GridServer::GridServer():Server()
     newrobot.x_pos = 5;
     newrobot.y_pos = 5;
 
+    std::vector<int> teams;
+    teams.push_back(2);
+    teams.push_back(4);
+
     gridGameInstance = new GridGame();
     std::vector<robot_info>* robot_info_vector;
-    gridGameInstance->randomizeTeam(1, 100, robot_info_vector);
-    gridGameInstance->randomizeTeam(2, 100, robot_info_vector);
-    gridGameInstance->printRobotPopulation();
+    gridGameInstance->initializeTeam(teams, robot_info_vector);
+    gridGameInstance->printPopulation();
     gridGameInstance->unregisterRobot(200);
     gridGameInstance->registerRobot(newrobot);
-    gridGameInstance->printRobotPopulation();
+    gridGameInstance->sortPopulation();
+    gridGameInstance->printPopulation();
 
 }
 int GridServer::handleNewConnection(int fd)

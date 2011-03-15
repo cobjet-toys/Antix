@@ -17,6 +17,7 @@ public:
      * Takes a pointer to a dynamically allovated position object.
      */
     GameObject(Position *pos);
+    GameObject(Position *pos, unsigned int m_id);
 
     /**
      * Delete the position.
@@ -28,12 +29,30 @@ public:
      */
     Position* getPosition();
 
+    unsigned int m_id;
+
+    /**
+     * Print data about the robot.
+     */
+    void printInfo();
+
+    /**
+     * Get X coordinate of object.
+     */
+    float getX();
+
+    /**
+     * Get Y coordinate of object.
+     */
+    float getY();
 
 private:
     /**
      * Position of the current object.
      */
     Position* m_Position;
+    
+
 };
 }
 #endif

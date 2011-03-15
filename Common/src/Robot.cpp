@@ -18,12 +18,11 @@ Robot::Robot(Math::Position *pos,  Home* home):GameObject(pos), m_PuckHeld(NULL)
     m_Speed = new Math::Speed();
 }
 
-Robot::Robot(Math::Position *pos, int id, float FOV, float Radius, float PickupRange, float SensorRange):GameObject(pos), m_PuckHeld(NULL)
+Robot::Robot(Math::Position *pos, unsigned int id, float FOV, float Radius, float PickupRange, float SensorRange):GameObject(pos, id), m_PuckHeld(NULL)
 {
     m_LastPickup = new Math::Position();
     m_Speed = new Math::Speed();
 
-    m_id = id;
     m_FOV = FOV;
     m_Radius = Radius;
     m_PickupRange = PickupRange;
@@ -294,13 +293,6 @@ bool Robot::Pickup()
     }
     */
     return false;
-}
-
-void Robot::printInfo()
-{
-
-	printf("Position: %f, %f - id:%d\n", (*getPosition()).getX(), (*getPosition()).getY(), m_id);
-
 }
 
 float Robot::getX()
