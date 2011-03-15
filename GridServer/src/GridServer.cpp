@@ -92,14 +92,14 @@ int GridServer::handler(int fd)
 					
 					sensed_item s1 ;
 					
-					l_totalSensed = l_robotsTotal;
+					l_totalSensed = 15;
 					std::vector<sensed_item> a1;
 					
-					for (int i =0; i< l_robotsTotal; i++)
+					for (int i =0; i< l_totalSensed; i++)
 					{
 						s1.robotid = i;
 						s1.x = i;
-						s1.y = i  * 10;
+						s1.y = i;
 						a1.push_back(s1);
 					}
 					DEBUGPRINT("got all sensory data\n");
@@ -117,7 +117,7 @@ int GridServer::handler(int fd)
 					Msg_SensedObjectGroupHeader l_robotHeader; // for each robot
 					Msg_SensedObjectGroupItem l_sensedObject; // for each sensed item
 					
-					unsigned short l_responseMsgSize = 0;
+					unsigned int l_responseMsgSize = 0;
 					
 					l_responseMsgSize += l_header.size; // append header size
 					l_responseMsgSize += l_msgSize.size; // append size of msg length 
