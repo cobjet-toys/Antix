@@ -27,6 +27,8 @@ Robot::Robot(Math::Position *pos, unsigned int id, float FOV, float Radius, floa
     int TEAM_SIZE = 1000;
     m_Team = id/TEAM_SIZE;
 
+    m_PuckHeld = -1;
+
     m_FOV = FOV;
     m_Radius = Radius;
     m_PickupRange = PickupRange;
@@ -38,6 +40,13 @@ Robot::~Robot()
 {
     delete m_LastPickup;
     delete m_Speed;
+}
+
+int Robot::setSpeed(Speed* speed)
+{
+
+    return 0;
+
 }
 
 float& Robot::getRadius()
@@ -260,25 +269,31 @@ void Robot::updateController()
 
 bool Robot::Holding() const
 {
-    return (bool)m_PuckHeld;
+    if (m_PuckHeld == -1)
+    {
+        return true;
+    }
+    else{
+        return false;
+    }
 }
 
-bool Robot::Drop()
+int Robot::Drop()
 {
+    unsigned int temppuck;
+
     //If we're holding a puck, drop it.
     if (Holding())
     {
-        m_PuckHeld->toggleHeld();
         m_PuckHeld = NULL;
-        return true;
     }
-    return false;
+    return temppuck;
 }
 
 bool Robot::Pickup()
 {
     /*
-    //If we don't have a puck.
+    // TODO: Not deleting this yet, may be needed for actions
     if (!Holding())
     {
         //Check our list of visible pucks.

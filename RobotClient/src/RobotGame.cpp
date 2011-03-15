@@ -2,9 +2,15 @@
 #include "Team.h"
 #include "MathAux.h"
 #include "Types.h"
+#include "Config.h"
 
 RobotGame::RobotGame()
 {
+    //TODO: these should come out of the config
+    robot_FOV = Math::dtor(90.0);
+    robot_Radius = 0.01;
+    robot_SensorRange = 0.1;
+    robot_PickupRange = robot_SensorRange / 5.0;
 
 }
 
@@ -24,16 +30,11 @@ int RobotGame::intitializeTeam(int grid_id, std::vector<int> team_mapping)
 int RobotGame::receiveInitialRobots(int grid_id, std::vector<robot_info> robot_info_vector)
 {
     
+
     std::vector<Robot*> l_Robots;
     std::vector<robot_info>::const_iterator end = robot_info_vector.end();
     for(std::vector<robot_info>::const_iterator it = robot_info_vector.begin(); it != end; it++)
     {
-        //TODO: these should come out of the config
-        float robot_FOV = Math::dtor(90.0);
-        float robot_Radius = 0.01;
-        float robot_SensorRange = 0.1;
-        float robot_PickupRange = robot_SensorRange / 5.0;
-
         Math::Position* l_RobotPosition = new Math::Position(it->x_pos, it->y_pos, it->angle);
         Game::Robot* l_Robot = new Robot(l_RobotPosition, it->id, robot_FOV, robot_Radius, robot_SensorRange, robot_PickupRange);
         l_Robots.push_back(l_Robot);
@@ -50,6 +51,17 @@ int RobotGame::registerRobot(int grid_id, robot_info robot)
 {
     // this will be called when a grid wants to register a robot
     // add the robot to the right grid in the map
+
+    Speed* l_Speed = new Speed();
+    l_Speed->setForwSpeed(robot.speed);
+
+    Math::Position* l_RobotPosition = new Math::Position(robot.x_pos, robot.y_pos, robot.angle);
+    Game::Robot* l_Robot = new Robot(l_RobotPosition, robot.id, robot_FOV, robot_Radius, robot_SensorRange, robot_PickupRange);
+
+    l_Robot->setSpeed(l_Speed);
+
+    std::vector<Robot*> robots = m_Robots[grid_id];
+    robots.push_back(l_Robot);
 
     return 0;
 }
@@ -68,13 +80,27 @@ int RobotGame::unregisterRobot(int grid_id, int robot_id)
 }
 
 // Handle sensor data
-int RobotGame::requestSensorData(int grid_id, std::vector<int>* robot_id)
+int RobotGame::requestSensorData(int grid_id, std::vector<int>* robot_ids)
 {
     // compiles a vector of robot ids for grid with id grid_id
     // problem: what to do when a robot is looking into more than 1 grid?
     // proposed solution: send that robot id to multiple grids, which will calculate
     // the chunk of sensor data in their area, then the RobotGame will piece that info
     // together when deciding on an action
+
+    std::vector<Robot*> robots = m_Robots[grid_id];
+    std::vector<int> l_robot_ids;
+    
+    std::vector<Robot*>::iterator end = robots.end();
+
+    for(std::vector<Robot*>::iterator it = robots.begin(); it != end; it++){
+        l_robot_ids.push_back( (**it).m_id );
+        DEBUGPRINT( "%d\n", (**it).m_id);
+    }
+
+
+    robot_ids = &l_robot_ids;
+
 
     return 0;
 }

@@ -57,12 +57,17 @@ public:
     /**
      * Drop a puck if one is being held.
      */
-    bool Drop();
+    int Drop();
 
     /**
      * Attempt to puck up the nearest puck.
      */
     bool Pickup();
+
+    /**
+     * Attempt to puck up the nearest puck.
+     */
+    int setSpeed(Speed* speed);
 
 
     /**
@@ -93,6 +98,7 @@ public:
     static float& getFOV();
 
 
+    unsigned int m_PuckHeld;    
 
 private: 
     /**
@@ -100,10 +106,6 @@ private:
      */
     Math::Speed* m_Speed;
 
-    /**
-     * The puck being held, if any.
-     */
-    Puck* m_PuckHeld;
 
     /**
      * Home of the robot.

@@ -28,7 +28,7 @@ public:
     int unregisterRobot(int grid_id, int robot_id);
 
     // Handle sensor data
-    int requestSensorData(int grid_id, vector<int>* robot_id);
+    int requestSensorData(int grid_id, vector<int>* robot_ids);
     int receiveSensorData(map<int, vector<sensed_item> >* sensor_data);
 
     // Send and recieve actions
@@ -43,6 +43,10 @@ private:
     //Map of grid ids to Robot *'s
     map<int, vector<Robot*> > m_Robots;
 
+    float robot_FOV;
+    float robot_Radius;
+    float robot_SensorRange;
+    float robot_PickupRange;
 };
 
 #endif //

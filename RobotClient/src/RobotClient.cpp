@@ -17,10 +17,11 @@ RobotClient::RobotClient():Client()
 
     // make a robot_info vector for testing
     std::vector<robot_info> robot_info_vector;
+    std::vector<int>* robot_ids;
     for(uint i=0; i<10; i++)
     {
         robot_info r;
-        r.id = 123;
+        r.id = 123 + i;
         r.x_pos = 1.0;
         r.y_pos = 1.0;
         r.speed = 5;
@@ -29,6 +30,9 @@ RobotClient::RobotClient():Client()
         robot_info_vector.push_back(r);
     }
     robotGameInstance->receiveInitialRobots(1, robot_info_vector);
+    robotGameInstance->requestSensorData(1, robot_ids);
+    
+
 }
 
 int RobotClient::sendHeaderMessage(TcpConnection *conn, int sender, int message)

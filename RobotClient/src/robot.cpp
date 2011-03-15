@@ -11,6 +11,7 @@ int main(int argc, char** argv)
 {
     setbuf(stdout, NULL);
 
+    Network::RobotClient rclient;
     if (argc < 3)
     {
         printf("Usage: ./robotclient.bin server.info system.config client_num\n");
@@ -30,7 +31,6 @@ int main(int argc, char** argv)
     parseServerFile(server_fn,grid_servers,robot_clients, clock_server, draw_server); 
     parseConfigFile(config_fn,clients);
     
-    Network::RobotClient rclient;
     rclient.init();
     
     // Connect to all the grid servers
