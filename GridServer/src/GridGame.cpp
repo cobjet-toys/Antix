@@ -4,6 +4,7 @@
 #include "Position.h"
 #include "GameObject.h"
 #include "MathAux.h"
+#include "Config.h"
 
 
 #include <time.h>
@@ -17,7 +18,10 @@
 using namespace Game;
 
 #define MILLISECS_IN_SECOND 1000
-#define AND_OPERATOR 1000
+#define PUCKVALUE 1000000000000000000000000000000
+#define ROBOTVALUE 0000000000000000000000000000000
+#define ROBOT 0
+#define PUCK 1
 
 typedef std::pair<int, GameObject*> ObjectIDPair;
 typedef std::pair<int, std::vector<sensed_item> > ObjectPair;
@@ -28,7 +32,7 @@ GridGame::GridGame()
     //Robot configurations.
     robot_FOV = Math::dtor(90.0);
     robot_Radius = 0.01;
-    robot_SensorRange = 0.1;
+    robot_SensorRange = 1;
     robot_PickupRange = robot_SensorRange/5.0;
 
     printf("\n%d\n", robot_FOV);
@@ -40,7 +44,7 @@ GridGame::GridGame()
 	m_NumGrids = 2;
     m_GridId = 1;
 
-    m_PuckTotal = 100;
+    m_PuckTotal = 20;
 
     m_Population.clear();
 
@@ -55,7 +59,7 @@ GridGame::GridGame()
 
        //Create the puck.
        Puck* l_Puck = new Puck(l_PuckPos, i);
-       m_Population.push_back( l_Puck );
+       addObjectToPop(l_Puck);
     }
 
     // Sort generated pucks
@@ -104,10 +108,12 @@ void GridGame::sortPopulation()
         while(i >= 0 && m_Population[i]->getPosition()->getY() > l_Key->getPosition()->getY())
         {
             m_Population[i+1] =m_Population[i];
+            m_YObjects[m_Population[i+1]] = i+1;
             --i;
         }
 
         m_Population[i+1] = l_Key;
+        m_YObjects[l_Key] = i+1;
     }
 }
 
@@ -159,7 +165,7 @@ int GridGame::initializeTeam(std::vector<int> teams, std::vector<robot_info>* ro
 {
 
         //TODO: Will load team_size from the config
-        int team_size = 100;
+        int team_size = 1000;
         std::vector<int>::iterator end = teams.end();
 
         std::vector<robot_info> l_robot_info_vector;
@@ -169,6 +175,7 @@ int GridGame::initializeTeam(std::vector<int> teams, std::vector<robot_info>* ro
             int firstid = (*it)*team_size;
             int lastid = firstid + team_size - 1;
 
+            std::cout << "from: " << firstid << "to: " << lastid << std::endl;
 
             for (int i = firstid; i <= lastid; i++)
             {
@@ -221,39 +228,107 @@ int GridGame::unregisterRobot(unsigned int robotid)
 int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<int, std::vector<sensed_item> >* sensed_items_map)
 {
 
-    std::vector<GameObject*>::iterator populationend = m_Population.end();
-    // TODO: Currently returning all items on grid. Will be optimized to only send what is around
-    //       its bounding box
-    std::vector<sensed_item>  l_sensed_items;
-    for(std::vector<GameObject*>::iterator robotit = m_Population.begin(); robotit != populationend; robotit++){
-                sensed_item tempsensed;
-                tempsensed.id = (**robotit).m_id;
-                tempsensed.x = (*robotit)->getX();
-                tempsensed.y = (*robotit)->getY();
-                l_sensed_items.push_back(tempsensed);
-    }
-    
+    for( std::map<GameObject*, int>::iterator it = m_YObjects.begin(); it != m_YObjects.end(); it++){
 
-    // TODO: Implement with hash key to robot value being index of robot population in vector
-    //       that way, we don't have to iterate through the nested forloop to find the robots
-    std::map<int, std::vector<sensed_item> > l_sensed_items_map;
-  
+        std::cout << it->first << " => " << it->second << std::endl;
+
+    }
+
+    std::map<int, std::vector<sensed_item> > l_sensed_items_map; 
 
     std::vector<int>::iterator clientend = robot_ids_from_client.end();
-
     for(std::vector<int>::iterator it = robot_ids_from_client.begin(); it != clientend; it++)
     {
+        // grab GameObject from int id
+        GameObject* tempobj = m_MapPopulation[(*it)]; 
 
+        // grab vector position in sorted population
+        int position = m_YObjects[tempobj];
 
-        for(std::vector<GameObject*>::iterator robotit = m_Population.begin(); robotit != populationend; robotit++)
-            if ( (**robotit).m_id == (*it)  )
-            {
-                //l_sensed_items_map.insert(RobotPair( (**robotit).m_id , l_sensed_items ));
+        printf("position for gameobject id %d: %d\n", (*tempobj).m_id, position); 
+
+        GameObject* position_obj = m_Population[position];
+
+        
+        std::vector<sensed_item> temp_vector;
+        
+        int counter = position;
+
+        while ( counter >= 0 )
+        {
+            if ( (tempobj->getY() - position_obj->getY()) < robot_SensorRange ){
+                //TODO: Check Y bound as well
+
+                if ( abs(tempobj->getX() - position_obj->getX()) < robot_SensorRange ){
+                    sensed_item temp_sensed;
+                    temp_sensed.id = (*position_obj).m_id;
+                    temp_sensed.x = position_obj->getX();
+                    temp_sensed.y = position_obj->getX();
+                    
+                    temp_vector.push_back( temp_sensed );
+                }
+                counter--;
+                position_obj = m_Population[counter];
             }
+            else{
+                break;
+            }
+        }
+
+        counter = position;
+        position_obj = m_Population[position];
+
+        printf("Counter: %d - Size client list: %d\n", counter, robot_ids_from_client.size() );
+
+        while ( counter <= m_Population.size() )
+        {
+            if ( (position_obj->getY() - tempobj->getY()) < robot_SensorRange ){
+                //TODO: Check Y bound as well
+
+                if ( abs(position_obj->getX() - tempobj->getX()) < robot_SensorRange ){
+                    sensed_item temp_sensed;
+                    temp_sensed.id = (*position_obj).m_id;
+                    temp_sensed.x = position_obj->getX();
+                    temp_sensed.y = position_obj->getX();
+                    
+                    temp_vector.push_back( temp_sensed );
+                }
+                counter++;
+                position_obj = m_Population[counter];
+            }
+            else{
+                break;
+            }
+        }
+
+        l_sensed_items_map[(*it)] = temp_vector;
+       
+        #ifdef DEBUG
+        int total = 0;
+
+        for( std::vector<sensed_item>::iterator someit = temp_vector.begin(); someit != temp_vector.end(); someit++ ){
+            std::cout << (*someit).id << ",";
+            total++;
+        }
+        std::cout << "Total:" <<total << std::endl;
+        #endif
+
     }
 
     sensed_items_map = &l_sensed_items_map;
 
+    #ifdef DEBUG
+    for( std::map<int, std::vector<sensed_item> >::iterator it = l_sensed_items_map.begin(); it != l_sensed_items_map.end(); it++){
+
+        std::cout << "robot id:" << it->first << " => "; 
+        
+        for( std::vector<sensed_item>::iterator iit = (it->second).begin(); iit != (it->second).begin(); iit++){
+            std::cout << (*iit).id;
+        }
+        std::cout << std::endl;
+
+    }
+    #endif
 
     return 1;
 
@@ -264,11 +339,13 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<
 int GridGame::addObjectToPop(GameObject* object)
 {
 
-    this->m_MapPopulation.insert( ObjectIDPair((*object).m_id, object) );
+    this->m_MapPopulation[(*object).m_id] = object ;
 
     this->m_Population.push_back(object);
 
     this->m_YObjects[object] = m_Population.size();
+
+    DEBUGPRINT("YObject value: %d\n", m_Population.size());
     
     //TODO: Sort robots at this point?
     
@@ -289,7 +366,7 @@ int GridGame::removeObjectFromPop(GameObject* object)
 int GridGame::removeObjectFromPop(int objectid)
 {
 
-    GameObject* obj = (m_MapPopulation.find(objectid))->second;
+    GameObject* obj = m_MapPopulation[objectid];
 
     m_MapPopulation.erase( objectid );
 
@@ -300,7 +377,7 @@ int GridGame::removeObjectFromPop(int objectid)
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != end; it++)
     {
         if ((**it).m_id == objectid){
-            printf("Found %d robot!", objectid);
+            printf("Found %d robot!\n", objectid);
             this->m_Population.erase(it);
             break;
         }
@@ -330,16 +407,30 @@ const float& GridGame::getWorldSize() const
 void GridGame::printPopulation(){
 
 	for (int i = 0; i < m_Population.size(); i++){
-		
+	
+        DEBUGPRINT("%d - ", i);
 		m_Population[i]->printInfo();
 
 	}
 }
 
-int readId(unsigned int id)
+unsigned int readId(unsigned int id)
 {
-    int value = id & AND_OPERATOR;
-
+    if ((id & PUCKVALUE)==PUCKVALUE)
+    {
+        unsigned int value = id || ROBOTVALUE;
+        return value;
+    }
+    return id;
 
 }
 
+unsigned int writeId(unsigned int id, int type)
+{
+    if (type == 1) // Then it is a puck
+    {
+        unsigned int value = (id || ROBOTVALUE);
+        return value;
+    }
+    return id;
+}

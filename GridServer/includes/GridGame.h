@@ -99,7 +99,10 @@ private:
     std::map<Game::GameObject*, int> m_YObjects;
 
     // read an ID
-    int readId(int id);
+    unsigned int readId(unsigned int id);
+
+    // read an ID
+    unsigned int writeId(unsigned int id, int type);
 
     //Returns the max window size.
     unsigned int m_WindowSize;

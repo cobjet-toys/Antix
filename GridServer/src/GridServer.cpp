@@ -18,15 +18,26 @@ GridServer::GridServer():Server()
     std::vector<int> teams;
     teams.push_back(2);
     teams.push_back(4);
+    teams.push_back(6);
 
+    std::map<int, std::vector<sensed_item> >* sensed_items_map;
+
+    DEBUGPRINT("=====Create Game\n");
     gridGameInstance = new GridGame();
+    DEBUGPRINT("=====Initialize teams\n");
     std::vector<robot_info>* robot_info_vector;
     gridGameInstance->initializeTeam(teams, robot_info_vector);
     gridGameInstance->printPopulation();
+    DEBUGPRINT("=====Unregister Robot\n");
     gridGameInstance->unregisterRobot(200);
-    gridGameInstance->registerRobot(newrobot);
-    gridGameInstance->sortPopulation();
     gridGameInstance->printPopulation();
+    DEBUGPRINT("=====Register Robot\n");
+    gridGameInstance->registerRobot(newrobot);
+    gridGameInstance->printPopulation();
+    DEBUGPRINT("=====Get Sensor Data\n");
+    gridGameInstance->returnSensorData(teams, sensed_items_map);
+
+
 
 }
 int GridServer::handleNewConnection(int fd)
