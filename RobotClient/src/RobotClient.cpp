@@ -62,7 +62,7 @@ int RobotClient::sendRobotRequests()
     Msg_header l_Header;
     Msg_MsgSize l_Size;
 
-    printf("Sending request for data to grid.\n");
+    DEBUGPRINT("Sending request for data to grid.\n");
 
     //For each grid, send a message request containing all of the robot ids for that grid.
     std::vector<int>::const_iterator l_GridEnd = m_Grids.end();
@@ -100,7 +100,7 @@ int RobotClient::sendRobotRequests()
         sendWrapper(m_serverList[(*it)], l_Buffer, l_MessageSize);
  
         unpack(l_Buffer, Msg_header_format, &l_Header.sender, &l_Header.message);
-        printf("Sender: %d Message: %d\n", l_Header.sender, l_Header.message);
+        DEBUGPRINT("Sender: %d Message: %d\n", l_Header.sender, l_Header.message);
     } 
     return 0;
 }
@@ -209,7 +209,7 @@ int RobotClient::handler(int fd)
                     time_t curr_sec = time(NULL); 
                     if (curr_sec > init_sec)
                     {
-                        DEBUGPRINT("Number of timesteps: %d", Timesteps);
+                        printf("Number of timesteps: %d", Timesteps);
                         init_sec = time(NULL);
                         Timesteps = 0;
                    }
