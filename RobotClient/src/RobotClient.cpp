@@ -16,7 +16,7 @@ static time_t init_sec = time(NULL);
 static int Timesteps = 0;
 #endif
 
-RobotClient::RobotClient():Client()
+RobotClient::RobotClient():Client(), m_ReadyGrids(0)
 {
 }
 
@@ -289,9 +289,10 @@ int RobotClient::handler(int fd)
                     //recieveSensorData(&l_SensedInfo);
 
                     m_ReadyGrids++; 
-                    DEBUGPRINT("Recevied sensory data from a grid\n");
+                    DEBUGPRINT("Recevied sensory data from a grid. %d Ready, %d total\n", m_ReadyGrids, m_Grids.size());
                     if (m_ReadyGrids == m_Grids.size())
                     {   
+                        DEBUGPRINT("Finished one loop\n");
                         TcpConnection* l_ClockConn = m_serverList[m_ClockFd];
                         //Prepare our 'header' message.
                         Msg_header l_Header;
@@ -308,6 +309,7 @@ int RobotClient::handler(int fd)
                             return -1;
                         }
                         sendWrapper(l_ClockConn, l_HBBuffer, l_MessageSize);
+                        DEBUGPRINT("Sent heartbeat.\n");
 
                         m_ReadyGrids = 0;
                     }
