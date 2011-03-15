@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     rclient.init();
 
     //TODO Get grid servers
-    //rclient.initGrid("127.0.0.1", "30001");
+    rclient.initGrid(argv[1], argv[3]);
 
     //Connect to the cloc
     rclient.initClock(argv[1], argv[2]);

@@ -18,7 +18,7 @@ public:
     int sendRobotRequests();
     int initGrid(const char * host, const char * port);
     int initClock(const char * host, const char * port);
-    int packHeaderMessage(unsigned char* buffer, int sender, int message);
+    int packHeaderMessage(unsigned char* buffer, uint16_t sender, uint16_t message);
     int recvWrapper(TcpConnection* conn, unsigned char* buffer, int msgSize);
     int sendWrapper(TcpConnection* conn, unsigned char* buffer, int msgSize);
 
