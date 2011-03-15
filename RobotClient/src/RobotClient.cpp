@@ -71,7 +71,7 @@ int RobotClient::sendRobotRequests()
         // vector<int> l_RobotIds;
         // requestSensorData((*it), &l_RobotIds);
         
-        l_Size.msgSize = 20000;//REPLACE WITH ACTUAL REQUEST FOR ROBOTS(l_RobotIds.size())
+        l_Size.msgSize = 4000;//REPLACE WITH ACTUAL REQUEST FOR ROBOTS(l_RobotIds.size())
 
         unsigned int l_MessageSize = (l_Size.msgSize*l_Req.size)+l_Header.size+l_Size.size;
         unsigned char l_Buffer[l_MessageSize];

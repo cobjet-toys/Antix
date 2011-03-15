@@ -92,7 +92,7 @@ int GridServer::handler(int fd)
 					
 					sensed_item s1 ;
 					
-					l_totalSensed = 15;
+					l_totalSensed = 5;
 					std::vector<sensed_item> a1;
 					
 					for (int i =0; i< l_totalSensed; i++)
