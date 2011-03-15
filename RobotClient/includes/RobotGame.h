@@ -18,19 +18,20 @@ public:
     RobotGame();
     ~RobotGame();
 
-    // Compile grid to team mapping
+    // Initialization functions
     int intitializeTeam(map<int, vector<int> >* team_mapping);
+    int receiveInitialRobots(map<int, robot_info>* robots);
 
     // Register and UnRegister robots from a particular grid
-    int registerRobot(int fd, robot_info robot);
-    int unregisterRobot(int fd, int robot_id);
+    int registerRobot(int grid_id, robot_info robot);
+    int unregisterRobot(int grid_id, int robot_id);
 
     // Handle sensor data
-    int requestSensorData(int fd, vector<int>* robot_id);
+    int requestSensorData(int grid_id, vector<int>* robot_id);
     int receiveSensorData(map<int, vector<sensed_item> >* sensor_data);
 
     // Send and recieve actions
-    int sendAction(int fd, map<int, action>* robot_actions);
+    int sendAction(int grid_id, map<int, action>* robot_actions);
     int actionResult(map<int, action_results>* results);
 
 private:
