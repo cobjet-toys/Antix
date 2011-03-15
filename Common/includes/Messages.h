@@ -26,7 +26,6 @@ enum
 	MSG_RESPONDSENSORDATA = 5, // USED
 	MSG_PROCESSACTION = 17, // USED
 	MSG_RESPONDPROCESSACTION = 18,
-	MSG_RESPONDINITTEAM = 19, // USED
 	MSG_REGISTERROBOT = 20, // USED
 	MSG_RESPONDREGISTERROBOT = 21, // USED
 	MSG_UNREGISTERROBOT = 22, // USED
@@ -117,5 +116,15 @@ typedef struct{
 	const static size_t size = 4;
 } Msg_TeamId;
 static const char * Msg_TeamId_format = "l";
+
+typedef struct{
+    uint32_t id;
+    uint32_t x_pos;
+    uint32_t y_pos;
+    uint16_t speed;
+    uint32_t angle;
+    uint32_t puck_id;
+	static const size_t size = 22;
+} Msg_RobotInfo;
 
 #endif
