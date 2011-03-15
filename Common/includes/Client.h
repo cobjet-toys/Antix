@@ -11,10 +11,7 @@
 #include <unistd.h>
 #include <map>
 #include <errno.h>
-
-#ifndef DEBUG
-#define DEBUG true
-#endif
+#include "Config.h"
 
 namespace Network
 {

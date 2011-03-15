@@ -115,6 +115,8 @@ int RobotClient::initGrid(const char* host, const char* port)
     }
     m_Grids.push_back(l_GridFd);
 
+    handleNewGrid(l_GridFd);
+
     return l_GridFd;
 }
 
@@ -129,6 +131,52 @@ int RobotClient::initClock(const char* host, const char* port)
     m_ClockFd = l_ClockFd;
 
     return l_ClockFd;
+}
+
+int RobotClient::handleNewGrid(int fd)
+{
+
+    printf("Initializing a new grid.\n");
+
+    std::vector<int> l_TeamMapping;
+    //initializeTeam(fd, &l_TeamMapping);    
+    
+    l_TeamMapping.push_back(4);
+    l_TeamMapping.push_back(5);
+    l_TeamMapping.push_back(6);
+
+    //Header message;
+    Msg_header l_Header;
+
+    //Total number of teams;
+    Msg_MsgSize l_Size;
+
+    //A team message;
+    Msg_TeamId l_TeamId;
+
+    unsigned int l_TeamRequests = l_TeamMapping.size();
+    //Create our message buffer
+    unsigned int l_MessageSize = l_Header.size+l_Size.size+(l_TeamId.size*l_TeamRequests);
+    unsigned char l_Buffer[l_MessageSize]; 
+    
+    unsigned int l_BufferOf = 0;
+    packHeaderMessage(l_Buffer+l_BufferOf, SENDER_CLIENT, MSG_PROCESSINITTEAM);
+    l_BufferOf += l_Header.size;
+
+    l_Size.msgSize = l_TeamMapping.size();
+    pack(l_Buffer+l_BufferOf, Msg_MsgSize_format, l_Size.msgSize);
+    l_BufferOf += l_Size.size;
+
+    printf("Sending %d teamid requests\n", l_Size.msgSize);
+
+    for (int i = 0; i < l_TeamRequests; i++)
+    {
+        l_TeamId.teamId = l_TeamMapping[i];
+        pack(l_Buffer+l_BufferOf, Msg_TeamId_format, l_TeamId.teamId);
+        l_BufferOf += l_TeamId.size;
+    }
+
+        sendWrapper(m_serverList[fd], l_Buffer, l_MessageSize);
 }
 
 int RobotClient::handler(int fd)
@@ -203,7 +251,7 @@ int RobotClient::handler(int fd)
                     recvWrapper(l_Conn, l_NumRobBuffer, l_NumRobots.size);
                     unpack(l_NumRobBuffer, Msg_MsgSize_format, &l_NumRobots.msgSize);
 
-                    printf("Expecting %d robots.\n", l_NumRobots.msgSize );
+                    DEBUGPRINT("Expecting %d robots.\n", l_NumRobots.msgSize );
 
                     //Go through all of the robots we expect info for.
                     for (int i = 0; i < l_NumRobots.msgSize;i++)
@@ -216,7 +264,7 @@ int RobotClient::handler(int fd)
                         unpack(l_GroupHeaderBuff, Msg_SensedObjectGroupHeader_format,
                                 &l_RoboHeader.id, &l_RoboHeader.objectCount);
 
-                        printf("Robot %d, with ID %d, has sensed %d objects\n",
+                        DEBUGPRINT("Robot %d, with ID %d, has sensed %d objects\n",
                                 i, l_RoboHeader.id, l_RoboHeader.objectCount);
                         
                         std::vector<Msg_SensedObjectGroupItem> &l_Info = l_SensedInfo[l_RoboHeader.id];
@@ -234,7 +282,7 @@ int RobotClient::handler(int fd)
                                    &l_SensedItem.x, &l_SensedItem.y);
                            l_Info.push_back(l_SensedItem);
 
-                           printf("Sensed object with ID %d, pos(%d, %d)", l_SensedItem.robotid,
+                           DEBUGPRINT("Sensed object with ID %d, pos(%d, %d)\n", l_SensedItem.robotid,
                                    l_SensedItem.x, l_SensedItem.y);
                         }
                     }
