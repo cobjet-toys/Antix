@@ -322,8 +322,8 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<
 
         std::cout << "robot id:" << it->first << " => "; 
         
-        for( std::vector<sensed_item>::iterator iit = (it->second).begin(); iit != (it->second).begin(); iit++){
-            std::cout << (*iit).id;
+        for( std::vector<sensed_item>::iterator iit = (it->second).begin(); iit != (it->second).end(); iit++){
+            std::cout << (*iit).id << ",";
         }
         std::cout << std::endl;
 
