@@ -49,7 +49,7 @@ void displayFunc()
 void drawTeams()
 {
     unsigned int winsize = Network::DrawServer::getInstance()->getWindowSize();
-    float worldsize = Network::DrawServer::getInstance()->getWorldSize();
+    //float worldsize = Network::DrawServer::getInstance()->getWorldSize();
     float radius = Network::DrawServer::getInstance()->getHomeRadius();
 
     for (Network::DrawServer::TeamIter it = Network::DrawServer::getInstance()->getFirstTeam();
@@ -107,8 +107,8 @@ void drawPucks()
 void drawRobots()
 {
     unsigned int winsize = Network::DrawServer::getInstance()->getWindowSize();
-    float worldsize = Network::DrawServer::getInstance()->getWorldSize();
-    float radius = Network::DrawServer::getInstance()->getHomeRadius();
+    //float worldsize = Network::DrawServer::getInstance()->getWorldSize();
+    //float radius = Network::DrawServer::getInstance()->getHomeRadius();
 
     glColor3f(255, 255, 255);
     
@@ -133,7 +133,7 @@ void drawRobots()
         for (Network::DrawServer::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
              it != Network::DrawServer::getInstance()->getLastRobot();it++)
         {
-          	/*if (!(*it).second)
+          	if (!(*it).second)
           	{
             		printf("No robot @ %d", (*it).first);
             		continue;

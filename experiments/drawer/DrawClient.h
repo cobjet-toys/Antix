@@ -13,7 +13,7 @@ namespace Network
 	    DrawClient();
 	    virtual ~DrawClient();
       void init(string db_host="localhost", int homes=1, int pucks=5, int homePop=10);
-	    void update();
+	    void update(uint32_t framestep);
 
 	private:
 	    int m_totalRobots;

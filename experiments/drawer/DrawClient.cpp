@@ -42,11 +42,10 @@ void DrawClient::init(string db_host, int homes, int pucks, int homePop)
     }
 }
 
-void DrawClient::update()
+void DrawClient::update(uint32_t framestep)
 {
     cout << "\n--------------DrawClient----------------\n" << endl;
     cout << "*** Objects=" << (this->m_totalRobots + this->m_totalPucks) << endl;
-    cout << "*** Steps=" << 3 << endl << endl;
 
     // Creates an array of random values, to draw the pucks -- TEMPORARY TESTING -- //
     srand(time(NULL));
@@ -58,56 +57,53 @@ void DrawClient::update()
     float robotPosition[this->m_totalRobots][2];
     for(int i = 0; i < this->m_totalRobots; i++){for(int j = 0; j < 2; j++){robotPosition[i][j] = (float)(rand()%600);}}
 
-    for(uint32_t j=0; j<100; j++)
+    char logKey[8];
+    sprintf(logKey, "%s%d", POS_DB_NAME, framestep%MAX_POS_KEYS);
+    this->posDB->setLogKey(logKey);
+    //cout << "\n*** LogKey=" << logKey << endl;
+
+    clock_t start = clock();
+    for(int i=0; i < this->m_totalRobots; i++)
     {
-        char logKey[8];
-        sprintf(logKey, "%s%d", POS_DB_NAME, j%MAX_POS_KEYS);
-        this->posDB->setLogKey(logKey);
-        //cout << "\n*** LogKey=" << logKey << endl;
+        char buf[64];
+        int id;
+        char hasPuck;
+        float posX, posY, orientation;
 
-        clock_t start = clock();
-        for(int i=0; i < this->m_totalRobots; i++)
-        {
-            char buf[64];
-            int id;
-            char hasPuck;
-            float posX, posY, orientation;
+        bzero(buf, 64);
+        id = i + 1024;
 
-            bzero(buf, 64);
-            id = i + 1024;
+        // Computes robots altered position (Random)
+        robotPosition[i][0] += float((rand()%200)-100)/50;
+        robotPosition[i][1] += float((rand()%200)-100)/50;
 
-            // Computes robots altered position (Random)
-            robotPosition[i][0] += float((rand()%200)-100)/50;
-            robotPosition[i][1] += float((rand()%200)-100)/50;               
+        posX = robotPosition[i][0];//(float)i*10+j*5;
+        posY = robotPosition[i][1];//i*15+j*3;
+        //posX = (float)i*10+j*5;
+        //posY = i*15+j*3;
+        orientation = 1.0;
+        hasPuck = i%2 == 0 ? 'T':'F';
 
-            posX = robotPosition[i][0];//(float)i*10+j*5;
-            posY = robotPosition[i][1];//i*15+j*3;
-            //posX = (float)i*10+j*5;
-            //posY = i*15+j*3;
-            orientation = 1.0;
-            hasPuck = i%2 == 0 ? 'T':'F';
-
-            sprintf(buf, POS_PATTERN, id, posX, posY, orientation, hasPuck);
-            //cout << buf << endl;
-            this->posDB->append(string(buf));
-        }
-
-        for(int i=0; i < this->m_totalPucks; i++)
-        {
-            char buf[64];
-            float posX, posY;
-
-            bzero(buf, 64);
-            posX = randPuckVals[(2*i)];
-            posY = randPuckVals[(2*i) + 1];
-
-            sprintf(buf, POS_PATTERN, i, posX, posY, 0.0, 'F');
-            //cout << buf << endl;
-            this->posDB->append(string(buf));
-        }
-
-        double elapsed = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
-        cout << j << ": " << elapsed << "ms" << endl;
+        sprintf(buf, POS_PATTERN, id, posX, posY, orientation, hasPuck);
+        //cout << buf << endl;
+        this->posDB->append(string(buf));
     }
+
+    for(int i=0; i < this->m_totalPucks; i++)
+    {
+        char buf[64];
+        float posX, posY;
+
+        bzero(buf, 64);
+        posX = randPuckVals[(2*i)];
+        posY = randPuckVals[(2*i) + 1];
+
+        sprintf(buf, POS_PATTERN, i, posX, posY, 0.0, 'F');
+        //cout << buf << endl;
+        this->posDB->append(string(buf));
+    }
+
+    double elapsed = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
+    cout << framestep << ": " << elapsed << "ms" << endl;
 
 }

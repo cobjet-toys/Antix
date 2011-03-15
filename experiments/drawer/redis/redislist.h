@@ -219,7 +219,7 @@ namespace AntixUtils
   
             // Print time in (ms) that it took to fetch data 
             double elapsed = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
-            //printf("Fetch: %fms\n", elapsed);
+            printf("Fetch: %fms\n", elapsed);
 
             return results;
         }
