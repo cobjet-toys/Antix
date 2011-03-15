@@ -1,6 +1,6 @@
 common_COMPILER = g++
 
-common_SRC = Client.cpp Server.cpp TcpConnection.cpp Packer.cpp 
+common_SRC = networkCommon.cpp Client.cpp Server.cpp TcpConnection.cpp Packer.cpp 
 common_LIBRARY = libcommon.a
 
 # ----- do not edit under this line unless you know what you are doing :)
@@ -24,7 +24,7 @@ common_REDIS_PATH = $(common_PWD)/Redis
 
 common: common_depend common_release_objects
 	@echo "Building RELEASE --------------------------------------------------------------------------------"
-	ar cvq $(common_RELEASE_PATH)/$(common_LIBRARY) $(common_RELEASE_OBJ) 
+	ar cvq $(common_RELEASE_PATH)/$(common_LIBRARY) $(common_RELEASE_OBJ)   
 	@echo "Building common COMPLETE --------------------------------------------------------------"
 
 common_debug: common_depend common_debug_objects
@@ -40,8 +40,8 @@ common_depend:
 
 common_release_objects:
 	@echo "Building common release objects -------------------------------------------------------"
-	$(shell cd $(common_RELEASE_OBJ_PATH); $(common_COMPILER) -c -I$(common_INCLUDE_PATH) $(addprefix $(common_SRC_PATH)/, $(common_SRC)))
-	@echo "Building {{PROJECT_NAEM}} release objects COMPLETE ----------------------------------------------"
+	$(shell cd $(common_RELEASE_OBJ_PATH); $(common_COMPILER) -c -I$(common_INCLUDE_PATH) $(addprefix $(common_SRC_PATH)/, $(common_SRC));)
+	@echo "Building common release objects COMPLETE ----------------------------------------------"
 
 common_debug_objects:
 	@echo "Building common debug objects ---------------------------------------------------------"

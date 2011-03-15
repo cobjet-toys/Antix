@@ -12,9 +12,9 @@
 enum 
 {
 	SENDER_CONTROLLER = 0,
-	SENDER_CLOCK = 1,
-	SENDER_GRIDSERVER = 2,
-	SENDER_CLIENT = 3
+	SENDER_CLOCK = 1, // used
+	SENDER_GRIDSERVER = 2, // used
+	SENDER_CLIENT = 3 // used
 };
 
 // Describes what the Physical Entities can send to each other (i.e. Step 2, How Does Box Communicate With World)
@@ -22,11 +22,10 @@ enum
 {
 	MSG_ACK = 99,
 	MSG_ASSIGN_ID = 0,
-    MSG_HEARTBEAT = 1,
+    MSG_HEARTBEAT = 1, // USED
 	MSG_INITTEAM = 2,
 	MSG_INITGRIDSERVER = 3,
 	MSG_SPECIFYGRIDINFO = 4,
-	MSG_ROBOTSENSORDATA = 5,
 	MSG_PUCKSENSORDATA = 6,
 	MSG_PICKUP = 7,
 	MSG_DROP = 8,
@@ -37,7 +36,15 @@ enum
 	MSG_DRAWROBOT = 13,
 	MSG_DRAWPUCK = 14,
 	MSG_INITDRAWER = 15,
-    MSG_REQUESTSENSORDATA = 16
+    MSG_REQUESTSENSORDATA = 16, // USED
+	MSG_RESPONDSENSORDATA = 5, // USED
+	MSG_PROCESSACTION = 17, // USED
+	MSG_RESPONDPROCESSACTION = 18,
+	MSG_RESPONDINITTEAM = 19, // USED
+	MSG_REGISTERROBOT = 20, // USED
+	MSG_RESPONDREGISTERROBOT = 21, // USED
+	MSG_UNREGISTERROBOT = 22, // USED
+	MSG_RESPONDUNREGISTERROBOT = 23 // USED
 };
 
 // Header Message to Identify What Kind Of Message Is Being Sent and Who It Came From
@@ -72,8 +79,8 @@ static const char* Msg_HB_format = "h";
 typedef struct{
 	uint16_t msgSize; //THIS IS THE NUMBER OF OBJECTS WE ARE REQUESTING
 	static const size_t size = 2;
-} Msg_RequestMsgSize;
-static const char* Msg_RequestMsgSize_format = "h"; 
+} Msg_MsgSize;
+static const char* Msg_MsgSize_format = "h"; 
 
 typedef struct
 {
@@ -238,28 +245,36 @@ typedef struct
 
 //------------------------------- DO NOT DELETE THESE
 
-//receive 
+// USED
 typedef struct{
 	uint32_t id;
 	static const size_t size = 4;
-} Msg_robotSensorRequestRobotId;
-static const char * Msg_robotSensorRequestRobotId_format = "l";
+} Msg_RobotId;
+static const char * Msg_RobotId_format = "l";
 
-// Send 
+// USED
 typedef struct{
 	uint32_t id;
 	uint16_t objectCount;
 	static const size_t size = 6;
 } Msg_sensedObjectGroupHeader;
-static const char * Msg_sensedObjectGroupHeader_format = "lh";
+static const char * Msg_SensedObjectGroupHeader_format = "lh";
 
-
+// USED
 typedef struct{
     uint32_t robotid;
     uint32_t x;
     uint32_t y;
 	static const size_t size = 12;
 } Msg_sensedObjectGroupItem;
-static const char * Msg_sensedObjectGroupItem_format = "lll";
+static const char * Msg_SensedObjectGroupItem_format = "lll";
+
+typedef struct{ // USED
+    uint16_t action; 
+    uint32_t speed;
+    uint32_t angle;
+	static const size_t size = 10;
+} Msg_Action;
+static const char * Msg_Action_format = "hll";
 
 #endif
