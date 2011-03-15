@@ -5,6 +5,7 @@
 #include <map>
 #include "Types.h"
 #include "Robot.h"
+#include "Team.h"
 
 using std::map;
 using std::vector;
@@ -19,8 +20,8 @@ public:
     ~RobotGame();
 
     // Initialization functions
-    int intitializeTeam(map<int, vector<int> >* team_mapping);
-    int receiveInitialRobots(map<int, robot_info>* robots);
+    int intitializeTeam(int grid_id, vector<int> team_mapping);
+    int receiveInitialRobots(int grid_id, vector<robot_info> robot_info_vector);
 
     // Register and UnRegister robots from a particular grid
     int registerRobot(int grid_id, robot_info robot);
