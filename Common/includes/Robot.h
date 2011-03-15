@@ -111,6 +111,11 @@ private:
     Home* m_Home;
 
     /**
+     * Team of the robot.
+     */
+    int m_Team;
+
+    /**
      * The last position a puck was found at.
      */
     Math::Position* m_LastPickup;

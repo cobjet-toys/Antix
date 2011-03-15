@@ -1,33 +1,46 @@
 #include "RobotGame.h"
 #include "Team.h"
+#include "MathAux.h"
+#include "Types.h"
 
 RobotGame::RobotGame()
 {
-    // instantiate team objects with range of robots
 
-    // need to instatiate a number of teams that robots
-    // can be linked to
-
-    // do we instantiate the robots here as well?
 }
 
 RobotGame::~RobotGame()
 {
-
 }
 
 // Compile grid to team mapping
-int RobotGame::intitializeTeam(map<int, vector<int> >* team_mapping)
+int RobotGame::intitializeTeam(int grid_id, std::vector<int> team_mapping)
 {
-    // this comes out of the config file as well
     // we know which teams are on which grid
     // so, create a mapping of grid ids to a vector of team ids
 
     return 0;
 }
 
-int RobotGame::receiveInitialRobots(map<int, robot_info>* robots)
+int RobotGame::receiveInitialRobots(int grid_id, std::vector<robot_info> robot_info_vector)
 {
+    
+    std::vector<Robot*> l_Robots;
+    std::vector<robot_info>::const_iterator end = robot_info_vector.end();
+    for(std::vector<robot_info>::const_iterator it = robot_info_vector.begin(); it != end; it++)
+    {
+        //TODO: these should come out of the config
+        float robot_FOV = Math::dtor(90.0);
+        float robot_Radius = 0.01;
+        float robot_SensorRange = 0.1;
+        float robot_PickupRange = robot_SensorRange / 5.0;
+
+        Math::Position* l_RobotPosition = new Math::Position(it->x_pos, it->y_pos, it->angle);
+        Game::Robot* l_Robot = new Robot(l_RobotPosition, it->id, robot_FOV, robot_Radius, robot_SensorRange, robot_PickupRange);
+        l_Robots.push_back(l_Robot);
+
+        l_Robot->printInfo();
+    }
+    m_Robots[grid_id] = l_Robots;
 
     return 0;
 }
@@ -55,7 +68,7 @@ int RobotGame::unregisterRobot(int grid_id, int robot_id)
 }
 
 // Handle sensor data
-int RobotGame::requestSensorData(int grid_id, vector<int>* robot_id)
+int RobotGame::requestSensorData(int grid_id, std::vector<int>* robot_id)
 {
     // compiles a vector of robot ids for grid with id grid_id
     // problem: what to do when a robot is looking into more than 1 grid?
@@ -66,7 +79,7 @@ int RobotGame::requestSensorData(int grid_id, vector<int>* robot_id)
     return 0;
 }
 
-int RobotGame::receiveSensorData(map<int, vector<sensed_item> >* sensor_data)
+int RobotGame::receiveSensorData(map<int, std::vector<sensed_item> >* sensor_data)
 {
     // map of sensed items for each robot id on the grid where this info is coming from
     // will be used to decide on an action, when the robot sees the complete sensor

@@ -23,6 +23,10 @@ Robot::Robot(Math::Position *pos, unsigned int id, float FOV, float Radius, floa
     m_LastPickup = new Math::Position();
     m_Speed = new Math::Speed();
 
+    //TODO: get TEAM_SIZE from the config
+    int TEAM_SIZE = 1000;
+    m_Team = id/TEAM_SIZE;
+
     m_FOV = FOV;
     m_Radius = Radius;
     m_PickupRange = PickupRange;

@@ -2,6 +2,7 @@
 #include "Messages.h"
 #include <string.h>
 #include "Config.h"
+#include "Types.h"
 
 #include <time.h>
 
@@ -12,6 +13,22 @@ static int Timesteps = 0;
 
 RobotClient::RobotClient():Client()
 {
+    robotGameInstance = new RobotGame();
+
+    // make a robot_info vector for testing
+    std::vector<robot_info> robot_info_vector;
+    for(uint i=0; i<10; i++)
+    {
+        robot_info r;
+        r.id = 123;
+        r.x_pos = 1.0;
+        r.y_pos = 1.0;
+        r.speed = 5;
+        r.angle = 1.0;
+        r.puck_id = 1;
+        robot_info_vector.push_back(r);
+    }
+    robotGameInstance->receiveInitialRobots(1, robot_info_vector);
 }
 
 int RobotClient::sendHeaderMessage(TcpConnection *conn, int sender, int message)
