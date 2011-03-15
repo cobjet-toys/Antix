@@ -111,4 +111,10 @@ typedef struct{ // USED
 } Msg_Action;
 static const char * Msg_Action_format = "hll";
 
+typedef struct{
+	uint32_t teamId;
+	const static size_t size = 4;
+} Msg_TeamId;
+static const char * Msg_TeamId_format = "l";
+
 #endif
