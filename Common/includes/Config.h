@@ -3,7 +3,7 @@
 
 #define DEBUG
 
-#ifdef RELEASE 
+#ifdef DEBUG 
 #define DEBUGPRINT printf
 #else
 #define DEBUGPRINT(format, args...) ((void)0)
