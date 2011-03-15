@@ -80,8 +80,8 @@ int GridServer::handler(int fd)
 						DEBUGPRINT("%i\n", id);
 					}
 
-					int robotsTotal = 2; // how many robots have sensory data
-					int l_totalSensed =2; // total of all the robots sensory data *how many sensed items in total*
+					int l_robotsTotal = l_robotIdVector.size(); // how many robots have sensory data
+					int l_totalSensed = 0; // total of all the robots sensory data *how many sensed items in total*
 					
 					std::map<int, std::vector<sensed_item> > sensed_items_map; // has map that contains a list for each robot in request list
 					/*
@@ -90,33 +90,40 @@ int GridServer::handler(int fd)
 					 ****************************************************************************************
 					*/
 					
-					sensed_item s1 = {0, 1, 1};
-					sensed_item s2 = {0, 1, 1};
+					sensed_item s1 ;
 					
+					l_totalSensed = l_robotsTotal;
 					std::vector<sensed_item> a1;
-					std::vector<sensed_item> a2;
 					
-					a1.push_back(s1);
-
-					a2.push_back(s2);
-					
-					sensed_items_map[0] = a1;
-					sensed_items_map[1] = a2;
-					
+					for (int i =0; i< l_robotsTotal; i++)
+					{
+						s1.robotid = i;
+						s1.x = i;
+						s1.y = i  * 10;
+						a1.push_back(s1);
+					}
+					DEBUGPRINT("got all sensory data\n");
+					for (int i = 0; i < l_robotsTotal; i++)
+					{
+						sensed_items_map[i] = a1;
+					}
+					DEBUGPRINT("got all robot <= sensory data total of %d robots with %d sensory objects\n", a1.size(),sensed_items_map.size());
 					
 					Msg_header l_header = {SENDER_GRIDSERVER, MSG_RESPONDSENSORDATA}; // header for response
 					memset(&l_msgSize, 0 , l_msgSize.size);
 					
-					l_msgSize.msgSize = robotsTotal;
+					l_msgSize.msgSize = l_robotsTotal;
 					
-					Msg_sensedObjectGroupItem sensedItem; // container for the sensed items
+					Msg_SensedObjectGroupHeader l_robotHeader; // for each robot
+					Msg_SensedObjectGroupItem l_sensedObject; // for each sensed item
 					
 					unsigned short l_responseMsgSize = 0;
 					
 					l_responseMsgSize += l_header.size; // append header size
 					l_responseMsgSize += l_msgSize.size; // append size of msg length 
-					l_responseMsgSize += l_robotId.size * robotsTotal; // append the total size for number of robot ids
-					l_responseMsgSize += l_totalSensed * sensedItem.size; // all sensed items
+					
+					l_responseMsgSize += (l_robotsTotal * l_robotHeader.size); // append the total size for number of robot ids
+					l_responseMsgSize += (l_totalSensed * l_robotsTotal * l_sensedObject.size); // all sensed items
 					
 					printf("msg size: %i\n", l_responseMsgSize);
 					
@@ -138,20 +145,20 @@ int GridServer::handler(int fd)
 					
 					l_position += l_msgSize.size; // shift by robot size header
 					
-					Msg_sensedObjectGroupHeader l_robotHeader; // for each robot
-					Msg_sensedObjectGroupItem l_sensedObject; // for each sensed item
+					DEBUGPRINT("AFTER PACKING SIZE %d\n", l_position);
 					
 					std::map<int, std::vector<sensed_item> >::iterator map_end = sensed_items_map.end(); 
 					 // sensed item iterator
 					
-					std::vector<sensed_item>::iterator sensedItemIt;
+					DEBUGPRINT("Set up iterator\n");
 					
+									
 					for (std::map<int, std::vector<sensed_item> >::iterator it = sensed_items_map.begin(); it != map_end; it++)
 					{
 						// for each robot requested
 						l_robotHeader.id = it->first;
 						l_robotHeader.objectCount = it->second.size();
-						
+						DEBUGPRINT("PACKING robot %d with %d sensory objects\n", l_robotHeader.id, l_robotHeader.objectCount);
 						if (pack(msgBuffer+l_position, Msg_SensedObjectGroupHeader_format, l_robotHeader.id, l_robotHeader.objectCount) != l_robotHeader.size)
 						{
 							DEBUGPRINT("Could not pack robot header\n");
@@ -159,8 +166,9 @@ int GridServer::handler(int fd)
 						}
 						
 						l_position += l_robotHeader.size;
+						DEBUGPRINT("CURRENT POSITION SIZE %d\n", l_position);
 						
-						sensedItemIt = it->second.end(); 
+						std::vector<sensed_item>::iterator sensedItemIt = it->second.end(); 
 						
 						for (std::vector<sensed_item>::iterator vecIt = it->second.begin(); vecIt != sensedItemIt; vecIt++)
 						{
@@ -168,7 +176,7 @@ int GridServer::handler(int fd)
 							l_sensedObject.y = vecIt->y;
 							l_sensedObject.x = vecIt->x;
 							l_sensedObject.robotid = vecIt->robotid;
-							
+							DEBUGPRINT("Packing sensed object id=%d x=%d y=%d | of buffer %d\n", l_sensedObject.robotid, l_sensedObject.x, l_sensedObject.y, l_position);
 							if (pack(msgBuffer+l_position, Msg_SensedObjectGroupItem_format, l_sensedObject.robotid, l_sensedObject.x, l_sensedObject.y) != l_sensedObject.size)
 							{
 								DEBUGPRINT("Could not pack robot header\n");
@@ -244,6 +252,56 @@ int GridServer::handler(int fd)
 					return 0;
 					
 				}// end of message process action
+				
+				case (MSG_PROCESSINITTEAM):
+				{					
+					Msg_header l_header;
+					Msg_MsgSize l_msgSize;
+					
+					NetworkCommon::requestMessageSize(l_msgSize, l_curConnection);
+					
+					int l_numTeams = l_msgSize.msgSize;
+					
+					if (l_numTeams <= 0)
+					{
+						DEBUGPRINT("Requested sensor data for <=0 Robots. Game error.\n");
+						return -1;
+					}
+					
+					DEBUGPRINT("Client has requested actions for %i robots\n", l_numTeams);
+					
+					Msg_TeamId l_teamId;
+					unsigned char l_teamIdBuff[l_teamId.size];
+					
+					memset(&l_teamId, 0 , l_teamId.size);
+					memset(l_teamIdBuff, 0 , l_teamId.size);
+					
+					std::vector<int> l_teamIdsVec;
+					std::map<int, std::vector<robot_info> > l_teamRobotsMap;
+					
+					for (int i = 0; i < l_numTeams; i++)
+					{
+						memset(l_teamIdBuff, 0 , l_teamId.size);
+						if (l_curConnection->recv(l_teamIdBuff, l_teamId.size) == -1)
+						{
+							DEBUGPRINT("Could not receive a team id.");
+							return -1;
+						}
+						unpack(l_teamIdBuff, Msg_TeamId_format, &l_teamId.teamId);
+						
+						l_teamIdsVec.push_back(l_teamId.teamId);
+						
+						DEBUGPRINT("Team id:%d unpacked and stored\n", l_teamId.teamId);
+					}
+					
+					/*if (GridGame::initializeTeam(vector<int> teamids, map<int, vector<robot_info> >* robots) < 0)
+					{
+						DEBUGPRINT("Initialize Team\n");
+						return -1;
+					}*/
+					
+					return 0;
+				}
 				
 				default:
 				{
