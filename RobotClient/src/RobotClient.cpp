@@ -60,7 +60,7 @@ int RobotClient::sendRobotRequests()
     //Create our request messages
     Msg_RequestSensorData l_Req;
     Msg_header l_Header;
-    Msg_RequestMsgSize l_Size;
+    Msg_MsgSize l_Size;
 
     printf("Sending request for data to grid.\n");
 
@@ -84,7 +84,7 @@ int RobotClient::sendRobotRequests()
         l_CurrBuffIndex += l_Header.size;
 
          //Add the number of elements we are sending
-        pack(l_Buffer+l_CurrBuffIndex, Msg_RequestMsgSize_format, l_Size.msgSize);
+        pack(l_Buffer+l_CurrBuffIndex, Msg_MsgSize_format, l_Size.msgSize);
         l_CurrBuffIndex += l_Size.size;
                
         for (int i = 0; i < l_Size.msgSize;i++)
@@ -191,17 +191,17 @@ int RobotClient::handler(int fd)
         case(SENDER_GRIDSERVER):
             switch(l_Header.message)
             {
-                case(MSG_ROBOTSENSORDATA) :
+                case(MSG_RESPONDSENSORDATA) :
                 {
                     
-                    std::map<int, std::vector<Msg_sensedObjectGroupItem> > l_SensedInfo;
+                    std::map<int, std::vector<Msg_SensedObjectGroupItem> > l_SensedInfo;
 
                     //Receive the total number of robots we are getting sens info for.
-                    Msg_RequestMsgSize l_NumRobots;
+                    Msg_MsgSize l_NumRobots;
                     unsigned char l_NumRobBuffer[l_NumRobots.size];
 
                     recvWrapper(l_Conn, l_NumRobBuffer, l_NumRobots.size);
-                    unpack(l_NumRobBuffer, Msg_RequestMsgSize_format, &l_NumRobots.msgSize);
+                    unpack(l_NumRobBuffer, Msg_MsgSize_format, &l_NumRobots.msgSize);
 
                     printf("Expecting %d robots.\n", l_NumRobots.msgSize );
 
@@ -209,28 +209,28 @@ int RobotClient::handler(int fd)
                     for (int i = 0; i < l_NumRobots.msgSize;i++)
                     {
                         //First get the header telling us how many objects are sensed and for which object.
-                        Msg_sensedObjectGroupHeader l_RoboHeader;
+                        Msg_SensedObjectGroupHeader l_RoboHeader;
                         unsigned char l_GroupHeaderBuff[l_RoboHeader.size];
 
                         recvWrapper(l_Conn, l_GroupHeaderBuff, l_RoboHeader.size);
-                        unpack(l_GroupHeaderBuff, Msg_sensedObjectGroupHeader_format,
+                        unpack(l_GroupHeaderBuff, Msg_SensedObjectGroupHeader_format,
                                 &l_RoboHeader.id, &l_RoboHeader.objectCount);
 
                         printf("Robot %d, with ID %d, has sensed %d objects\n",
                                 i, l_RoboHeader.id, l_RoboHeader.objectCount);
                         
-                        std::vector<Msg_sensedObjectGroupItem> &l_Info = l_SensedInfo[l_RoboHeader.id];
+                        std::vector<Msg_SensedObjectGroupItem> &l_Info = l_SensedInfo[l_RoboHeader.id];
                         //Receive all of our sensed items.
                         for (int a = 0; a < l_RoboHeader.objectCount; a++)
                         {
                             
                            //Receive a sensed item.
-                           Msg_sensedObjectGroupItem l_SensedItem;
+                           Msg_SensedObjectGroupItem l_SensedItem;
                            unsigned char l_SensedItemBuffer[l_SensedItem.size]; 
                             
                            //Receive and insert into our map of sensed items.
                            recvWrapper(l_Conn, l_SensedItemBuffer, l_SensedItem.size);
-                           unpack(l_SensedItemBuffer, Msg_sensedObjectGroupItem_format, &l_SensedItem.robotid,
+                           unpack(l_SensedItemBuffer, Msg_SensedObjectGroupItem_format, &l_SensedItem.robotid,
                                    &l_SensedItem.x, &l_SensedItem.y);
                            l_Info.push_back(l_SensedItem);
 
