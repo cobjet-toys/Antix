@@ -22,7 +22,7 @@ void DrawClient::init(string db_host, int homes, int pucks, int homePop)
     this->posDB->setDataOnly(true);
     this->m_totalHomes = homes;
     this->m_totalPucks = pucks;
-    this->m_totalRobots = 1000;//homePop;
+    this->m_totalRobots = 10000;//homePop;
 
     /* Push fake team data */
     this->posDB->setLogKey(TEAM_DB_NAME);
@@ -40,13 +40,13 @@ void DrawClient::init(string db_host, int homes, int pucks, int homePop)
         cout << buf << endl;
         this->posDB->append(string(buf));
     }
+    
+    cout << "\n--------------DrawClient----------------\n" << endl;
+    cout << "*** Objects=" << (this->m_totalRobots + this->m_totalPucks) << endl;
 }
 
 void DrawClient::update(uint32_t framestep)
 {
-    cout << "\n--------------DrawClient----------------\n" << endl;
-    cout << "*** Objects=" << (this->m_totalRobots + this->m_totalPucks) << endl;
-
     // Creates an array of random values, to draw the pucks -- TEMPORARY TESTING -- //
     srand(time(NULL));
     float randPuckVals[this->m_totalPucks * 2];

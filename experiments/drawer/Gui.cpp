@@ -28,8 +28,6 @@ void timerFunc(int dummy)
 
 void displayFunc()
 {    
-    Network::DrawServer::getInstance()->update();  
-
     //printf("displayFunc()::");
     //printRobots();
     
@@ -43,6 +41,8 @@ void displayFunc()
     //drawTest();
 
     glutSwapBuffers();
+    
+    Network::DrawServer::getInstance()->update();  
     glutTimerFunc(0, timerFunc, 0);
 }
 

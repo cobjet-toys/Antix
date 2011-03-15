@@ -94,7 +94,7 @@ void DrawServer::update()
     char logKey[16];
     sprintf(logKey, "%s%d", POS_DB_NAME, (this->m_framestep % MAX_POS_KEYS));
     this->m_redisCli->setLogKey(logKey);
-    cout << "\n*** LogKey=" << logKey << endl;
+    //cout << "\n*** LogKey=" << logKey << endl;
 
     clock_t start = clock();
     vector<AntixUtils::LogItem> items;
@@ -102,9 +102,8 @@ void DrawServer::update()
     items = this->m_redisCli->logitems();
     
     // Print time in (ms) that it took to fetch data 
-    double elapsed = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
-    printf("Fetch   %d: %fms (Robots=%d, Pucks=%d)\n",
-            this->m_framestep, elapsed, this->m_robots.size(), this->m_pucks.size());
+    //double elapsed = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
+    //printf("Fetch   %d: %fms (Robots=%d, Pucks=%d)\n", this->m_framestep, elapsed, this->m_robots.size(), this->m_pucks.size());
     
     start = clock();
     
@@ -175,9 +174,9 @@ void DrawServer::update()
     //this->m_redisCli->clear();
 
     // Print time in (ms) that it took to process data
-    double elapsed2 = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
-    printf("Process %d: %fms (Robots=%d, Pucks=%d)\n",
-            this->m_framestep, elapsed2, this->m_robots.size(), this->m_pucks.size());
+    //double elapsed2 = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
+    //printf("Process %d: %fms (Robots=%d, Pucks=%d)\n",
+            //this->m_framestep, elapsed2, this->m_robots.size(), this->m_pucks.size());
     
     //check for overflow
     this->m_framestep++;
