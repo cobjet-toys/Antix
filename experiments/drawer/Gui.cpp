@@ -28,6 +28,8 @@ void timerFunc(int dummy)
 
 void displayFunc()
 {    
+    Network::DrawServer::getInstance()->update();  
+
     //printf("displayFunc()::");
     //printRobots();
     
@@ -41,15 +43,13 @@ void displayFunc()
     //drawTest();
 
     glutSwapBuffers();
-    
-    Network::DrawServer::getInstance()->update();  
     glutTimerFunc(0, timerFunc, 0);
 }
 
 void drawTeams()
 {
     unsigned int winsize = Network::DrawServer::getInstance()->getWindowSize();
-    //float worldsize = Network::DrawServer::getInstance()->getWorldSize();
+    float worldsize = Network::DrawServer::getInstance()->getWorldSize();
     float radius = Network::DrawServer::getInstance()->getHomeRadius();
 
     for (Network::DrawServer::TeamIter it = Network::DrawServer::getInstance()->getFirstTeam();
@@ -72,11 +72,13 @@ void drawPucks()
     unsigned int winsize = Network::DrawServer::getInstance()->getWindowSize();
 
     // pack the puck points into a vertex array for fast rendering
-    /*const size_t len( Network::DrawServer::getInstance()->getPucksCount());
+    const size_t len( Network::DrawServer::getInstance()->getPucksCount());
 
     // keep this buffer around between calls for speed
     static std::vector<GLfloat> pts;
     pts.resize(len * 2);
+    // Activate and specify pointer to vertex array
+    glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(2, GL_FLOAT, 0, &pts[0]);
 
     int i=0;
@@ -90,50 +92,46 @@ void drawPucks()
         i += 2;
     }
 
-    glDrawArrays(GL_POINTS, 0, len);*/
+    // Draw the array of vertices
+    glDrawArrays(GL_POINTS, 0, len);
 
-    glColor3f(255.0f, 120.0f, 120.0f); // BLUE
-
-    glBegin(GL_POINTS);
-    for (Network::DrawServer::PuckIter it = Network::DrawServer::getInstance()->getFirstPuck();
-            it != Network::DrawServer::getInstance()->getLastPuck(); it++)
-    {    
-        Math::Position * puckPos = (*it).second->getPosition(); 
-        glVertex2f(puckPos->getX()/winsize, puckPos->getY()/winsize);
-    }
-    glEnd();
+    // Deactivate vertex arrays after drawing
+    glDisableClientState(GL_VERTEX_ARRAY);
 }
 
 void drawRobots()
 {
-    unsigned int winsize = Network::DrawServer::getInstance()->getWindowSize();
-    //float worldsize = Network::DrawServer::getInstance()->getWorldSize();
-    //float radius = Network::DrawServer::getInstance()->getHomeRadius();
+    unsigned int winsize   = Network::DrawServer::getInstance()->getWindowSize();
+    float worldsize        = Network::DrawServer::getInstance()->getWorldSize();
+    float radius           = Network::DrawServer::getInstance()->getHomeRadius();
 
+    glPointSize(2.0);
     glColor3f(255, 255, 255);
     
     // if robots are smaller than 4 pixels across, draw them as points
     //if( (radius * (double)winsize/(double)worldsize) < 2.0 )
     if(true)
     {
-        /*const size_t len( Network::DrawServer::getInstance()->getRobotsCount()); 
+        const size_t len( Network::DrawServer::getInstance()->getRobotsCount()); 
     	
         // keep this buffer around between calls for speed
         static std::vector<GLfloat> pts;
         static std::vector<GLfloat> colors;
-        pts.resize( len * 2 );
-        colors.resize( len * 3 );
+        pts.resize(len * 2);
+        colors.resize(len * 3);
 
-        glVertexPointer( 2, GL_FLOAT, 0, &pts[0] );
+        // Activate and specify pointer to vertex array
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glVertexPointer(2, GL_FLOAT, 0, &pts[0]);
 
-        glEnableClientState( GL_COLOR_ARRAY );
-        glColorPointer( 3, GL_FLOAT, 0, &colors[0] );
+        glEnableClientState(GL_COLOR_ARRAY);
+        glColorPointer(3, GL_FLOAT, 0, &colors[0]);
 
         int i = 0;
         for (Network::DrawServer::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
              it != Network::DrawServer::getInstance()->getLastRobot();it++)
         {
-          	if (!(*it).second)
+           	if(!(*it).second)
           	{
             		printf("No robot @ %d", (*it).first);
             		continue;
@@ -142,40 +140,22 @@ void drawRobots()
             Math::Position * robotPos = (*it).second->getPosition();
             assert(robotPos);
 
-            pts[2*i+0] = robotPos->getX();
-            pts[2*i+1] = robotPos->getY();
+            pts[2*i + 0] = robotPos->getX()/winsize;
+            pts[2*i + 1] = robotPos->getY()/winsize;
 
-            colors[3*i+0] = 255;
-            colors[3*i+1] = 255;
-            colors[3*i+2] = 255;
+            colors[3*i + 0] = 255;
+            colors[3*i + 1] = 255;
+            colors[3*i + 2] = 255;
 
             i++;
         }
         glEnd();
 
-        glDrawArrays( GL_POINTS, 0, len );
-        glDisableClientState( GL_COLOR_ARRAY );*/
+        glDrawArrays(GL_POINTS, 0, len);
 
-        const size_t len(Network::DrawServer::getInstance()->getRobotsCount());
-        char buf[40];
-        sprintf(buf, "robot count: %d", len);
-        drawText(buf, 5.0f, 585.0f);
-
-        glBegin(GL_POINTS);
-        for (Network::DrawServer::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
-             it != Network::DrawServer::getInstance()->getLastRobot(); it++)
-        {
-            if (!(*it).second)
-			      {
-				      //printf("No robot @ %d\n", (*it).first);
-				      continue;
-			      }
-
-            Math::Position * robotPos = (*it).second->getPosition();
-            //printf("Robot: %f %f\n", robotPos->getX(), robotPos->getY());
-			      glVertex2f(robotPos->getX()/winsize, robotPos->getY()/winsize);
-        }
-        glEnd();
+        // Deactivate vertex arrays after drawing
+        glDisableClientState(GL_COLOR_ARRAY);
+        glDisableClientState(GL_VERTEX_ARRAY);
     }
     else 
     {
@@ -206,18 +186,68 @@ void drawText(char* text, float x, float y)
     }
 }
 
+// Draws 1000000 vertices using 2 methods, and compares the drawtimes
 void drawTest()
 {
-    glColor3f( 0, 0, 255 ); // BLUE
-
+    unsigned int numValues = 1000000;
+  
+    // Initialize value arrays
+    GLfloat value1[numValues/2];
+    GLfloat value2[numValues/2];
+    for(size_t i = 0; i < numValues/2; i++)
+    {    
+       value1[i] = 0.0 + 1/double(numValues)*i;
+       value2[i] = 0.5 + 1/double(numValues)*i;
+    }
+  
+    // Set point size to 5.0
     glPointSize(5.0);
 
+    // Set colour to BLUE
+    glColor3f(0, 0, 255);
+
+    // Start clock timer (testing purposes)
+    clock_t start = clock();
+
+    // Draw vertex points incrementally
     glBegin(GL_POINTS);
-	  for (size_t i = 0; i < 5; i++)
+	  for (size_t i = 0; i < numValues/2; i++)
     {    
-       glVertex2f(0.1*i, 0.1*i);
+       glVertex2f(value1[i], value1[i]);
     }
     glEnd();
+
+    // Print time in (ms) that it took to fetch data 
+    double elapsed = (clock() - start);
+    printf("Draw func #1: %fms\n", elapsed);
+
+    // Set colour to RED
+    glColor3f(255, 0, 0);
+
+    // Start clock timer (testing purposes)
+    start = clock();
+
+    // Specify vertex coords
+    GLfloat vertices[numValues/2];
+    for (size_t i = 0; i < numValues/2; i++)
+    {    
+       vertices[2*i]     = value2[i];
+       vertices[2*i + 1] = value2[i];
+    }
+
+    // Activate and specify pointer to vertex array
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(2, GL_FLOAT, 0, vertices);
+
+    // draw a cube
+    glDrawArrays(GL_POINTS, 0, numValues/2);
+
+    // deactivate vertex arrays after drawing
+    glDisableClientState(GL_VERTEX_ARRAY);
+
+    // Print time in (ms) that it took to fetch data 
+    double elapsed2 = (clock() - start);
+    printf("Draw func #2: %fms\n", elapsed2);
 }
 
 /*
