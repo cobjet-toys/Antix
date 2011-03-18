@@ -1,24 +1,24 @@
 # Configuration settings for controller
 
 # Client settings
-CLIENTS = 1
 CLIENT_RUN_COMMAND = "hostname"
 # the controller will cd to antix Path + this  directory and call "make":
 CLIENT_BUILD_DIR = ""
 CLIENT_BUILD_COMMAND = ""
 
 # Server settings
-SERVERS = 1
-SERVER_RUN_COMMAND = "experiments/clock/grid.bin" # args hard-coded
+GRID_RUN_COMMAND = "hostname"
+GRID_PORT = "13337" # for simplicity, every subsequent grid will use port +1
 # the controller will cd to antix Path + this  directory and call "make":
-SERVER_BUILD_DIR = "experiments/clock/"
-SERVER_BUILD_COMMAND = "make hardeep"
+GRID_BUILD_DIR = ""
+GRID_BUILD_COMMAND = ""
 
 # Clock settings
-CLOCK_RUN_COMMAND = "experiments/clock/clock.bin" # args hard-coded
+CLOCK_RUN_COMMAND = "hostname"
+CLOCK_PORT = "13437" # for simplicity, every subseqent clock will use port +1
 # the controller will cd to antix Path + this  directory and call "make":
-CLOCK_BUILD_DIR = "experiments/clock/"
-CLOCK_BUILD_COMMAND = "make clock"
+CLOCK_BUILD_DIR = ""
+CLOCK_BUILD_COMMAND = ""
 
 # Drawer settings
 DRAWER_RUN_COMMAND = "hostname"

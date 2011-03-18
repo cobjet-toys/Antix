@@ -5,33 +5,55 @@ from configuration import *
 
 FIRST_FREE_MACHINE = 0
 
-def start_process(name):
-    machine = get_free_computer()
+def start_process(name, **kwargs):
+    machine, machine_ip = get_free_computer()
     if machine is None:
         print "No more free machines, exiting."
-        # TODO: some code that stops all running processes across all computers
-        # not exactly sure how to do this
         sys.exit()
     
     script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH
     if name is "clock":
-        script += CLOCK_RUN_COMMAND
+        script += CLOCK_RUN_COMMAND + " " + str(current_clock_port) + " " + NUM_CLIENTS
+        global current_clock_port
+        current_clock_port += 1
     elif name is "client":
-        script += CLIENT_RUN_COMMAND
-    elif name is "server":
-        script += SERVER_RUN_COMMAND
+        client_num = kwargs['client_num']
+        script += CLIENT_RUN_COMMAND + " " + SERVER_INFO + " " + SYSTEM_CONFIG + " " + str(client_num)
+    elif name is "grid":
+        script += GRID_RUN_COMMAND + " " + SERVER_INFO + " " + str(current_grid_port)
+        global current_grid_port
+        current_grid_port += 1
     elif name is "drawer":
-        script += DRAWER_RUN_COMMAND
-    script += " > antix." + machine + ".out'"
+        if FOV == "1":
+            script += DRAWER_RUN_COMMAND + " " + WI_SIZE + " " + WO_SIZE + " " + H_RADIUS + " 1 " + FOV_ANGLE + " " + FOV_RANGE
+        else:
+            script += DRAWER_RUN_COMMAND + " " + WI_SIZE + " " + WO_SIZE + " " + H_RADIUS + " 0"
+    script += " > antix." + machine + ".out &'"
     print "Running: " + script
 
     try:
         out, error = run_bash_script(script)
         print "Output: " + out.rstrip()
         print
+
+        # Save the IP/port info to server.info file
+        if name is "clock":
+            to_append = "clock,{0}," + str(current_clock_port)
+        if name is "drawer":
+            to_append = "drawer,{0}"
+        if name is "grid":
+            to_append = "grid,{0}," + str(current_grid_port)
+        if name is "client":
+            to_append = "client,{0}"
+
+        to_append += "\n"
+        SERVER_INFO_FILE.write(to_append.format(machine_ip.rstrip()))
+            
     except BashScriptException as e:
         print "* ERROR STARTING " + name.upper() + " *"
         print e
+        # stop everything!
+        sys.exit()
 
 def build_binary(name):
     script = "cd " + PATH
@@ -39,8 +61,8 @@ def build_binary(name):
         script += CLOCK_BUILD_DIR + "; " + CLOCK_BUILD_COMMAND
     elif name is "client":
         script += CLIENT_BUILD_DIR + "; " + CLIENT_BUILD_COMMAND
-    elif name is "server":
-        script += SERVER_BUILD_DIR + "; " + SERVER_BUILD_COMMAND
+    elif name is "grid":
+        script += GRID_BUILD_DIR + "; " + GRID_BUILD_COMMAND
     elif name is "drawer":
         script += DRAWER_BUILD_DIR + "; " + DRAWER_BUILD_COMMAND
     print "Running: " + script
@@ -57,11 +79,8 @@ def build_binary(name):
 
 def get_free_computer():
     """
-    In the future this could check the load average on each machine
-    and only return a machine based on what we deem to be free.
-
-    For now, returns the first machine that doesn't have one of
-    our processes running on it. One process per machine.
+    Checks a machine's load average, cpu idle time, and gets its IP.
+    Then it decides what to use the machine for.
     """
     try:
         # check that the machine is up
@@ -70,21 +89,32 @@ def get_free_computer():
             global FIRST_FREE_MACHINE
             machine_to_test = CSIL_COMPUTERS[FIRST_FREE_MACHINE]
             FIRST_FREE_MACHINE += 1
-            # see if we can get the hostname of the machine
-            # if we can, it's on and we can use it
-            # in the future, we'll get the load average
+            # get the machine's IP, and return this as well
+            # if we can't get it, the machine's not connectable
+            # in the future, we could also get the load average
             # and make a decision based on that
-            get_hostname = "ssh -p 24 " + USER + "@" + machine_to_test + " 'hostname'"
+            get_machine_info = "ssh -p 24 " + USER + "@" + machine_to_test + \
+                " '" + PATH + "Controller/machine_info.sh'"
             try:
-                out, error = run_bash_script(get_hostname)
-                # it works, return
+                out, error = run_bash_script(get_machine_info)
+                # machine is on, check the info and decide what to use it for
+                info = out.split('\n')[:3]
+                machine_ip = info[0]
+                machine_lavg = info[1].split(" ")
+                m_lavg_one = machine_lavg[0]
+                m_lavg_five = machine_lavg[1]
+                m_lavg_fifteen = machine_lavg[2]
+                machine_idle = info[2].split("%")[0]
+
+                # not using the metrics right now, just return the next machine
                 machine = machine_to_test
             except BashScriptException as e:
                 print "* ERROR CONNECTING TO " + machine_to_test.upper() + " *"
                 print e
                 print "* TRYING ANOTHER MACHINE *"
+                print
 
-        return machine
+        return machine, machine_ip
     except IndexError:
         return None
 
@@ -112,21 +142,42 @@ class BashScriptException(Exception):
 
     def __str__(self):
         return "Returncode: " + str(self.returncode) + "\nError: " + self.stderr
-        #print self.returncode
-        #print self.stderr
-        #return "this is the exception"
 
 # Main:
 
 # Get the user argument
-if len(sys.argv) != 3:
-    print "Usage: python controller.py <sfu_username> <path/to/antix/directory/in/your/home/directory/>"
-    print "For example: python contoller.py hha13 ~/Documents/Antix/"
+if len(sys.argv) != 4:
+    print "Usage: python controller.py <sfu_username> <path/to/antix/directory/in/your/home/directory/> <system.config>"
+    print "For example: python contoller.py hha13 ~/Documents/Antix/ system.config"
     print "Also, make sure you've set up SSH keys for your account."
     sys.exit()
 
 USER = sys.argv[1]
 PATH = sys.argv[2]
+SYSTEM_CONFIG = sys.argv[3]
+
+# Parse system config file
+config_file = open(SYSTEM_CONFIG, 'r')
+def strip_newlines(s): return s.rstrip()
+configs = map(strip_newlines, config_file.readlines())
+
+NUM_TEAMS = configs[0]
+NUM_ROBOTS_PER_TEAM = configs[1]
+NUM_CLIENTS = configs[2]
+NUM_GRIDS = configs[3]
+WI_SIZE = configs[4]
+WO_SIZE = configs[5]
+H_RADIUS = configs[6]
+FOV = configs[7]
+FOV_ANGLE = configs[8]
+FOV_RANGE = configs[9]
+
+SERVER_INFO = "server.info"
+SERVER_INFO_FILE = open(SERVER_INFO, 'w', 0) # 0 means no buffer
+
+# copy the clock/port setting
+current_clock_port = int(CLOCK_PORT)
+current_grid_port = int(GRID_PORT)
 
 # Build all the code
 print "*** BUILDING BINARIES ***"
@@ -136,9 +187,9 @@ print "** BUILDING CLOCK **"
 print
 build_binary("clock")
 
-print "** BUILDING SERVER **"
+print "** BUILDING GRID **"
 print
-build_binary("server")
+build_binary("grid")
 
 print "** BUILDING CLIENT **"
 print
@@ -151,25 +202,25 @@ build_binary("drawer")
 # Start processes
 print "*** STARTING PROCESSES ***"
 
-# Start clock
 print "** STARTING CLOCK **"
 print
 start_process("clock")
 
-# Start clients
-print "** STARTING CLIENTS **"
-print
-for _ in itertools.repeat(None, CLIENTS):
-    start_process("client")
-
-# Start servers
-print "** STARTING SERVERS **"
-print
-for _ in itertools.repeat(None, SERVERS):
-    start_process("server")
-
-# Start drawer process
 print "** STARTING DRAWER **"
 print
 start_process("drawer")
 
+print "** STARTING GRIDS **"
+print
+for _ in itertools.repeat(None, int(NUM_GRIDS)):
+    start_process("grid")
+
+print "** STARTING CLIENTS **"
+print
+for i in range(1, int(NUM_CLIENTS)+1):
+    start_process("client", client_num=i)
+
+SERVER_INFO_FILE.close()
+
+print
+print "EVERYTHING IS DONE!"

@@ -1,0 +1,74 @@
+#Determine the OS
+OS := $(shell uname -s)
+
+#Linux Libraries
+ifeq ($(OS),Linux)
+GLUTLIBS = -L/usr/X11R6/lib -lGLU -lGL -lglut -lX11 -lXext
+GLUTFLAGS = -I/usr/local/include/GL
+endif
+
+#OSX Libraries
+ifeq ($(OS),Darwin)
+GLUTFLAGS = -framework OpenGL -framework GLUT
+endif
+
+CC = g++
+CXXFLAGS = -g -Wall -O3 $(GLUTFLAGS)
+LIBS =  -g -lm $(GLUTLIBS)
+
+#Shortcut to include directory so we don't need the full path.
+INCLUDE = -I"include/"
+
+#Directory to output built object files before linking.
+OBJ_DIR = "objs"
+
+#List of object files.
+OBJS = objs/robotixSA_Main.o objs/speed.o objs/position.o objs/math.o objs/gameobject.o objs/home.o objs/puck.o objs/visibleobject.o objs/game.o objs/robot.o objs/color.o
+
+all: robotixSA
+
+#Robotix stand alone client.
+robotixSA: position.o speed.o math.o gameobject.o home.o puck.o visibleobject.o color.o game.o robot.o robotixSA_Main.o
+	$(CC) $(OBJS) -o $@  
+
+#Math objects go here.
+position.o: src/Math/Position.cpp include/Math/Position.h
+	$(CC) $(INCLUDE) -c src/Math/Position.cpp -o $(OBJ_DIR)/$@	
+
+speed.o: include/Math/Speed.h src/Math/Speed.cpp
+	$(CC) $(INCLUDE) -c src/Math/Speed.cpp -o $(OBJ_DIR)/$@	
+
+math.o: include/Math/Math.h src/Math/Math.cpp
+	$(CC) $(INCLUDE) -c src/Math/Math.cpp -o $(OBJ_DIR)/$@	
+
+#Game objects go here.
+gameobject.o: position.o include/Game/GameObject.h src/Game/GameObject.cpp
+	$(CC) $(INCLUDE) -c src/Game/GameObject.cpp -o $(OBJ_DIR)/$@
+
+home.o: position.o gameobject.o include/Game/Home.h src/Game/Home.cpp
+	$(CC) $(INCLUDE) -c src/Game/Home.cpp -o $(OBJ_DIR)/$@
+
+puck.o: position.o gameobject.o include/Game/Puck.h src/Game/Puck.cpp
+	$(CC) $(INCLUDE) -c src/Game/Puck.cpp -o $(OBJ_DIR)/$@
+
+visibleobject.o: src/Game/VisibleObject.cpp
+	$(CC) $(INCLUDE) -c src/Game/VisibleObject.cpp -o $(OBJ_DIR)/$@
+
+robot.o: math.o game.o include/Game/Robot.h src/Game/Robot.cpp
+	$(CC) $(INCLUDE) -c src/Game/Robot.cpp -o $(OBJ_DIR)/$@
+
+color.o: include/GUI/Color.h src/GUI/Color.cpp
+	$(CC) $(INCLUDE) -c src/GUI/Color.cpp -o $(OBJ_DIR)/$@
+
+game.o: robot.o math.o include/Game/Game.h src/Game/Game.cpp
+	$(CC) $(INCLUDE) -c src/Game/Game.cpp -o $(OBJ_DIR)/$@
+
+
+#Main object.
+robotixSA_Main.o: src/RobotixSA.cpp
+	$(CC) $(INCLUDE) -c src/RobotixSA.cpp -o $(OBJ_DIR)/$@
+
+
+clean:
+	rm objs/*.o
+	rm robotixSA	
