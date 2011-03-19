@@ -15,8 +15,8 @@ class RobotClient: public Client
 public:
     RobotClient();
     virtual int handler(int fd);
-    int handleNewGrid(int fd); 
-    int initGrid(const char * host, const char * port);
+    int handleNewGrid(int id); 
+    int initGrid(const char * host, const char * port, const int id);
     int initClock(const char * host, const char * port);
 private:
 
@@ -26,6 +26,7 @@ private:
     int sendRobotRequests();
 
 	std::vector<int> m_Grids;
+    std::map<int, int> m_GridIds;
     uint16_t m_HeartBeat;
     int m_ClockFd;
     unsigned int m_ReadyGrids;

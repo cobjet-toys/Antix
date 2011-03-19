@@ -22,7 +22,7 @@ enum
 enum 
 {
     MSG_HEARTBEAT = 1, // USED
-	MSG_PROCESSINITTEAM = 2,
+	MSG_REQUESTINITTEAM = 2,
     MSG_GRIDNEIGHBOURS = 3,
 	MSG_RESPONDINITTEAM = 24,
     MSG_REQUESTSENSORDATA = 16, // USED
@@ -34,6 +34,15 @@ enum
 	MSG_UNREGISTERROBOT = 22, // USED
 	MSG_RESPONDUNREGISTERROBOT = 23 // USED
 };
+
+typedef struct
+{
+    uint32_t id;
+    float x;
+    float y;
+    static const size_t size = 12;
+} Msg_InitRobot;
+static const char* Msg_InitRobot_format = "lff";
 
 typedef struct
 {
@@ -106,6 +115,8 @@ typedef struct{
 	static const size_t size = 6;
 } Msg_SensedObjectGroupHeader;
 static const char * Msg_SensedObjectGroupHeader_format = "lh";
+
+
 
 // USED
 typedef struct{

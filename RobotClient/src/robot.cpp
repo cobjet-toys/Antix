@@ -24,12 +24,12 @@ int main(int argc, char** argv)
     rclient.init();
 
     //TODO Get grid servers
-    rclient.initGrid("142.58.35.87", "22222");
+/*    rclient.initGrid("142.58.35.87", "22222");
     rclient.initGrid("142.58.35.218", "33333");
     rclient.initGrid("142.58.35.74", "44444");
     rclient.initGrid("142.58.35.171", "55555");
     rclient.initGrid("142.58.35.101", "66666");
-
+*/
     //Connect to the cloc
     rclient.initClock("142.58.35.211", "77777");
 

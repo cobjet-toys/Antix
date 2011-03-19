@@ -105,7 +105,7 @@ int RobotClient::sendRobotRequests()
     return 0;
 }
 
-int RobotClient::initGrid(const char* host, const char* port)
+int RobotClient::initGrid(const char* host, const char* port, const int id)
 {
     int l_GridFd = initConnection(host, port);
 
@@ -114,8 +114,7 @@ int RobotClient::initGrid(const char* host, const char* port)
         DEBUGPRINT("Failed creating connection to a grid server\n");
     }
     m_Grids.push_back(l_GridFd);
-
-    handleNewGrid(l_GridFd);
+    m_GridIds[id] = l_GridFd;
 
     return l_GridFd;
 }
@@ -128,55 +127,23 @@ int RobotClient::initClock(const char* host, const char* port)
     {
         DEBUGPRINT("Failed creating connection to a grid server\n");
     }
+
     m_ClockFd = l_ClockFd;
 
     return l_ClockFd;
 }
 
-int RobotClient::handleNewGrid(int fd)
+int RobotClient::handleNewGrid(int id)
 {
 
     printf("Initializing a new grid.\n");
-
-    std::vector<int> l_TeamMapping;
-    //initializeTeam(fd, &l_TeamMapping);    
-    
-    l_TeamMapping.push_back(4);
-    l_TeamMapping.push_back(5);
-    l_TeamMapping.push_back(6);
-
     //Header message;
     Msg_header l_Header;
-
-    //Total number of teams;
-    Msg_MsgSize l_Size;
-
-    //A team message;
-    Msg_TeamId l_TeamId;
-
-    unsigned int l_TeamRequests = l_TeamMapping.size();
-    //Create our message buffer
-    unsigned int l_MessageSize = l_Header.size+l_Size.size+(l_TeamId.size*l_TeamRequests);
-    unsigned char l_Buffer[l_MessageSize]; 
+    unsigned char l_Buffer[l_Header.size];
+    packHeaderMessage(l_Buffer, SENDER_CLIENT, MSG_REQUESTINITTEAM);
     
-    unsigned int l_BufferOf = 0;
-    packHeaderMessage(l_Buffer+l_BufferOf, SENDER_CLIENT, MSG_PROCESSINITTEAM);
-    l_BufferOf += l_Header.size;
-
-    l_Size.msgSize = l_TeamMapping.size();
-    pack(l_Buffer+l_BufferOf, Msg_MsgSize_format, l_Size.msgSize);
-    l_BufferOf += l_Size.size;
-
-    printf("Sending %d teamid requests\n", l_Size.msgSize);
-
-    for (int i = 0; i < l_TeamRequests; i++)
-    {
-        l_TeamId.teamId = l_TeamMapping[i];
-        pack(l_Buffer+l_BufferOf, Msg_TeamId_format, l_TeamId.teamId);
-        l_BufferOf += l_TeamId.size;
-    }
-
-        sendWrapper(m_serverList[fd], l_Buffer, l_MessageSize);
+    int l_GridFd = m_GridIds[id];
+    sendWrapper(m_serverList[l_GridFd], l_Buffer, l_Header.size);
 }
 
 int RobotClient::handler(int fd)
@@ -238,6 +205,33 @@ int RobotClient::handler(int fd)
         case(SENDER_GRIDSERVER):
             switch(l_Header.message)
             {
+                case(MSG_RESPONDINITTEAM) :
+                {
+                    DEBUGPRINT("Receiving robot ids and positions for a team.\n");
+
+                    //Receive the number of robots we are expecting.
+                    Msg_MsgSize l_NumRobots;
+                    unsigned char l_NumRoboBuffer[l_NumRobots.size];
+
+                    recvWrapper(l_Conn, l_NumRoboBuffer, l_NumRobots.size);
+
+                    unpack(l_NumRoboBuffer, Msg_MsgSize_format, &l_NumRobots.msgSize);
+
+                    DEBUGPRINT("Expecting ids and positions for %d robots.\n", l_NumRobots.msgSize);
+
+                    //Receive the robot data.
+                    Msg_InitRobot l_Robo;
+                    unsigned int l_MessageSize = l_Robo.size*l_NumRobots.msgSize;
+                    unsigned char l_RobosBuffer[l_MessageSize];
+                    
+                    //For each robot, recv, unpack, and add to game.
+                    for (int i =0; i < l_NumRobots.msgSize; i++)
+                    {
+                        
+                    }
+
+                }
+                break;
                 case(MSG_RESPONDSENSORDATA) :
                 {
                     
