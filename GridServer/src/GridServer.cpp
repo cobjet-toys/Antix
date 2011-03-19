@@ -42,6 +42,50 @@ int GridServer::handler(int fd)
 	
 	switch (l_sender)
 	{
+        case SENDER_CONTROLLER:
+        {
+            switch(l_senderMsg)
+            {
+                case(MSG_GRIDNEIGHBOURS):
+                {
+                    Msg_MsgSize l_NumNeighbours;                    
+                    unsigned char l_SizeBuffer[l_NumNeighbours.size];
+
+                    //Receive and unpack the number of neighbours.
+                    if (l_curConnection->recv(l_SizeBuffer, l_NumNeighbours.size) == -1)
+				    {
+							DEBUGPRINT("Couldn't receive the number of neighbour.\n");
+							return -1;
+					}
+                    unpack(l_SizeBuffer, Msg_MsgSize_format, &l_NumNeighbours.msgSize);
+
+                    DEBUGPRINT("Received grid neighbour information for %hd neighbours\n", l_NumNeighbours.msgSize);
+
+                    Msg_GridNeighbour l_Neighbour;
+                    //Create a buffer big enough to hold all of the expected neighbours.
+                    unsigned int l_SizeOfNeighbourInfo = l_Neighbour.size*l_NumNeighbours.msgSize;
+                    unsigned char l_NeighbourBuffer[l_SizeOfNeighbourInfo];
+
+                    if (l_curConnection->recv(l_NeighbourBuffer, l_SizeOfNeighbourInfo) == -1)
+				    {
+							DEBUGPRINT("Couldn't receive the grid neighbours.\n");
+							return -1;
+					}                    unsigned int l_Offset = 0;
+
+                    for (int i = 0; i < l_NumNeighbours.msgSize;i++)
+                    {
+                        unpack(l_NeighbourBuffer+l_Offset, Msg_gridNeighbour_format, &l_Neighbour.position,
+                                &l_Neighbour.ip, &l_Neighbour.port);
+                        l_Offset += l_Neighbour.size;
+                        printf("Received a new neighbour at position %hd, with IP %s and Port %s\n",
+                                l_Neighbour.position, l_Neighbour.ip, l_Neighbour.port);
+                        //TODO Handle new neighbour.
+                    }
+                }
+                break;
+            }
+        }
+        break;
         case SENDER_CLIENT:
 			
             switch(l_senderMsg)
@@ -107,7 +151,7 @@ int GridServer::handler(int fd)
 					{
 						sensed_items_map[i] = a1;
 					}
-					DEBUGPRINT("got all robot <= sensory data total of %d robots with %d sensory objects\n", a1.size(),sensed_items_map.size());
+					DEBUGPRINT("got all robot <= sensory data total of %ui robots with %ui sensory objects\n", a1.size(),sensed_items_map.size());
 					
 					Msg_header l_header = {SENDER_GRIDSERVER, MSG_RESPONDSENSORDATA}; // header for response
 					memset(&l_msgSize, 0 , l_msgSize.size);
@@ -199,6 +243,7 @@ int GridServer::handler(int fd)
 					return 0;
 					
 				} // end of message sensor date
+                break;
 				
 				case (MSG_PROCESSACTION):
 				{
@@ -252,6 +297,7 @@ int GridServer::handler(int fd)
 					return 0;
 					
 				}// end of message process action
+                break;
 				
 				case (MSG_PROCESSINITTEAM):
 				{					
@@ -302,6 +348,7 @@ int GridServer::handler(int fd)
 					
 					return 0;
 				}
+                break;
 				
 				default:
 				{

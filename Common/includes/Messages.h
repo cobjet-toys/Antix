@@ -8,12 +8,14 @@
 #include <sys/types.h>
 #include <arpa/inet.h> //Required for INET6_ADDRSTRLEN?
 
+#define MAX_PORTCHARACTERS 6
 // Describes the Physical Entities in the Paradigm (i.e. Step 1, Draw Box)
 enum 
 {
 	SENDER_CLOCK = 1, // used
 	SENDER_GRIDSERVER = 2, // used
-	SENDER_CLIENT = 3 // used
+	SENDER_CLIENT = 3, // used
+    SENDER_CONTROLLER = 4
 };
 
 // Describes what the Physical Entities can send to each other (i.e. Step 2, How Does Box Communicate With World)
@@ -21,6 +23,7 @@ enum
 {
     MSG_HEARTBEAT = 1, // USED
 	MSG_PROCESSINITTEAM = 2,
+    MSG_GRIDNEIGHBOURS = 3,
 	MSG_RESPONDINITTEAM = 24,
     MSG_REQUESTSENSORDATA = 16, // USED
 	MSG_RESPONDSENSORDATA = 5, // USED
@@ -31,6 +34,16 @@ enum
 	MSG_UNREGISTERROBOT = 22, // USED
 	MSG_RESPONDUNREGISTERROBOT = 23 // USED
 };
+
+typedef struct
+{
+    uint16_t position;
+    char ip[INET6_ADDRSTRLEN];
+    char port[MAX_PORTCHARACTERS];
+    static const size_t size = sizeof(ip) + sizeof(port) + sizeof(position);
+
+} Msg_GridNeighbour;
+static const char* Msg_gridNeighbour_format = "hss";
 
 // Header Message to Identify What Kind Of Message Is Being Sent and Who It Came From
 typedef struct
