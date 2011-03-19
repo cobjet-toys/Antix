@@ -1,35 +1,39 @@
-#ifndef ROBOT_CLIENT_H_ 
-#define ROBOT_CLIENT_H_
+#ifndef CONTROLLER_CLIENT_H_ 
+#define CONTROLLER_CLIENT_H_
 
 #include "Client.h"
 #include "Messages.h"
 #include "Packer.h"
 #include <vector>
 #include <map>
+#include <utility> 
 
 namespace Network
 {
 
-class RobotClient: public Client
+class ControllerClient: public Client
 {
 public:
-    RobotClient();
+    ControllerClient();
     virtual int handler(int fd);
-    int handleNewGrid(int id); 
-    int initGrid(const char * host, const char * port, const int id);
+    int initGrid(const char * host, const char * port);
     int initClock(const char * host, const char * port);
-private:
+    int initRobotClient(const char* host, const char* port);
 
+    //Initialize grids.
+    int initNeighbourGrids(); 
+
+    int beginSimulation();
+
+private:
     int packHeaderMessage(unsigned char* buffer, uint16_t sender, uint16_t message);
     int recvWrapper(TcpConnection* conn, unsigned char* buffer, int msgSize);
     int sendWrapper(TcpConnection* conn, unsigned char* buffer, int msgSize);
-    int sendRobotRequests();
 
+    std::map<int, std::pair<const char*, const char*> > m_GridConInfo;
+    std::vector<int> m_RobotClients;
 	std::vector<int> m_Grids;
-    std::map<int, int> m_GridIds;
-    uint16_t m_HeartBeat;
     int m_ClockFd;
-    unsigned int m_ReadyGrids;
 };
 }
 

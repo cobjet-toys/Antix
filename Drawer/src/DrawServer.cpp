@@ -32,14 +32,18 @@ DrawServer::~DrawServer()
 DrawServer* DrawServer::getInstance()
 {
     if (!m_instance)
+    {    
+		printf("getInstance\n");
         m_instance = new DrawServer();
+    }
 
     return m_instance;
 }
 
+/*
 int DrawServer::init(int argc, char** argv)
 {
-	if (Server::init(argv[1]) < 0)
+	if (Client::init() < 0)
 		return -1;
 
     if (argc > 2)
@@ -54,9 +58,60 @@ int DrawServer::init(int argc, char** argv)
             this->m_FOVAngle = strtof(argv[6], NULL);
             this->m_FOVRange = strtof(argv[7], NULL);
         }
-    }
+    }   
     
     return 0;
+}
+*/
+
+int DrawServer::initGrid(const char* host, const char* port)
+{
+	DEBUGPRINT("initGrid()\n");
+    int l_GridFd = initConnection(host, port);
+    DEBUGPRINT("after initConnection()\n");
+
+    if (l_GridFd < 0)
+    {
+        DEBUGPRINT("Failed creating connection to a grid server\n");
+    }
+    
+    setGridConfig(l_GridFd, 'T', 'F');
+    return l_GridFd;
+}
+
+int DrawServer::setGridConfig(int grid_fd, char send_data, char data_type, float leftX, float leftY, float rightX, float rightY)
+{
+	//send config to grid
+    TcpConnection * l_curConn = m_serverList[grid_fd];
+    if (l_curConn == 0)
+    	return -1;
+    
+     //Header message;
+    Msg_header l_Header;
+
+    //Drawer config;
+    Msg_DrawerConfig l_DrawerConfig;
+
+    //Create our message buffer
+    unsigned int l_MessageSize = l_Header.size + l_DrawerConfig.size;
+    unsigned char l_Buffer[l_MessageSize]; 
+    
+    //Pack msg header
+    unsigned int l_BufferOf = 0;
+    packHeaderMessage(l_Buffer+l_BufferOf, SENDER_DRAWER, MSG_SETDRAWERCONFIG);
+    l_BufferOf += l_Header.size;
+    
+    //Pack config message
+	l_DrawerConfig.send_data = send_data;
+	l_DrawerConfig.data_type = data_type;
+	l_DrawerConfig.left_x = leftX;
+	l_DrawerConfig.left_y = leftY;
+	l_DrawerConfig.right_x = rightX;
+	l_DrawerConfig.right_y = rightY;
+    pack(l_Buffer+l_BufferOf, Msg_DrawerConfig_format, 
+    	l_DrawerConfig.send_data, l_DrawerConfig.data_type, l_DrawerConfig.left_x, l_DrawerConfig.left_y, l_DrawerConfig.right_x, l_DrawerConfig.right_y);
+    
+    return sendWrapper(l_curConn, l_Buffer, l_MessageSize);   
 }
 
 void DrawServer::initTeams()
@@ -97,7 +152,7 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
     	(float)newInfo.x_pos, (float)newInfo.x_pos, (float)newInfo.angle);
     if (!pos)
     { 
-    	DEBUGPRINT("Object %d: Invalid position\n", newInfo.newInfo.id);
+    	DEBUGPRINT("Object %d: Invalid position\n", newInfo.id);
     	return;
     }
     
@@ -145,7 +200,7 @@ int DrawServer::handler(int fd)
     DEBUGPRINT("Handling file descriptor: %i\n", fd);
 
     //Get our TCPConnection for this socket.    
-    TcpConnection * l_Conn = this->m_Clients[fd];	
+    TcpConnection * l_Conn = this->m_serverList[fd];	
 	if (l_Conn == NULL)
     {
 		return -1; // no such socket descriptor
@@ -198,16 +253,6 @@ int DrawServer::handler(int fd)
             break;
     }
     
-    return 0;
-}
-
-int DrawServer::handleNewConnection(int fd)
-{
-    return 0;
-}
-
-int DrawServer::allConnectionReadyHandler()
-{
     return 0;
 }
 

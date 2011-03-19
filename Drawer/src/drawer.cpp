@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 #include "DrawServer.h"
-//#include "Gui.h"
+#include "Gui.h"
 
 /*
  * Usage: ./DrawServer <window_size> <world_size> <home_radius> <enable_FOV> [ <FOV_angle> <FOV_range> ]
@@ -32,15 +32,15 @@ int main(int argc, char** argv)
         perror("Usage: ./DrawServer <port number> <window_size> <world_size> <home_radius> <enable_FOV> [ <FOV_angle> <FOV_range> ] ");
         return (EXIT_FAILURE);
     }
-     * */
-     
-     printf("%d\n", 1025 >> 10);
-     
+     * */     
     
-    Network::DrawServer::getInstance()->init(argc, argv);
+    //Network::DrawServer::getInstance()->init(argc, argv);
+    int ret = Network::DrawServer::getInstance()->init();
+    printf("ret=%d\n", ret);
+    Network::DrawServer::getInstance()->initGrid("142.58.35.211", "3333");
     Network::DrawServer::getInstance()->initTeams();
 
-    //initGraphics(argc, argv);
+    initGraphics(argc, argv);
     
     return (EXIT_SUCCESS);
 }

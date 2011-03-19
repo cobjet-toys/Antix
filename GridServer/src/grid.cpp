@@ -1,4 +1,6 @@
 #include "GridServer.h"
+#include "GridParser.h"
+#include <errno.h>
 #include <pthread.h>
 #include <unistd.h>
 
@@ -31,30 +33,47 @@ void * drawer_function(void* gridPtr)
 
 int main(int argc, char ** argv)
 {
-	Network::GridServer grid;
-	if(argc < 2) 
+	Network::GridServer *l_grid = new Network::GridServer();
+	if (argc < 3) 
 	{
-		perror("Please specify a port for the server");
+		printf("Usage: ./grid.bin <port> <init_file>\n");
 		return -1;
 	}
-	if(grid.init(argv[1]) < 0) 
+	
+	GridParser l_parser;
+	
+	int l_res = 0;
+	
+	if ((l_res = l_parser.readFile(argv[2], (void *)l_grid )) == ENOENT) 
+	{
+		printf("Error with parsing file: %s\n", argv[2]);
+		return -1;
+	}
+	if (l_res < 0)
+	{
+		printf("Failed to parse file\n");
+		return -1;
+	}
+	
+	if (l_grid->init(argv[1]) < 0) 
 	{
 		return -1;
 	}
-
+	
+	
+	//Spawn Drawer thread
+	
 	pthread_t thread1;
     int iret1;
-
-    //grid.initDrawer();
-
-    iret1 = pthread_create(&thread1, NULL, drawer_function, (void *)&grid);
+    
+    iret1 = pthread_create(&thread1, NULL, drawer_function, (void *)&l_grid);
     if(iret1 != 0 || pthread_join(thread1, NULL) != 0)
     {
         perror("pthread failed");
         return -1;
     }
 	
-	grid.start();
+	l_grid->start();
 	
 	return 0;
 }

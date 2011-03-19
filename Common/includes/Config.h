@@ -1,9 +1,9 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#define DEBUG false
+#define DEBUG true
 
-#ifdef RELEASE 
+#ifdef DEBUG 
 #define DEBUGPRINT printf
 #else
 #define DEBUGPRINT(format, args...) ((void)0)

@@ -46,7 +46,7 @@ void Robot::updatePosition()
     float l_Dx = m_Speed->getForwSpeed() * cos(l_CurrentPos->getOrient());
     float l_Dy = m_Speed->getForwSpeed() * sin(l_CurrentPos->getOrient());
     float l_Da = m_Speed->getRotSpeed();
-    float l_WorldSize = 1.0; //Robotix::getInstance()->getWorldSize();
+    float l_WorldSize = Robotix::getInstance()->getWorldSize();
 
     //Update our new position.
     l_CurrentPos->setX(Math::DistanceNormalize( l_CurrentPos->getX() + l_Dx, l_WorldSize )); 

@@ -8,20 +8,23 @@
 #include <sys/types.h>
 #include <arpa/inet.h> //Required for INET6_ADDRSTRLEN?
 
+#define MAX_PORTCHARACTERS 6
 // Describes the Physical Entities in the Paradigm (i.e. Step 1, Draw Box)
 enum 
 {
 	SENDER_CLOCK = 1, // used
 	SENDER_GRIDSERVER = 2, // used
 	SENDER_CLIENT = 3, // used
-    SENDER_DRAWER = 4,
+    SENDER_CONTROLLER = 4,
+    SENDER_DRAWER = 5,
 };
 
 // Describes what the Physical Entities can send to each other (i.e. Step 2, How Does Box Communicate With World)
 enum 
 {
     MSG_HEARTBEAT = 1, // USED
-	MSG_PROCESSINITTEAM = 2,
+	MSG_REQUESTINITTEAM = 2, // USED
+    MSG_GRIDNEIGHBOURS = 3,
 	MSG_RESPONDINITTEAM = 24,
     MSG_REQUESTSENSORDATA = 16, // USED
 	MSG_RESPONDSENSORDATA = 5, // USED
@@ -35,6 +38,25 @@ enum
     MSG_GRIDDATACOMPRESS = 32,
     MSG_SETDRAWERCONFIG = 33,
 };
+
+typedef struct
+{
+    uint32_t id;
+    float x;
+    float y;
+    static const size_t size = 12;
+} Msg_InitRobot;
+static const char* Msg_InitRobot_format = "lff";
+
+typedef struct
+{
+    uint16_t position;
+    char ip[INET6_ADDRSTRLEN];
+    char port[MAX_PORTCHARACTERS];
+    static const size_t size = sizeof(ip) + sizeof(port) + sizeof(position);
+
+} Msg_GridNeighbour;
+static const char* Msg_gridNeighbour_format = "hss";
 
 // Header Message to Identify What Kind Of Message Is Being Sent and Who It Came From
 typedef struct
@@ -97,6 +119,8 @@ typedef struct{
 	static const size_t size = 6;
 } Msg_SensedObjectGroupHeader;
 static const char * Msg_SensedObjectGroupHeader_format = "lh";
+
+
 
 // USED
 typedef struct{

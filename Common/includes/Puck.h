@@ -4,11 +4,6 @@
 #include "GameObject.h"
 #include "Position.h"
 
-namespace Network
-{
-	class DrawServer;
-}
-
 namespace Game
 {
 /**
@@ -16,9 +11,6 @@ namespace Game
  */
 class Puck : public GameObject 
 {
-
-friend class Network::DrawServer;
-
 public:
     /**
      * Initialize the puck at location 'pos', and held to false.

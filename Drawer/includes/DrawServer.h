@@ -1,7 +1,7 @@
 #ifndef _DRAWSERVER_H
 #define	_DRAWSERVER_H
 
-#include "Server.h"
+#include "Client.h"
 #include "Robot.h"
 #include "Puck.h"
 #include "Team.h"
@@ -14,6 +14,7 @@
 
 #include <map>
 #include <vector>
+#include <time.h>
 
 #define TEAM_ID_SHIFT       10
 
@@ -31,21 +32,21 @@ namespace Network
     typedef std::map<int, Game::Team*> TeamMap;
 
 
-    class DrawServer : public Server
-    {
-	public:                        
-	
+class DrawServer: public Client
+{
+public:                      
+
 	    DrawServer();
 	    virtual ~DrawServer();
         static DrawServer* getInstance();
-        int init(int argc, char** argv);
+        //int init(int argc, char** argv);
+
+        // Client/connection methods
+        virtual int handler(int fd);
+		int initGrid(const char * host, const char * port);
+		int setGridConfig(int grid_fd, char send_data, char data_type, float leftX = 0.0, float leftY = 0.0, float rightX = 0.0, float rightY = 0.0);
         void initTeams();
         void updateObject(Msg_RobotInfo newInfo);
-
-        // inherited from Server
-        virtual int handler(int fd);
-		virtual int handleNewConnection(int fd);
-		virtual int allConnectionReadyHandler();
 
         int getWindowSize() { return this->m_windowSize; }
         float getWorldSize() { return this->m_worldSize; }

@@ -1,6 +1,6 @@
 drawer_COMPILER = g++
 
-drawer_SRC = drawer.cpp DrawServer.cpp
+drawer_SRC = drawer.cpp DrawServer.cpp Gui.cpp
 drawer_EXECUTABLE = drawer.bin
 
 
@@ -40,12 +40,12 @@ endif
 
 drawer_debug: common drawer_depend drawer_debug_objects
 	@echo "Building DEBUG ----------------------------------------------------------------------------------"
-	$(shell cd $(drawer_DEBUG_PATH)/; $(drawer_COMPILER) -g -o $(drawer_EXECUTABLE) $(drawer_DEBUG_OBJ) $(PWD)/$(ROOT_DIR)/build/debug/libcommon.a )
+	$(shell cd $(drawer_DEBUG_PATH)/; $(drawer_COMPILER) -g -o $(drawer_EXECUTABLE) $(drawer_DEBUG_OBJ) $(PWD)/$(ROOT_DIR)/build/debug/libcommon.a $(GLUTLIBS) $(GLUTFLAGS) )
 	@echo "Building DEBUG drawer COMPLETE --------------------------------------------------------"
 
 drawer: common drawer_depend drawer_release_objects
 	@echo "Building RELEASE --------------------------------------------------------------------------------"
-	$(shell cd $(drawer_RELEASE_PATH)/; $(drawer_COMPILER) -o $(drawer_EXECUTABLE) $(drawer_RELEASE_OBJ) $(PWD)/$(ROOT_DIR)/build/release/libcommon.a )
+	$(shell cd $(drawer_RELEASE_PATH)/; $(drawer_COMPILER) -o $(drawer_EXECUTABLE) $(drawer_RELEASE_OBJ) $(PWD)/$(ROOT_DIR)/build/release/libcommon.a $(GLUTLIBS) $(GLUTFLAGS) )
 	@echo "Building drawer COMPLETE --------------------------------------------------------------"
 
 drawer_depend:

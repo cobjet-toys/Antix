@@ -1,1 +1,24 @@
- 
+How to run: ./robot.bin -f {{FILE_NAME}}  -p {{PORT_NUMBER}}
+
+#### Format for ROBOT Client Init
+
+GRID {{HOSTNAME}} {{PORT}} // one line for each grid
+GRID {{HOSTNAME}} {{PORT}}
+GRID {{HOSTNAME}} {{PORT}}
+GRID {{HOSTNAME}} {{PORT}}
+GRID {{HOSTNAME}} {{PORT}}
+CLOCK {{HOSTNAME}} {{PORT}} // the clock information
+
+============================================================
+
+How to run: ./grid.bin -f {{FILE_NAME}} -p {{PORT_NUM}}
+
+#### Format
+
+NUM_TEAMS {{NUMBER OF TEAMS}}
+ROBOTS_PER_TEAM {{ROBOTS_PER_TEAM}}
+ID_RANGE {{FROM}} {{TO}}
+
+============================================================
+
+How to run: ./clock.bin -p {{PORT_NUM}}

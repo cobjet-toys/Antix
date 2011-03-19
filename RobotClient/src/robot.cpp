@@ -2,7 +2,9 @@
 #include <assert.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include "RobotParser.h"
 #include "RobotClient.h"
+#include "Config.h"
 
 const char usage[] = "Required arguments for the RobotClient:\n"
     "  -? : Prints this helpful message.\n"
@@ -13,27 +15,32 @@ const char usage[] = "Required arguments for the RobotClient:\n"
 int main(int argc, char** argv)
 {
 
-    if (argc <3)
+    if (argc <2)
     {
-        printf("Specify IP and Port\n");
+        printf("Usage: ./client.bin <init_file>\n");
         return -1;
     }
 
-    Network::RobotClient rclient;
+    Network::RobotClient * l_rclient = new Network::RobotClient;
+    l_rclient->init();
+	
+	RobotParser l_parser;
+	
+	int l_res = 0;
+	DEBUGPRINT("About to readfile\n");
+	if ((l_res = l_parser.readFile(argv[1], (void *)l_rclient )) == ENOENT) 
+	{
+		printf("Error with parsing file: %s\n", argv[2]);
+		return -1;
+	}
+	if (l_res < 0)
+	{
+		printf("Failed to parse file\n");
+		return -1;
+	}
+	DEBUGPRINT("Done reading files\n");
 
-    rclient.init();
-
-    //TODO Get grid servers
-    rclient.initGrid("142.58.35.87", "22222");
-    rclient.initGrid("142.58.35.218", "33333");
-    rclient.initGrid("142.58.35.74", "44444");
-    rclient.initGrid("142.58.35.171", "55555");
-    rclient.initGrid("142.58.35.101", "66666");
-
-    //Connect to the cloc
-    rclient.initClock("142.58.35.211", "77777");
-
-    rclient.start();
+    l_rclient->start();
 /*
 char* server_info_file = NULL;
 char* system_config_file = NULL;
