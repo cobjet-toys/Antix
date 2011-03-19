@@ -7,8 +7,10 @@
 
 namespace Network
 {
-	class DrawServer;
+    class DrawServer;
 }
+
+
 
 namespace Game
 {
@@ -20,6 +22,7 @@ class Team
  */
 friend class Robotix;
 friend class Network::DrawServer;
+
 public:
     /**
      * Ctor. Initialize with random color, and home at random position.

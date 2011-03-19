@@ -66,9 +66,7 @@ int DrawServer::init(int argc, char** argv)
 
 int DrawServer::initGrid(const char* host, const char* port)
 {
-	DEBUGPRINT("initGrid()\n");
     int l_GridFd = initConnection(host, port);
-    DEBUGPRINT("after initConnection()\n");
 
     if (l_GridFd < 0)
     {
@@ -110,6 +108,7 @@ int DrawServer::setGridConfig(int grid_fd, char send_data, char data_type, float
 	l_DrawerConfig.right_y = rightY;
     pack(l_Buffer+l_BufferOf, Msg_DrawerConfig_format, 
     	l_DrawerConfig.send_data, l_DrawerConfig.data_type, l_DrawerConfig.left_x, l_DrawerConfig.left_y, l_DrawerConfig.right_x, l_DrawerConfig.right_y);
+    
     
     return sendWrapper(l_curConn, l_Buffer, l_MessageSize);   
 }

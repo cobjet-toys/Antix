@@ -57,7 +57,7 @@ public:
     /**
      * Is the robot holding a puck.
      */
-    bool Holding() const;
+    //bool Holding() const;
 
     /**
      * Drop a puck if one is being held.
@@ -101,7 +101,7 @@ public:
 
     static float& getFOV();
 
-    virtual void draw();
+    //virtual void draw();
 
 private: 
     /**

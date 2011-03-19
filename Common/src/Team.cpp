@@ -1,5 +1,4 @@
 #include "Team.h"
-#include "Game.h"
 
 using namespace Game;
 
@@ -41,7 +40,7 @@ Team::~Team()
     {
         delete (*it);
     }
-    delete m_Color;
+    //delete m_Color;
     delete m_Home;
 }
 
@@ -58,3 +57,5 @@ std::list<Robot*>::iterator Team::getFirstRobot()
 std::list<Robot*>::iterator Team::getLastRobot()
 {
     return m_Robots.end();
+}
+
