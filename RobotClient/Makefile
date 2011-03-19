@@ -1,6 +1,6 @@
 robot_COMPILER = g++
 
-robot_SRC = robot.cpp RobotClient.cpp
+robot_SRC = robot.cpp RobotClient.cpp RobotParser.cpp
 robot_EXECUTABLE = robot.bin
 
 # ----- do not edit under this line unless you know what you are doing :)

@@ -1,5 +1,5 @@
 #include "Client.h"
-//#include "Config.h"
+#include "Config.h"
 
 Network::Client::Client()
 {
@@ -21,7 +21,7 @@ int Network::Client::initConnection(const char* host, const char* port)
 {
 	if (strlen(host) > INET6_ADDRSTRLEN || strlen(port) > MAX_PORT_LENGTH )
 	{
-		if (DEBUG) perror("Invalid port or host length to init");
+		if (DEBUG) perror("Invalid port or host length to init\n");
 		return -2;
 	}
 	
@@ -29,6 +29,8 @@ int Network::Client::initConnection(const char* host, const char* port)
 	{
 		if (DEBUG) perror("Invalid arguments to init");
 	} 
+	
+	DEBUGPRINT("Connection to host:%s:%s\n", host, port);
 	
 	addrinfo l_hints, *l_result, *l_p;
 	int l_resvalue = -1;
@@ -103,7 +105,7 @@ int Network::Client::initConnection(const char* host, const char* port)
 	
 	if( addHandler(fileDesc, EPOLLET|EPOLLIN|EPOLLHUP|EPOLLPRI, conn ) == -1)
 	{
-		if (DEBUG) printf("Could not add handler to tcpConnection");
+		if (DEBUG) printf("Could not add handler to tcpConnection\n");
 		return -1;
 	}
 	

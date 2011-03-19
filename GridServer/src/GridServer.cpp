@@ -11,6 +11,10 @@ GridServer::GridServer():Server()
 {
     m_uId = -1;
     m_hb_rcvd = 0;
+	m_idRangeFrom = 0;
+	m_idRangeTo = 0;
+	m_robotsPerTeam = 0;
+	m_teamsAvailable = 0;
 }
 int GridServer::handleNewConnection(int fd)
 {
@@ -367,4 +371,24 @@ int GridServer::handler(int fd)
     return 0;
 }
 
+void Network::GridServer::setTeams(int amount)
+{
+	m_teamsAvailable = amount;
+}
+
+void Network::GridServer::setIdRange(int from, int to)
+{
+	m_idRangeFrom = from;
+	m_idRangeTo = to;
+}
+
+void Network::GridServer::setRobotsPerTeam(int amount)
+{
+	m_robotsPerTeam = amount;
+}
+
+void Network::GridServer::setId(int id)
+{
+	m_uId = id;
+}
 

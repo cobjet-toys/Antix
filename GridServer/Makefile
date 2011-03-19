@@ -1,6 +1,6 @@
 grid_COMPILER = g++
 
-grid_SRC = grid.cpp GridServer.cpp
+grid_SRC = grid.cpp GridServer.cpp GridParser.cpp
 grid_EXECUTABLE = grid.bin
 
 # ----- do not edit under this line unless you know what you are doing :)

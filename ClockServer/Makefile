@@ -1,6 +1,6 @@
 clock_COMPILER = g++
 
-clock_SRC = ClockServer.cpp clock.cpp  
+clock_SRC = ClockServer.cpp clock.cpp  ClockParser.cpp
 clock_EXECUTABLE = clock.bin
 
 # ----- do not edit under this line unless you know what you are doing :)

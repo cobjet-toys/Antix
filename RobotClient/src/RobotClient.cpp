@@ -112,6 +112,7 @@ int RobotClient::initGrid(const char* host, const char* port, const int id)
     if (l_GridFd < 0)
     {
         DEBUGPRINT("Failed creating connection to a grid server\n");
+		return -1;
     }
     m_Grids.push_back(l_GridFd);
     m_GridIds[id] = l_GridFd;
@@ -126,6 +127,7 @@ int RobotClient::initClock(const char* host, const char* port)
     if (l_ClockFd < 0)
     {
         DEBUGPRINT("Failed creating connection to a grid server\n");
+		return -1;
     }
 
     m_ClockFd = l_ClockFd;

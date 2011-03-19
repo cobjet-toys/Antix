@@ -1,19 +1,37 @@
 #include "GridServer.h"
+#include "GridParser.h"
+#include <errno.h>
 
 int main(int argc, char ** argv)
 {
-	Network::GridServer grid;
-	if (argc < 2) 
+	Network::GridServer *l_grid = new Network::GridServer();
+	if (argc < 3) 
 	{
-		perror("Please specify a port for the server");
+		printf("Usage: ./grid.bin <port> <init_file>\n");
 		return -1;
 	}
-	if (grid.init(argv[1]) < 0) 
+	
+	GridParser l_parser;
+	
+	int l_res = 0;
+	
+	if ((l_res = l_parser.readFile(argv[2], (void *)l_grid )) == ENOENT) 
+	{
+		printf("Error with parsing file: %s\n", argv[2]);
+		return -1;
+	}
+	if (l_res < 0)
+	{
+		printf("Failed to parse file\n");
+		return -1;
+	}
+	
+	if (l_grid->init(argv[1]) < 0) 
 	{
 		return -1;
 	}
 	
-	grid.start();
+	l_grid->start();
 	
 	return 0;
 }
