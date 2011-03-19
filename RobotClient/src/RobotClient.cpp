@@ -11,12 +11,12 @@
 
 using namespace Network;
 
-#ifdef DEBUG
+
 static time_t init_sec = time(NULL);
 static int Timesteps = 0;
-#endif
 
-RobotClient::RobotClient():Client()
+
+RobotClient::RobotClient():Client(), m_ReadyGrids(0)
 {
 }
 
@@ -62,7 +62,7 @@ int RobotClient::sendRobotRequests()
     Msg_header l_Header;
     Msg_MsgSize l_Size;
 
-    printf("Sending request for data to grid.\n");
+    DEBUGPRINT("Sending request for data to grid.\n");
 
     //For each grid, send a message request containing all of the robot ids for that grid.
     std::vector<int>::const_iterator l_GridEnd = m_Grids.end();
@@ -71,7 +71,7 @@ int RobotClient::sendRobotRequests()
         // vector<int> l_RobotIds;
         // requestSensorData((*it), &l_RobotIds);
         
-        l_Size.msgSize = 10;//REPLACE WITH ACTUAL REQUEST FOR ROBOTS(l_RobotIds.size())
+        l_Size.msgSize = 4000;//REPLACE WITH ACTUAL REQUEST FOR ROBOTS(l_RobotIds.size())
 
         unsigned int l_MessageSize = (l_Size.msgSize*l_Req.size)+l_Header.size+l_Size.size;
         unsigned char l_Buffer[l_MessageSize];
@@ -100,7 +100,7 @@ int RobotClient::sendRobotRequests()
         sendWrapper(m_serverList[(*it)], l_Buffer, l_MessageSize);
  
         unpack(l_Buffer, Msg_header_format, &l_Header.sender, &l_Header.message);
-        printf("Sender: %d Message: %d\n", l_Header.sender, l_Header.message);
+        DEBUGPRINT("Sender: %d Message: %d\n", l_Header.sender, l_Header.message);
     } 
     return 0;
 }
@@ -205,16 +205,15 @@ int RobotClient::handler(int fd)
                 //Message is heart beat.
                 case(MSG_HEARTBEAT) :
                 {
-#ifdef DEBUG
                     time_t curr_sec = time(NULL); 
                     if (curr_sec > init_sec)
                     {
-                        DEBUGPRINT("Number of timesteps: %d", Timesteps);
+                        printf("Number of timesteps: %d\n", Timesteps);
                         init_sec = time(NULL);
                         Timesteps = 0;
                    }
                    Timesteps++;
-#endif
+
                    DEBUGPRINT("Expecting to receive a heartbeat message from the clock.\n");
                    
                    //Create a heartbeat message and buffer to receive into.
@@ -289,9 +288,10 @@ int RobotClient::handler(int fd)
                     //recieveSensorData(&l_SensedInfo);
 
                     m_ReadyGrids++; 
-                    DEBUGPRINT("Recevied sensory data from a grid\n");
+                    DEBUGPRINT("Recevied sensory data from a grid. %d Ready, %d total\n", m_ReadyGrids, m_Grids.size());
                     if (m_ReadyGrids == m_Grids.size())
                     {   
+                        DEBUGPRINT("Finished one loop\n");
                         TcpConnection* l_ClockConn = m_serverList[m_ClockFd];
                         //Prepare our 'header' message.
                         Msg_header l_Header;
@@ -308,6 +308,7 @@ int RobotClient::handler(int fd)
                             return -1;
                         }
                         sendWrapper(l_ClockConn, l_HBBuffer, l_MessageSize);
+                        DEBUGPRINT("Sent heartbeat.\n");
 
                         m_ReadyGrids = 0;
                     }
