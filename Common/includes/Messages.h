@@ -138,8 +138,8 @@ typedef struct{
     float left_y;			// 0 for full grid
     float right_x;			// 0 for full grid
     float right_y;			// 0 for full grid
-	static const size_t size = 2;
+	static const size_t size = 18;
 } Msg_DrawerConfig;
-static const char * Msg_DrawerConfig_format = "cc";
+static const char * Msg_DrawerConfig_format = "ccffff";
 
 #endif
