@@ -303,7 +303,7 @@ int GridServer::handler(int fd)
 				}// end of message process action
                 break;
 				
-				case (MSG_PROCESSINITTEAM):
+				case (MSG_REQUESTINITTEAM):
 				{					
 					Msg_header l_header;
 					Msg_MsgSize l_msgSize;
