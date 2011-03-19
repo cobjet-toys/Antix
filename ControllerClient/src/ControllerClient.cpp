@@ -93,13 +93,15 @@ int ControllerClient::initNeighbourGrids()
         {
             l_RightGrid = m_Grids[i+1];
         }
+        DEBUGPRINT("Got grid fds\n");
         //Send the nearby grids.
         Msg_header l_Header;
 
         Msg_GridNeighbour l_Neighbour;
         l_Neighbour.position = 0;
-        strncpy(l_Neighbour.ip, m_GridConInfo[m_Grids[l_LeftGrid]].first, sizeof(l_Neighbour.ip));
-        strncpy(l_Neighbour.port, m_GridConInfo[m_Grids[l_LeftGrid]].second, sizeof(l_Neighbour.port));
+
+        strncpy(l_Neighbour.ip, m_GridConInfo[l_LeftGrid].first, sizeof(l_Neighbour.ip));
+        strncpy(l_Neighbour.port, m_GridConInfo[l_LeftGrid].second, sizeof(l_Neighbour.port));
 
         Msg_MsgSize l_NumNeighbours = {2};
 
@@ -107,6 +109,8 @@ int ControllerClient::initNeighbourGrids()
         unsigned char l_Buffer[l_BuffSize]; 
    
         unsigned int l_Offset = 0; 
+
+        DEBUGPRINT("Created first neighbour message and buffer\n");
         //Pack header.
         packHeaderMessage(l_Buffer+l_Offset, SENDER_CONTROLLER, MSG_GRIDNEIGHBOURS);
         l_Offset += l_Header.size;
@@ -122,8 +126,8 @@ int ControllerClient::initNeighbourGrids()
 
         //Prepare and pack the right neighbour
         l_Neighbour.position = 1;
-        strncpy(l_Neighbour.ip, m_GridConInfo[m_Grids[l_RightGrid]].first, sizeof(l_Neighbour.ip));
-        strncpy(l_Neighbour.port, m_GridConInfo[m_Grids[l_RightGrid]].second, sizeof(l_Neighbour.port));
+        strncpy(l_Neighbour.ip, m_GridConInfo[l_RightGrid].first, sizeof(l_Neighbour.ip));
+        strncpy(l_Neighbour.port, m_GridConInfo[l_RightGrid].second, sizeof(l_Neighbour.port));
 
         pack(l_Buffer+l_Offset, Msg_gridNeighbour_format, l_Neighbour.position, l_Neighbour.ip, l_Neighbour.port);
 
@@ -162,12 +166,13 @@ int ControllerClient::beginSimulation()
     TcpConnection* l_ClockCon = m_serverList[m_ClockFd];
 
     Msg_header l_Header;
-    Msg_HB l_hb = {0};
 
-    unsigned int l_MsgSize = l_hb.size+l_Header.size;
+    unsigned int l_MsgSize = l_Header.size;
     unsigned char l_Buffer[l_MsgSize];
 
     packHeaderMessage(l_Buffer, SENDER_CONTROLLER, MSG_HEARTBEAT);
+
+    sendWrapper(l_ClockCon, l_Buffer, l_MsgSize);
 }
 
 int ControllerClient::handler(int fd)
