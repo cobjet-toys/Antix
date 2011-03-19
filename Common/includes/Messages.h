@@ -124,13 +124,12 @@ static const char * Msg_TeamId_format = "l";
 
 typedef struct{
     uint32_t id;
-    uint32_t x_pos;
-    uint32_t y_pos;
-    uint16_t speed;
-    uint32_t angle;
-    uint32_t puck_id;
-	static const size_t size = 22;
+    float x_pos;
+    float y_pos;
+    float angle;
+    char has_puck;
+	static const size_t size = 17;
 } Msg_RobotInfo;
-static const char * Msg_RobotInfo_format = "lllhll";
+static const char * Msg_RobotInfo_format = "lfffl";
 
 #endif

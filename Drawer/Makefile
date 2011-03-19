@@ -38,15 +38,15 @@ endif
 
 # ----------------------------------------------------------------------
 
-drawer: common drawer_depend drawer_release_objects
-	@echo "Building RELEASE --------------------------------------------------------------------------------"
-	$(shell cd $(drawer_RELEASE_PATH)/; $(drawer_COMPILER) -o $(drawer_EXECUTABLE) $(drawer_RELEASE_OBJ) $(PWD)/$(ROOT_DIR)/build/release/libcommon.a )
-	@echo "Building drawer COMPLETE --------------------------------------------------------------"
-
 drawer_debug: common drawer_depend drawer_debug_objects
 	@echo "Building DEBUG ----------------------------------------------------------------------------------"
 	$(shell cd $(drawer_DEBUG_PATH)/; $(drawer_COMPILER) -g -o $(drawer_EXECUTABLE) $(drawer_DEBUG_OBJ) $(PWD)/$(ROOT_DIR)/build/debug/libcommon.a )
 	@echo "Building DEBUG drawer COMPLETE --------------------------------------------------------"
+
+drawer: common drawer_depend drawer_release_objects
+	@echo "Building RELEASE --------------------------------------------------------------------------------"
+	$(shell cd $(drawer_RELEASE_PATH)/; $(drawer_COMPILER) -o $(drawer_EXECUTABLE) $(drawer_RELEASE_OBJ) $(PWD)/$(ROOT_DIR)/build/release/libcommon.a )
+	@echo "Building drawer COMPLETE --------------------------------------------------------------"
 
 drawer_depend:
 	@echo "Compiling drawer dependancy list  -----------------------------------------------------"
@@ -63,6 +63,7 @@ drawer_debug_objects:
 	@echo "Building drawer debug objects ---------------------------------------------------------"
 	$(shell cd $(drawer_DEBUG_OBJ_PATH); $(drawer_COMPILER) -c -I$(drawer_INCLUDE_PATH) -I$(drawer_INCLUDE_COMMON_PATH) $(addprefix $(drawer_SRC_PATH)/, $(drawer_SRC)))
 	@echo "Building drawer debug objects COMPLETE ------------------------------------------------"
+
 drawer_clean:
 	@echo "Cleaning drawer ALL -------------------------------------------------------------------"
 	rm drawer_depends $(drawer_RELEASE_PATH)/$(drawer_EXECUTABLE) $(drawer_DEBUG_PATH)/$(drawer_EXECUTABLE) $(drawer_RELEASE_OBJ_PATH)/*.o $(drawer_DEBUG_OBJ_PATH)/*.o

@@ -1,5 +1,9 @@
 #include "DrawServer.h"
 #include "Home.h"
+#include "Robot.h"
+#include "Puck.h"
+#include "Team.h"
+#include "Position.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -163,20 +167,22 @@ int DrawServer::handler(int fd)
                     Msg_MsgSize l_NumObjects;
 					NetworkCommon::requestMessageSize(l_NumObjects, l_Conn);
                     DEBUGPRINT("Expecting %d objects.\n", l_NumObjects.msgSize );
+                    
+                    //containers to hold processed/received data
+                    Msg_RobotInfo l_ObjInfo;
+                    unsigned char l_ObjInfoBuf[l_ObjInfo.size];
 
                     //Go through all of the objects we expect position data for.
                     for (int i = 0; i < l_NumObjects.msgSize;i++)
                     {
-                        //First get the header telling us how many objects are sensed and for which object.
-                        Msg_RobotInfo l_ObjInfo;
-                        unsigned char l_ObjInfoBuf[l_ObjInfo.size];
+                        bzero(&l_ObjInfo, l_ObjInfo.size);
                         
                         recvWrapper(l_Conn, l_ObjInfoBuf, l_ObjInfo.size);
                         unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
-                                &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.speed, &l_ObjInfo.angle, &l_ObjInfo.puck_id );
+                                &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck );
 
-                        DEBUGPRINT("Object: newInfo.id=%d\tx=%d\ty=%d\tspeed=%d\tangle=%d\tpuck=%d\n",
-                                l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.speed, l_ObjInfo.angle, l_ObjInfo.puck_id );
+                        DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
+                                l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
                                 
                         updateObject(l_ObjInfo);
                     }
