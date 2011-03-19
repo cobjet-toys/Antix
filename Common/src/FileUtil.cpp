@@ -1,21 +1,8 @@
 #include "FileUtil.h"
+#include "SimulationInfo.h"
 
 namespace Antix
 {
-
-// TODO: This is a bad place to put these, find somewhere better
-int NUM_TEAMS;
-int ROBOTS_PER_TEAM;
-int NUM_CLIENT_PROCESSES;
-int NUM_GRIDS;
-int WINDOW_SIZE;
-float WORLD_SIZE;
-float HOME_RADIUS;
-bool ENABLE_FOV;
-float FOV_ANGLE;
-float FOV_RANGE;
-char* CLIENT_NUM;
-
 
 std::vector<string> linesInFile(const char* fileName)
 {
@@ -36,18 +23,18 @@ int parseConfigFile(const char* configFileName, ClientList& clients)
     try
     {
         int loop_start = 8;
-        Antix::NUM_TEAMS = lexical_cast<int>( lines[0] );
-        Antix::ROBOTS_PER_TEAM = lexical_cast<int>( lines[1] );
-        Antix::NUM_CLIENT_PROCESSES = lexical_cast<int>( lines[2] );
-        Antix::NUM_GRIDS = lexical_cast<int>( lines[3] );
-        Antix::WINDOW_SIZE = lexical_cast<int>( lines[4] );
-        Antix::WORLD_SIZE = lexical_cast<float>( lines[5] );
-        Antix::HOME_RADIUS = lexical_cast<float>( lines[6] );
-        Antix::ENABLE_FOV = (lexical_cast<int>( lines[7] ) == 1) ? true : false;
-        if(Antix::ENABLE_FOV)
+        SimInfo::NUM_TEAMS = lexical_cast<int>( lines[0] );
+        SimInfo::ROBOTS_PER_TEAM = lexical_cast<int>( lines[1] );
+        SimInfo::NUM_CLIENT_PROCESSES = lexical_cast<int>( lines[2] );
+        SimInfo::NUM_GRIDS = lexical_cast<int>( lines[3] );
+        SimInfo::WINDOW_SIZE = lexical_cast<int>( lines[4] );
+        SimInfo::WORLD_SIZE = lexical_cast<float>( lines[5] );
+        SimInfo::HOME_RADIUS = lexical_cast<float>( lines[6] );
+        SimInfo::ENABLE_FOV = (lexical_cast<int>( lines[7] ) == 1) ? true : false;
+        if(SimInfo::ENABLE_FOV)
         {
-            Antix::FOV_ANGLE = lexical_cast<float>( lines[8] );
-            Antix::FOV_RANGE = lexical_cast<float>( lines[9] );
+            SimInfo::FOV_ANGLE = lexical_cast<float>( lines[8] );
+            SimInfo::FOV_RANGE = lexical_cast<float>( lines[9] );
             loop_start = 10;
         }
         
