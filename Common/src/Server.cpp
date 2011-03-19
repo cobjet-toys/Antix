@@ -123,6 +123,12 @@ int Server::init(const char* port, int maxConnections)
 		}
     }
 	int fileDesc = m_ServerConn.getSocketFd();
+	int enable = 1;
+	
+	if (setsockopt(fileDesc, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == -1)
+	{
+		return -1;	
+	}
 	
 	this->setnonblock(fileDesc); // @ todo check for errors
 	this->addHandler(fileDesc, EPOLLIN|EPOLLET, &m_ServerConn); //@ todo check for errors
