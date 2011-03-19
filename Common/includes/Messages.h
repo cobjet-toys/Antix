@@ -33,8 +33,7 @@ enum
 	MSG_RESPONDUNREGISTERROBOT = 23, // USED
     MSG_GRIDDATAFULL = 31,
     MSG_GRIDDATACOMPRESS = 32,
-    MSG_SENDGRIDDATA = 33,
-    MSG_STOPGRIDDATA = 34,
+    MSG_SETDRAWERCONFIG = 33,
 };
 
 // Header Message to Identify What Kind Of Message Is Being Sent and Who It Came From
@@ -130,6 +129,17 @@ typedef struct{
     char has_puck;
 	static const size_t size = 17;
 } Msg_RobotInfo;
-static const char * Msg_RobotInfo_format = "lfffl";
+static const char * Msg_RobotInfo_format = "lfffc";
+
+typedef struct{
+   	char send_data;			//'T' or 'F'
+    char data_type;			//'F' or 'C'
+    float left_x;			// 0 for full grid
+    float left_y;			// 0 for full grid
+    float right_x;			// 0 for full grid
+    float right_y;			// 0 for full grid
+	static const size_t size = 2;
+} Msg_DrawerConfig;
+static const char * Msg_DrawerConfig_format = "cc";
 
 #endif
