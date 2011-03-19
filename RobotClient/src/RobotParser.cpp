@@ -24,15 +24,25 @@ int RobotParser::handler(std::vector<std::string> commands, void *args)
 	if (!commands.empty()) // grid parser
 	{
 		std::string command = commands.at(0);
-		if ( command == "GRID" && commands.size() >= 3)
+		if ( command == "GRID" && commands.size() >= 4)
 		{
+<<<<<<< HEAD
 			printf("PARSED: GRID with IP %s and PORT %s\n", commands.at(1).c_str(), commands.at(2).c_str(), grid_id);
 			return l_robot->initGrid(commands.at(1).c_str(), commands.at(2).c_str(), grid_id);
+=======
+			int id = atoi(commands.at(1).c_str());
+			const char * host = commands.at(2).c_str();
+			const char * port = commands.at(3).c_str();
+			printf("PARSED: GRID ID %i with IP %s and PORT %s\n", id, host, port);
+			return l_robot->initGrid(host,port, id);
+>>>>>>> 61e41acf239cc670f3a90b2da1ca056f9e8003fb
 		}
 		if ( command == "CLOCK" && commands.size() >= 3)
-		{
-			printf("PARSED: CLOCK with IP %s and PORT %s\n", commands.at(1).c_str(), commands.at(2).c_str());
-			return l_robot->initClock(commands.at(1).c_str(), commands.at(2).c_str());
+		{	
+			const char * host = commands.at(1).c_str();
+			const char * port = commands.at(2).c_str();
+			printf("PARSED: CLOCK with IP %s and PORT %s\n", host, port);
+			return l_robot->initClock(host, port);
 		}
 		if (command == "#")
 		{
