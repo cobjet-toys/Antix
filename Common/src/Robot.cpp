@@ -1,10 +1,12 @@
 #include "Robot.h"
 #include <math.h>
 #include "MathAux.h"
+#include "AntixUtil.h"
 #include <stdlib.h>
 #include <stdio.h>
 
 using namespace Game;
+using namespace Antix;
 
 Robot::Robot(Math::Position *pos, int teamid, unsigned int id):GameObject(pos, id), m_PuckHeld(NULL)
 {
@@ -72,6 +74,22 @@ void Robot::updatePosition()
 
 void Robot::updateSensors( std::vector<sensed_item> sensed_items )
 {
+    // TODO Might be a more optimal way to do this, diffs?
+    m_VisiblePucks.clear();
+    m_VisibleRobots.clear();
+
+    std::vector<sensed_item>::iterator iter;
+    for( iter = sensed_items.begin(); iter != sensed_items.end(); iter++)
+    {
+        if( getType((*iter).id) == ROBOT )
+        {
+            m_VisibleRobots.push_back( Location( (*iter).x, (*iter).y ) );
+        }
+        else
+        {
+            m_VisiblePucks.push_back( Location( (*iter).x, (*iter).y ) );
+        }
+    }
 
 /*
     //Clear our collection of visible objets.

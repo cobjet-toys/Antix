@@ -47,10 +47,15 @@ typedef struct{
 typedef unsigned int uid;
 typedef std::pair<string, string> ConnectionPair;
 typedef std::pair<int, int> TeamGridPair;
+typedef std::pair<float, float> Location;
 typedef std::vector<ConnectionPair> ConnectionList;
 typedef std::vector<string> StringList;
 typedef ConnectionList::iterator ConListIterator;
 typedef std::map<uid, std::vector<TeamGridPair> > ClientList;
 typedef std::map<int, std::vector<sensed_item> > SensedItems;
+
+// For checking output of Antix::getTypes()
+const int ROBOT = 0;
+const int PUCK = 1;
 
 #endif // __TYPES_H__

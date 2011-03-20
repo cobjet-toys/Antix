@@ -68,7 +68,7 @@ int RobotGame::setTeamRobot(int gridId, int teamId, int robotId, float x, float 
 {
     Math::Position* l_robotPosition = new Math::Position(x,y, 0.0); // initial angle is 0.0
     Game::Robot* l_Robot = new Robot(l_robotPosition, teamId, robotId);
-    m_Robots[gridId].push_back(l_Robot);
+    m_robotsByGrid[gridId].push_back(l_Robot);
 
     return 0;
 }
@@ -87,7 +87,7 @@ int RobotGame::registerRobot(int grid_id, robot_info robot)
 
     l_Robot->setSpeed(l_Speed);
 
-    std::vector<Robot*> robots = m_robotsInGrid[grid_id];
+    std::vector<Robot*> robots = m_robotsByGrid[grid_id];
     robots.push_back(l_Robot);
 
     return 0;
@@ -115,7 +115,7 @@ int RobotGame::requestSensorData(int grid_id, std::vector<int>* robot_ids)
     // the chunk of sensor data in their area, then the RobotGame will piece that info
     // together when deciding on an action
 
-    std::vector<Robot*> robots = m_robotsInGrid[grid_id];
+    std::vector<Robot*> robots = m_robotsByGrid[grid_id];
     std::vector<int> l_robot_ids;
     
     std::vector<Robot*>::iterator end = robots.end();

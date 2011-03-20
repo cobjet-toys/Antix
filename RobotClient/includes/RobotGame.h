@@ -44,7 +44,7 @@ public:
 private:
 
     // Map of grid ids to Robot *'s
-    map<int, vector<Robot*> > m_robotsInGrid;
+    map<int, vector<Robot*> > m_robotsByGrid;
 
     // Map of robot_ids to Robot *'s
     map<int, Robot*> m_robots;

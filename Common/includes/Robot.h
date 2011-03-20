@@ -110,8 +110,8 @@ private:
     /**
      * Collection of visible objects, resets at every update.
      */
-    std::list< VisiblePuckPtr > m_VisiblePucks;
-    std::list< VisibleRobotPtr > m_VisibleRobots;
+    std::list< std::pair<float,float> > m_VisiblePucks;
+    std::list< std::pair<float,float> > m_VisibleRobots;
 
     int m_TeamId;
 
