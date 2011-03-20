@@ -6,14 +6,10 @@
 #include "RobotClient.h"
 #include "Config.h"
 
-const char usage[] = "Required arguments for the RobotClient:\n"
-    "  -? : Prints this helpful message.\n"
-    "  -i <server_info_file> : Specifies the file to read for server info\n"
-    "  -c <system_config_file> : Specifies the system config file to read \n"
-    "  -n <client_num> : Specifies the client number\n";
 
 int main(int argc, char** argv)
 {
+    setbuf(stdout, NULL);
 
     if (argc <2)
     {
@@ -45,41 +41,54 @@ int main(int argc, char** argv)
 char* server_info_file = NULL;
 char* system_config_file = NULL;
 int client_num = -1;
+=======
+    Network::RobotClient rclient;
+    if (argc < 3)
+    {
+        printf("Usage: ./robotclient.bin server.info system.config client_num\n");
+        return -1;
+    }
 
-  // parse arguments to configure Robot static members
-	int c;
-	while( ( c = getopt( argc, argv, "?d:i:g:s:")) != -1 )
-		switch( c )
-			{
-			case 'i':
-			  server_info_file = optarg ;
-			  printf( "server info filename set: %s\n", server_info_file );
-			  break;
-			case 'c':
-			  system_config_file = optarg;
-			  printf( "system config file set: %s\n", system_config_file );
-			  break;
-			case 'n':
-			  client_num = atoi(optarg);
-			  printf( "starting grid set: %d\n", client_num );
-			  break;
-			case '?':
-			  puts( usage );
-			  exit(0); // ok
-			  break;
-			default:
-				fprintf( stderr, "[Team] Option parse error.\n" );
-				puts( usage );
-				exit(-1); // error
-			}
+    const char* server_fn = argv[1];
+    const char* config_fn = argv[2];
+    const int client_num = lexical_cast<int>(argv[3]);
 
-	if (server_info_file == NULL | system_config_file == NULL | client_num == -1)
-	{
-		fprintf( stderr, "You have not entered all required args\n" );
-		puts( usage );
-		exit(-1); // error
-	}
-*/
-	//printf(usage);
+    ConnectionList grid_servers;
+    ConnectionList robot_clients;
+    ConnectionPair clock_server;
+    ConnectionPair draw_server;
+    ClientList clients;
+    
+    parseServerFile(server_fn,grid_servers,robot_clients, clock_server, draw_server); 
+    parseConfigFile(config_fn,clients);
+    
+    rclient.init();
+    
+    // Connect to all the grid servers
+    for(ConListIterator iter = grid_servers.begin();
+        iter != grid_servers.end();
+        iter++)
+    {
+        rclient.initGrid( (*iter).first.c_str(), (*iter).second.c_str() );
+    }
+    
+    for( ClientList::iterator iter = clients.begin();
+         iter != clients.end();
+         iter++)
+    {
+        std::vector< TeamGridPair > pairs = iter->second;
+        for(int i = 0; i < pairs.size(); i++)
+        {
+            cout << "TeamNum: " << pairs[i].first;
+            cout << "\tGridNum: " << pairs[i].second << endl;;
+        }
+    }
+
+
+    //Connect to the clock
+    rclient.initClock(clock_server.first.c_str(), clock_server.second.c_str());
+    rclient.start();*/
+
     return 0;
 }
+

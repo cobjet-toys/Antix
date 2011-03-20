@@ -21,19 +21,14 @@ typedef VisibleObject<Robot*> VisibleRobotPtr;
 
 class Robot : public GameObject
 {
-/**
- * Individual robot class.
- */
-friend class Robotix;
 
 public:
     /**
      * Initialize robot at position 'pos' with home 'home'.
      */
-    /**
-     * TODO: Change home to team.
-     */
     Robot(Math::Position *pos, Home* home);
+    
+    Robot(Math::Position *pos, unsigned int id, float FOV, float Radius, float PickupRange, float SensorRange);
     
     /**
      * Delete position object.
@@ -62,7 +57,7 @@ public:
     /**
      * Drop a puck if one is being held.
      */
-    bool Drop();
+    int Drop();
 
     /**
      * Attempt to puck up the nearest puck.
@@ -70,9 +65,10 @@ public:
     bool Pickup();
 
     /**
-     * Print data about the robot.
+     * Attempt to puck up the nearest puck.
      */
-    void printInfo();
+    int setSpeed(Speed* speed);
+
 
     /**
      * Get X coordinate of robot.
@@ -101,7 +97,8 @@ public:
 
     static float& getFOV();
 
-    virtual void draw();
+
+    unsigned int m_PuckHeld;    
 
 private: 
     /**
@@ -109,15 +106,16 @@ private:
      */
     Math::Speed* m_Speed;
 
-    /**
-     * The puck being held, if any.
-     */
-    Puck* m_PuckHeld;
 
     /**
      * Home of the robot.
      */
     Home* m_Home;
+
+    /**
+     * Team of the robot.
+     */
+    int m_Team;
 
     /**
      * The last position a puck was found at.
@@ -127,8 +125,8 @@ private:
     /**
      * Collection of visible objects, resets at every update.
      */
-    std::list<VisiblePuckPtr> m_VisiblePucks;
-    std::list<VisibleRobotPtr> m_VisibleRobots;
+    std::list< VisiblePuckPtr > m_VisiblePucks;
+    std::list< VisibleRobotPtr > m_VisibleRobots;
 
     /**
      * FOV of any robot.

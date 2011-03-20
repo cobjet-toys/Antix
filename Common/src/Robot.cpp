@@ -18,10 +18,35 @@ Robot::Robot(Math::Position *pos,  Home* home):GameObject(pos), m_PuckHeld(NULL)
     m_Speed = new Math::Speed();
 }
 
+Robot::Robot(Math::Position *pos, unsigned int id, float FOV, float Radius, float PickupRange, float SensorRange):GameObject(pos, id), m_PuckHeld(NULL)
+{
+    m_LastPickup = new Math::Position();
+    m_Speed = new Math::Speed();
+
+    //TODO: get TEAM_SIZE from the config
+    int TEAM_SIZE = 1000;
+    m_Team = id/TEAM_SIZE;
+
+    m_PuckHeld = -1;
+
+    m_FOV = FOV;
+    m_Radius = Radius;
+    m_PickupRange = PickupRange;
+    m_SensorRange = SensorRange;
+
+}
+
 Robot::~Robot()
 {
     delete m_LastPickup;
     delete m_Speed;
+}
+
+int Robot::setSpeed(Speed* speed)
+{
+
+    return 0;
+
 }
 
 float& Robot::getRadius()
@@ -41,6 +66,7 @@ float& Robot::getFOV()
 
 void Robot::updatePosition()
 {
+    /*
     //Calculate our displacement based on our speed and current position.
     Math::Position* l_CurrentPos = getPosition();
     float l_Dx = m_Speed->getForwSpeed() * cos(l_CurrentPos->getOrient());
@@ -59,11 +85,13 @@ void Robot::updatePosition()
         m_PuckHeld->getPosition()->setX(l_CurrentPos->getX());
         m_PuckHeld->getPosition()->setY(l_CurrentPos->getY()); 
     }
+    */
 }
 
-/* TODO: Add to GridGame
 void Robot::updateSensors()
 {
+
+/*
     //Clear our collection of visible objets.
     m_VisiblePucks.clear();
     m_VisibleRobots.clear();
@@ -144,13 +172,12 @@ void Robot::updateSensors()
         //The puck is in our range and FOV, add it to visible pucks.
         m_VisiblePucks.push_back(VisiblePuckPtr(l_Puck, l_Range, l_RelHeading));
     }
-     
+     */
 }
-*/
 
-/*
 void Robot::updateController()
 {
+/*
     float l_HeadingError = 0.0;
 
     Position* l_CurrentPos = getPosition();
@@ -237,28 +264,36 @@ void Robot::updateController()
         //Turn to reduce error.
         m_Speed->setRotSpeed(0.2 * l_HeadingError);
     }
+*/
 }
 
 bool Robot::Holding() const
 {
-    return (bool)m_PuckHeld;
+    if (m_PuckHeld == -1)
+    {
+        return true;
+    }
+    else{
+        return false;
+    }
 }
 
-bool Robot::Drop()
+int Robot::Drop()
 {
+    unsigned int temppuck;
+
     //If we're holding a puck, drop it.
     if (Holding())
     {
-        m_PuckHeld->toggleHeld();
         m_PuckHeld = NULL;
-        return true;
     }
-    return false;
+    return temppuck;
 }
 
 bool Robot::Pickup()
 {
-    //If we don't have a puck.
+    /*
+    // TODO: Not deleting this yet, may be needed for actions
     if (!Holding())
     {
         //Check our list of visible pucks.
@@ -275,15 +310,8 @@ bool Robot::Pickup()
             }
         }
     }
+    */
     return false;
-}
-*/
-
-void Robot::printInfo()
-{
-
-	printf("Position: %f, %f\n", (*getPosition()).getX(), (*getPosition()).getY());
-
 }
 
 float Robot::getX()

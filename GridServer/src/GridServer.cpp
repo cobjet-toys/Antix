@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include "networkCommon.h"
+#include <stdlib.h>
 
 using namespace Network;
 
@@ -15,6 +16,34 @@ GridServer::GridServer():Server()
 	m_idRangeTo = 0;
 	m_robotsPerTeam = 0;
 	m_teamsAvailable = 0;
+
+    robot_info newrobot;
+    newrobot.id = 400;
+    newrobot.x_pos = 5;
+    newrobot.y_pos = 5;
+
+    std::vector<int> teams;
+    teams.push_back(2);
+    teams.push_back(4);
+    teams.push_back(6);
+
+    std::map<int, std::vector<sensed_item> >* sensed_items_map;
+
+    DEBUGPRINT("=====Create Game\n");
+    gridGameInstance = new GridGame();
+    DEBUGPRINT("=====Initialize teams\n");
+    std::vector<robot_info>* robot_info_vector;
+    gridGameInstance->initializeTeam(teams, robot_info_vector);
+    gridGameInstance->printPopulation();
+    DEBUGPRINT("=====Unregister Robot\n");
+    gridGameInstance->unregisterRobot(200);
+    gridGameInstance->printPopulation();
+    DEBUGPRINT("=====Register Robot\n");
+    gridGameInstance->registerRobot(newrobot);
+    gridGameInstance->printPopulation();
+    DEBUGPRINT("=====Get Sensor Data\n");
+    gridGameInstance->returnSensorData(teams, sensed_items_map);
+
 }
 int GridServer::handleNewConnection(int fd)
 {
@@ -145,7 +174,7 @@ int GridServer::handler(int fd)
 					
 					for (int i =0; i< l_totalSensed; i++)
 					{
-						s1.robotid = i;
+						s1.id = i;
 						s1.x = i;
 						s1.y = i;
 						a1.push_back(s1);
@@ -223,7 +252,7 @@ int GridServer::handler(int fd)
 							// for each object seen by such robot
 							l_sensedObject.y = vecIt->y;
 							l_sensedObject.x = vecIt->x;
-							l_sensedObject.robotid = vecIt->robotid;
+							l_sensedObject.robotid = vecIt->id;
 							DEBUGPRINT("Packing sensed object id=%d x=%d y=%d | of buffer %d\n", l_sensedObject.robotid, l_sensedObject.x, l_sensedObject.y, l_position);
 							if (pack(msgBuffer+l_position, Msg_SensedObjectGroupItem_format, l_sensedObject.robotid, l_sensedObject.x, l_sensedObject.y) != l_sensedObject.size)
 							{
@@ -313,8 +342,8 @@ int GridServer::handler(int fd)
                     unsigned int l_MessageSize = l_Header.size + l_Size.size + (ROBOSPERTEAM * l_RoboInfo.size); 
                     unsigned char l_Buffer[l_MessageSize];
 
-                    l_header.sender = SENDER_GRIDSERVER;
-                    l_header.message = MSG_RESPONDINITTEAM;
+                    l_Header.sender = SENDER_GRIDSERVER;
+                    l_Header.message = MSG_RESPONDINITTEAM;
 
                     unsigned int l_Offset = 0;
                     pack(l_Buffer+l_Offset, Msg_header_format, l_Header.sender, l_Header.message);
