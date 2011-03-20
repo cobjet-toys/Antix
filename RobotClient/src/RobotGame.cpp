@@ -3,6 +3,11 @@
 #include "MathAux.h"
 #include "Types.h"
 #include "Config.h"
+#include "AntixUtil.h"
+#include <iostream>
+
+using std::cout;
+using std::endl;
 
 RobotGame::RobotGame()
 {
@@ -58,8 +63,13 @@ int RobotGame::initTeam(int id, float x, float y)
     return 0;
 }
 
-int setTeamRobot(int teamId, int robotId, float x, float y)
+int RobotGame::setTeamRobot(int gridId, int teamId, int robotId, float x, float y)
+// Creates a robot and adds it to the grid to robot vector mapping. Creates the robot at position x,y, and team teamId.
 {
+    Math::Position* l_robotPosition = new Math::Position(x,y, 0.0); // initial angle is 0.0
+    Game::Robot* l_Robot = new Robot(l_robotPosition, teamId, robotId);
+    m_Robots[gridId].push_back(l_Robot);
+
     return 0;
 }
 
@@ -73,11 +83,11 @@ int RobotGame::registerRobot(int grid_id, robot_info robot)
     l_Speed->setForwSpeed(robot.speed);
 
     Math::Position* l_RobotPosition = new Math::Position(robot.x_pos, robot.y_pos, robot.angle);
-    Game::Robot* l_Robot = new Robot(l_RobotPosition, robot.id, robot_FOV, robot_Radius, robot_SensorRange, robot_PickupRange);
+    Game::Robot* l_Robot = new Robot(l_RobotPosition, robot.id);
 
     l_Robot->setSpeed(l_Speed);
 
-    std::vector<Robot*> robots = m_Robots[grid_id];
+    std::vector<Robot*> robots = m_robotsInGrid[grid_id];
     robots.push_back(l_Robot);
 
     return 0;
@@ -105,7 +115,7 @@ int RobotGame::requestSensorData(int grid_id, std::vector<int>* robot_ids)
     // the chunk of sensor data in their area, then the RobotGame will piece that info
     // together when deciding on an action
 
-    std::vector<Robot*> robots = m_Robots[grid_id];
+    std::vector<Robot*> robots = m_robotsInGrid[grid_id];
     std::vector<int> l_robot_ids;
     
     std::vector<Robot*>::iterator end = robots.end();
@@ -115,9 +125,7 @@ int RobotGame::requestSensorData(int grid_id, std::vector<int>* robot_ids)
         DEBUGPRINT( "%d\n", (**it).m_id);
     }
 
-
     robot_ids = &l_robot_ids;
-
 
     return 0;
 }
@@ -127,6 +135,15 @@ int RobotGame::receiveSensorData(map<int, std::vector<sensed_item> >* sensor_dat
     // map of sensed items for each robot id on the grid where this info is coming from
     // will be used to decide on an action, when the robot sees the complete sensor
     // there may be some trouble with pieceing more sensor data together for edge robots
+    
+    SensedItems::iterator iter;
+    for(iter = sensor_data->begin(); iter != sensor_data->end(); iter++)
+    {
+        //cout << (*iter).first << " " << (*iter).second.at(0).id << endl;
+        int robot_id = (*iter).first;
+        Robot* l_robotp = m_robots[robot_id];
+        l_robotp->updateSensors( (*iter).second );
+    }
 
     return 0;
 }

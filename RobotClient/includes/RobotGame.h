@@ -27,7 +27,7 @@ public:
 
     // New Initialization functions
     int initTeam( int id, float x, float y);
-    int setTeamRobot(int teamId, int robotId, float x, float y);
+    int setTeamRobot(int gridId, int teamId, int robotId, float x, float y);
 
     // Register and UnRegister robots from a particular grid
     int registerRobot(int grid_id, robot_info robot);
@@ -44,7 +44,10 @@ public:
 private:
 
     // Map of grid ids to Robot *'s
-    map<int, vector<Robot*> > m_Robots;
+    map<int, vector<Robot*> > m_robotsInGrid;
+
+    // Map of robot_ids to Robot *'s
+    map<int, Robot*> m_robots;
 
     // Map of team ids to home coordinates
     map<int, std::pair<float, float> > m_homeLocations;
