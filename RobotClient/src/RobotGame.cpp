@@ -58,8 +58,13 @@ int RobotGame::initTeam(int id, float x, float y)
     return 0;
 }
 
-int setTeamRobot(int teamId, int robotId, float x, float y)
+int RobotGame::setTeamRobot(int gridId, int teamId, int robotId, float x, float y)
+// Creates a robot and adds it to the grid to robot vector mapping. Creates the robot at position x,y, and team teamId.
 {
+    Math::Position* l_robotPosition = new Math::Position(x,y, 0.0); // initial angle is 0.0
+    Game::Robot* l_Robot = new Robot(l_robotPosition, teamId, robotId);
+    m_Robots[gridId].push_back(l_Robot);
+
     return 0;
 }
 
@@ -73,7 +78,7 @@ int RobotGame::registerRobot(int grid_id, robot_info robot)
     l_Speed->setForwSpeed(robot.speed);
 
     Math::Position* l_RobotPosition = new Math::Position(robot.x_pos, robot.y_pos, robot.angle);
-    Game::Robot* l_Robot = new Robot(l_RobotPosition, robot.id, robot_FOV, robot_Radius, robot_SensorRange, robot_PickupRange);
+    Game::Robot* l_Robot = new Robot(l_RobotPosition, robot.id);
 
     l_Robot->setSpeed(l_Speed);
 
