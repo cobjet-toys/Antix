@@ -312,7 +312,7 @@ int RobotClient::handler(int fd)
                     //recieveSensorData(&l_SensedInfo);
 
                     m_ReadyGrids++; 
-                    DEBUGPRINT("Recevied sensory data from a grid. %d Ready, %d total\n", m_ReadyGrids, m_Grids.size());
+                    DEBUGPRINT("Recevied sensory data from a grid. %d Ready, %zu total\n", m_ReadyGrids, m_Grids.size());
                     if (m_ReadyGrids == m_Grids.size())
                     {   
                         DEBUGPRINT("Finished one loop\n");
