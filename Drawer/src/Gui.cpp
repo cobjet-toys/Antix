@@ -166,7 +166,7 @@ void drawRobots()
         		continue;
         	}
         	
-            (*it).second->draw();
+            //(*it).second->draw();
         }
     }
 
