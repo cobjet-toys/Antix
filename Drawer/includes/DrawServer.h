@@ -16,7 +16,7 @@
 #include <vector>
 #include <time.h>
 
-#define TEAM_ID_SHIFT       10
+#define TEAM_ID_SHIFT       1024
 
 class Team;
 class Puck;

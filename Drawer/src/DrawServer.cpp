@@ -137,7 +137,8 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
     	return;
     }
     
-    int objId = newInfo.id / TEAM_ID_SHIFT;
+    int objId = newInfo.id % TEAM_ID_SHIFT;
+    DEBUGPRINT("%d = %d %% %d\n", objId, newInfo.id, TEAM_ID_SHIFT);
     if(objId == 0)
     {
         if (!this->m_pucks[objId])
@@ -169,9 +170,6 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
         
         //this->m_robots[newInfo.id]->m_PuckHeld = this->m_pucks[newInfo.puck_id];
     }
-    
-    //check for overflow
-    this->m_framestep++;
 }
 
 
@@ -219,7 +217,6 @@ int DrawServer::handler(int fd)
                         unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
                                 &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck );
 
-						//DEBUGPRINT("ID=%d\n", l_ObjInfo.id);
                         DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
                                 l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
                                 

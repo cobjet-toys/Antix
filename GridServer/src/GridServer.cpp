@@ -446,8 +446,8 @@ int GridServer::updateDrawer(uint32_t framestep)
 {
     printf("----updateDrawer---------\n");
 
-    int m_totalRobots = 10000;
-    int m_totalPucks = 10000;
+    int m_totalRobots = 10;
+    int m_totalPucks = 0;
     int l_totalObjects = m_totalRobots + m_totalPucks;
 
 
@@ -510,8 +510,8 @@ int GridServer::updateDrawer(uint32_t framestep)
         l_ObjInfo.angle = orientation;
         l_ObjInfo.has_puck = i%2 == 0 ? 'T' : 'F';
 
-        DEBUGPRINT("Expected: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
-                   l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
+        //DEBUGPRINT("Expected: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
+                   //l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
                        
         if (pack(msgBuffer+l_position, Msg_RobotInfo_format,
                  l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck ) != l_ObjInfo.size)
@@ -519,12 +519,6 @@ int GridServer::updateDrawer(uint32_t framestep)
             DEBUGPRINT("Could not pack robot header\n");
             return -1;
         }
-        
-        unpack(msgBuffer+l_position, Msg_RobotInfo_format,
-                &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck );
-
-        DEBUGPRINT("Actual: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
-                   l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
 
         l_position += l_ObjInfo.size;
         
