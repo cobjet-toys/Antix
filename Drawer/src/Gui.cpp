@@ -162,6 +162,11 @@ void drawRobots()
             i++;
         }
         glEnd();
+        
+        char tmpBuf[16];
+        int numOfRobots = (int)Network::DrawServer::getInstance()->getRobotsCount();
+        sprintf(tmpBuf, "#Robots=%d", numOfRobots);
+        drawText(tmpBuf, 5,5);
 
         glDrawArrays(GL_POINTS, 0, len);
 

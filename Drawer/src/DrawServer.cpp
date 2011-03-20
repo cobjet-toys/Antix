@@ -137,33 +137,34 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
     	return;
     }
     
-    if(newInfo.id >> TEAM_ID_SHIFT == 0)
+    int objId = newInfo.id / TEAM_ID_SHIFT;
+    if(objId == 0)
     {
-        if (!this->m_pucks[newInfo.id])
+        if (!this->m_pucks[objId])
         {
-        	  this->m_pucks[newInfo.id] = new Game::Puck(pos);
+        	  this->m_pucks[objId] = new Game::Puck(pos);
         }
       	else
       	{
-      		  this->m_pucks[newInfo.id]->getPosition()->setX(newInfo.x_pos);
-      		  this->m_pucks[newInfo.id]->getPosition()->setY(newInfo.y_pos);        		
+      		  this->m_pucks[objId]->getPosition()->setX(newInfo.x_pos);
+      		  this->m_pucks[objId]->getPosition()->setY(newInfo.y_pos);        		
       	}
     }
     else
     {
-      	if (!this->m_robots[newInfo.id])
+      	if (!this->m_robots[objId])
       	{
         		if (!this->m_teams[1])//newInfo.id/TEAM_ID_SHIFT])    
         		{
         			  DEBUGPRINT("No home for team %d\n", 1);//newInfo.id/TEAM_ID_SHIFT);
         			  return;
         		}         			
-  			    this->m_robots[newInfo.id] = new Game::Robot(pos, this->m_teams[1]->getHome());//newInfo.id/TEAM_ID_SHIFT]->getHome());
+  			    this->m_robots[objId] = new Game::Robot(pos, this->m_teams[1]->getHome());//newInfo.id/TEAM_ID_SHIFT]->getHome());
       	}          	
       	else
       	{
-        		this->m_robots[newInfo.id]->getPosition()->setX(newInfo.x_pos);
-        		this->m_robots[newInfo.id]->getPosition()->setY(newInfo.y_pos);        		
+        		this->m_robots[objId]->getPosition()->setX(newInfo.x_pos);
+        		this->m_robots[objId]->getPosition()->setY(newInfo.y_pos);        		
       	}
         
         //this->m_robots[newInfo.id]->m_PuckHeld = this->m_pucks[newInfo.puck_id];
@@ -205,22 +206,24 @@ int DrawServer::handler(int fd)
                     DEBUGPRINT("Expecting %d objects.\n", l_NumObjects.msgSize );
                     
                     //containers to hold processed/received data
-                    Msg_RobotInfo l_ObjInfo;
-                    unsigned char l_ObjInfoBuf[l_ObjInfo.size];
 
                     //Go through all of the objects we expect position data for.
                     for (int i = 0; i < l_NumObjects.msgSize;i++)
                     {
+		                Msg_RobotInfo l_ObjInfo;
+		                unsigned char l_ObjInfoBuf[l_ObjInfo.size];
                         bzero(&l_ObjInfo, l_ObjInfo.size);
                         
                         recvWrapper(l_Conn, l_ObjInfoBuf, l_ObjInfo.size);
+                        
                         unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
                                 &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck );
 
-                        //DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
-                          //      l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
+						//DEBUGPRINT("ID=%d\n", l_ObjInfo.id);
+                        DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
+                                l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
                                 
-                        //updateObject(l_ObjInfo);
+                        updateObject(l_ObjInfo);
                     }
                     DEBUGPRINT("Finished updating objects\n");
 

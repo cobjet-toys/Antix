@@ -218,4 +218,3 @@ void unpack(unsigned char *buf, const char *format, ...)
 
     va_end(ap);
 }
-

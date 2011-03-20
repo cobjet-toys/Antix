@@ -446,8 +446,8 @@ int GridServer::updateDrawer(uint32_t framestep)
 {
     printf("----updateDrawer---------\n");
 
-    int m_totalRobots = 1000;
-    int m_totalPucks = 5;
+    int m_totalRobots = 10000;
+    int m_totalPucks = 10000;
     int l_totalObjects = m_totalRobots + m_totalPucks;
 
 
@@ -493,8 +493,6 @@ int GridServer::updateDrawer(uint32_t framestep)
 
     l_position += l_msgSize.size; // shift by robot size header
 
-    DEBUGPRINT("AFTER PACKING SIZE %d\n", l_position);
-
     for(int i = 0; i < m_totalRobots; i++)
     {
         // Computes robots altered position (Random)
@@ -512,17 +510,24 @@ int GridServer::updateDrawer(uint32_t framestep)
         l_ObjInfo.angle = orientation;
         l_ObjInfo.has_puck = i%2 == 0 ? 'T' : 'F';
 
-        //DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
-        //           l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
+        DEBUGPRINT("Expected: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
+                   l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
                        
         if (pack(msgBuffer+l_position, Msg_RobotInfo_format,
-                 &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck ) != l_ObjInfo.size)
+                 l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck ) != l_ObjInfo.size)
         {
             DEBUGPRINT("Could not pack robot header\n");
             return -1;
         }
+        
+        unpack(msgBuffer+l_position, Msg_RobotInfo_format,
+                &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck );
+
+        DEBUGPRINT("Actual: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
+                   l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
 
         l_position += l_ObjInfo.size;
+        
         //DEBUGPRINT("CURRENT POSITION SIZE %d\n", l_position);		
     }
 		

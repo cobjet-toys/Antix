@@ -1,7 +1,7 @@
 #include "TcpConnection.h"
 #include "networkCommon.h"
 #include "Packer.h"
-//#include "Config.h"
+#include "Config.h"
 #include <string.h>
 
 

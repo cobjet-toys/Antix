@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     //Network::DrawServer::getInstance()->init(argc, argv);
     Network::DrawServer * drawer = Network::DrawServer::getInstance();
     drawer->init();
-    drawer->initGrid("142.58.35.211", "3333", 0);
+    drawer->initGrid("localhost", "3333", 0);
     drawer->initTeams();
 	
 	/*
