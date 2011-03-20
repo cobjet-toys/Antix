@@ -15,7 +15,8 @@ enum
 	SENDER_CLOCK = 1, // used
 	SENDER_GRIDSERVER = 2, // used
 	SENDER_CLIENT = 3, // used
-    SENDER_CONTROLLER = 4
+    SENDER_CONTROLLER = 4,    
+    SENDER_DRAWER = 5,
 };
 
 // Describes what the Physical Entities can send to each other (i.e. Step 2, How Does Box Communicate With World)
@@ -32,7 +33,19 @@ enum
 	MSG_REGISTERROBOT = 20, // USED
 	MSG_RESPONDREGISTERROBOT = 21, // USED
 	MSG_UNREGISTERROBOT = 22, // USED
-	MSG_RESPONDUNREGISTERROBOT = 23 // USED
+	MSG_RESPONDUNREGISTERROBOT = 23, // USED
+    MSG_GRIDDATAFULL = 31,
+    MSG_GRIDDATACOMPRESS = 32,
+    MSG_SETDRAWERCONFIG = 33,
+};
+
+// Drawer enums
+enum
+{
+	DRAWER_STOPDATA = 'F',
+	DRAWER_SENDDATA = 'T',
+	DRAWER_FULLDETAILS = 'F',
+	DRAWER_COMPRESSEDDETAILS = 'C',
 };
 
 typedef struct
@@ -143,12 +156,23 @@ static const char * Msg_TeamId_format = "l";
 
 typedef struct{
     uint32_t id;
-    uint32_t x_pos;
-    uint32_t y_pos;
-    uint16_t speed;
-    uint32_t angle;
-    uint32_t puck_id;
-	static const size_t size = 22;
+    float x_pos;
+    float y_pos;
+    float angle;
+    char has_puck;
+	static const size_t size = 17;
 } Msg_RobotInfo;
+static const char * Msg_RobotInfo_format = "lfffc";
+
+typedef struct{
+   	char send_data;			//'T' or 'F'
+    char data_type;			//'F' or 'C'
+    float left_x;			// 0 for full grid
+    float left_y;			// 0 for full grid
+    float right_x;			// 0 for full grid
+    float right_y;			// 0 for full grid
+	static const size_t size = 18;
+} Msg_DrawerConfig;
+static const char * Msg_DrawerConfig_format = "ccffff";
 
 #endif
