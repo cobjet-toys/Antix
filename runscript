@@ -1,0 +1,4 @@
+nohup gnome-terminal --execute ./GridServer/build/debug/grid.bin 12345 GridServer/build/GRID_CONFIG
+nohup gnome-terminal --execute ./ClockServer/build/debug/clock.bin 12346 1 ClockServer/build/CLOCK_CONFIG
+nohup gnome-terminal --execute ./RobotClient/build/debug/robot.bin RobotClient/build/ROBOT_CONFIG
+

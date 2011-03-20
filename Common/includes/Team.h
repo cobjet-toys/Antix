@@ -9,12 +9,23 @@
 #include "VisibleObject.h"
 #include <list>
 
+namespace Network
+{
+    class DrawServer;
+}
+
 namespace Game
 {
 
 class Team : public GameObject
 {
+friend class Network::DrawServer;
 
+public:
+    /**
+     * Ctor. Initialize with random color, and home at random position.
+     */
+    Team();
 public:
     
     Team(Math::Position *pos, unsigned int id);

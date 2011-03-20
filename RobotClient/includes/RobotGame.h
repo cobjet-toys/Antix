@@ -9,6 +9,7 @@
 
 using std::map;
 using std::vector;
+using std::pair;
 
 using namespace Game;
 
@@ -42,11 +43,11 @@ public:
 
 private:
 
-    //Map of file descriptors to Grids 
-    //map<int, int> m_gridMap;
-
-    //Map of grid ids to Robot *'s
+    // Map of grid ids to Robot *'s
     map<int, vector<Robot*> > m_Robots;
+
+    // Map of team ids to home coordinates
+    map<int, std::pair<float, float> > m_homeLocations;
 
     float robot_FOV;
     float robot_Radius;

@@ -28,12 +28,12 @@ grid_DEBUG_OBJ = $(addprefix $(grid_DEBUG_OBJ_PATH)/, $(grid_SRC:.cpp=.o))
 
 grid_debug: common_debug grid_depend grid_debug_objects
 	@echo "Building DEBUG ----------------------------------------------------------------------"
-	$(shell cd $(grid_DEBUG_PATH)/; $(grid_COMPILER) -g -o $(grid_EXECUTABLE) $(grid_DEBUG_OBJ) $(grid_PWD)/$(ROOT_DIR)/build/debug/libcommon.a)
+	$(shell cd $(grid_DEBUG_PATH)/; $(grid_COMPILER) -g -lpthread -o $(grid_EXECUTABLE) $(grid_DEBUG_OBJ) $(grid_PWD)/$(ROOT_DIR)/build/debug/libcommon.a)
 	@echo "Building DEBUG grid COMPLETE --------------------------------------------------------"
 
 grid: common grid_depend grid_release_objects
 	@echo "Building RELEASE ---------------------------------------------------------------------"
-	$(shell cd $(grid_RELEASE_PATH)/; $(grid_COMPILER) -o $(grid_EXECUTABLE) $(grid_RELEASE_OBJ) $(grid_PWD)/$(ROOT_DIR)/build/release/libcommon.a)
+	$(shell cd $(grid_RELEASE_PATH)/; $(grid_COMPILER) -lpthread -o $(grid_EXECUTABLE) $(grid_RELEASE_OBJ) $(grid_PWD)/$(ROOT_DIR)/build/release/libcommon.a)
 	@echo "Building grid COMPLETE --------------------------------------------------------------"
 
 grid_depend:

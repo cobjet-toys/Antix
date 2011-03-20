@@ -38,6 +38,13 @@ int RobotParser::handler(std::vector<std::string> commands, void *args)
 			printf("PARSED: CLOCK with IP %s and PORT %s\n", host, port);
 			return l_robot->initClock(host, port);
 		}
+        if ( command == "INIT_GRID" && commands.size() >= 2)
+		{	
+			unsigned int id = atoi(commands.at(1).c_str());
+			printf("PARSED: INIT_GRID with ID %d\n", id);
+			return l_robot->handleNewGrid(id);
+		}
+
 		if (command == "#")
 		{
 			DEBUGPRINT("Skipped Comment\n");
