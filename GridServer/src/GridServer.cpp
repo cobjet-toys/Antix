@@ -304,52 +304,37 @@ int GridServer::handler(int fd)
                 break;
 				
 				case (MSG_REQUESTINITTEAM):
-				{					
-					Msg_header l_header;
-					Msg_MsgSize l_msgSize;
-					
-					NetworkCommon::requestMessageSize(l_msgSize, l_curConnection);
-					
-					int l_numTeams = l_msgSize.msgSize;
-					
-					if (l_numTeams <= 0)
+				{
+                    unsigned int ROBOSPERTEAM = 1000;                    
+					Msg_header l_Header;
+					Msg_MsgSize l_Size = {ROBOSPERTEAM};//INITIALIZE WITH FUNCTION THAT RETRIEVES NUMBER OF ROBS / TEAM
+					Msg_InitRobot l_RoboInfo = {3, 0.1, 0.1};
+
+                    unsigned int l_MessageSize = l_Header.size + l_Size.size + (ROBOSPERTEAM * l_RoboInfo.size); 
+                    unsigned char l_Buffer[l_MessageSize];
+
+                    l_header.sender = SENDER_GRIDSERVER;
+                    l_header.message = MSG_RESPONDINITTEAM;
+
+                    unsigned int l_Offset = 0;
+                    pack(l_Buffer+l_Offset, Msg_header_format, l_Header.sender, l_Header.message);
+                    l_Offset += l_Header.size;
+                    
+                    pack(l_Buffer+l_Offset, Msg_MsgSize_format, l_Size.msgSize);
+                    l_Offset += l_Size.size;
+
+                    for(int i = 0; i < ROBOSPERTEAM; i++)
+                    {
+                        pack(l_Buffer+l_Offset, Msg_InitRobot_format, l_RoboInfo.id, l_RoboInfo.x, l_RoboInfo.y);
+                        l_Offset += l_RoboInfo.size;
+                    }
+
+                    if (l_curConnection->send(l_Buffer, l_MessageSize) == -1)
 					{
-						DEBUGPRINT("Requested sensor data for <=0 Robots. Game error.\n");
+						DEBUGPRINT("failed to send");
 						return -1;
 					}
-					
-					DEBUGPRINT("Client has requested actions for %i robots\n", l_numTeams);
-					
-					Msg_TeamId l_teamId;
-					unsigned char l_teamIdBuff[l_teamId.size];
-					
-					memset(&l_teamId, 0 , l_teamId.size);
-					memset(l_teamIdBuff, 0 , l_teamId.size);
-					
-					std::vector<int> l_teamIdsVec;
-					std::map<int, std::vector<robot_info> > l_teamRobotsMap;
-					
-					for (int i = 0; i < l_numTeams; i++)
-					{
-						memset(l_teamIdBuff, 0 , l_teamId.size);
-						if (l_curConnection->recv(l_teamIdBuff, l_teamId.size) == -1)
-						{
-							DEBUGPRINT("Could not receive a team id.");
-							return -1;
-						}
-						unpack(l_teamIdBuff, Msg_TeamId_format, &l_teamId.teamId);
-						
-						l_teamIdsVec.push_back(l_teamId.teamId);
-						
-						DEBUGPRINT("Team id:%d unpacked and stored\n", l_teamId.teamId);
-					}
-					
-					/*if (GridGame::initializeTeam(vector<int> teamids, map<int, vector<robot_info> >* robots) < 0)
-					{
-						DEBUGPRINT("Initialize Team\n");
-						return -1;
-					}*/
-					
+
 					return 0;
 				}
                 break;

@@ -115,7 +115,8 @@ int RobotClient::initGrid(const char* host, const char* port, const int id)
 		return -1;
     }
     m_Grids.push_back(l_GridFd);
-    m_GridIds[id] = l_GridFd;
+    m_GridIdsToFd[id] = l_GridFd;
+    m_GridFdsToId[l_GridFd] = id;
 
     return l_GridFd;
 }
@@ -144,7 +145,7 @@ int RobotClient::handleNewGrid(int id)
     unsigned char l_Buffer[l_Header.size];
     packHeaderMessage(l_Buffer, SENDER_CLIENT, MSG_REQUESTINITTEAM);
     
-    int l_GridFd = m_GridIds[id];
+    int l_GridFd = m_GridIdsToFd[id];
     sendWrapper(m_serverList[l_GridFd], l_Buffer, l_Header.size);
 }
 
@@ -221,15 +222,21 @@ int RobotClient::handler(int fd)
 
                     DEBUGPRINT("Expecting ids and positions for %d robots.\n", l_NumRobots.msgSize);
 
+                    int l_GridId = m_GridFdToIds[fd];
                     //Receive the robot data.
                     Msg_InitRobot l_Robo;
                     unsigned int l_MessageSize = l_Robo.size*l_NumRobots.msgSize;
                     unsigned char l_RobosBuffer[l_MessageSize];
+
+                    recvWrapper(l_Conn, l_RoboBuffers, l_MessageSize);
                     
                     //For each robot, recv, unpack, and add to game.
                     for (int i =0; i < l_NumRobots.msgSize; i++)
                     {
-                        
+                        unpack(l_RoboBuffers, Msg_InitRobot_format, &l_Robo.id, &l_Robo.x, &l_Robo.y);
+                        insertRobot(l_GridId, l_Robo.id, l_Robo.x, l_Robo.y);
+                        DEBUGPRINT("Received a new robot with ID %d, Coord (%f, %f)\n", 
+                                l_Robo.id, l_Robo.x, l_Robo.y);
                     }
 
                 }

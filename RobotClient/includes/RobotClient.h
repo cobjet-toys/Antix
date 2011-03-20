@@ -26,7 +26,8 @@ private:
     int sendRobotRequests();
 
 	std::vector<int> m_Grids;
-    std::map<int, int> m_GridIds;
+    std::map<int, int> m_GridIdsToFd;
+    std::map<int, int> m_GridFdtoIds;
     uint16_t m_HeartBeat;
     int m_ClockFd;
     unsigned int m_ReadyGrids;
