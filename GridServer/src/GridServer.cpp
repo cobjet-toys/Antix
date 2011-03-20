@@ -48,7 +48,6 @@ GridServer::GridServer():Server()
     DEBUGPRINT("=====Get Sensor Data\n");
     gridGameInstance->returnSensorData(teams, sensed_items_map);
 
-    exit(1);
 
 }
 int GridServer::handleNewConnection(int fd)
