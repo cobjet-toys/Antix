@@ -6,6 +6,8 @@
 #include "Packer.h"
 #include "GridGame.h"
 
+#define FRAME_FREQUENCY 500
+
 namespace Network
 {
 class GridServer : public Server
@@ -19,6 +21,9 @@ public:
 	void setIdRange(int from, int to);
 	void setRobotsPerTeam(int amount);
 	void setId(int id);
+		
+    //Drawer Connections
+    int updateDrawer(uint32_t framestep);
 
 private:
     uint32_t m_uId;
@@ -29,6 +34,9 @@ private:
 	int m_robotsPerTeam;
 	//GridGame gridGameInstance;
     GridGame* gridGameInstance;	
+	
+	bool updateDrawerFlag;
+    TcpConnection * m_drawerConn;
 };
 }
 

@@ -5,6 +5,7 @@
 #include <vector>
 #include "networkCommon.h"
 #include <stdlib.h>
+#include <pthread.h>
 
 using namespace Network;
 
@@ -56,6 +57,30 @@ int GridServer::handleNewConnection(int fd)
 int GridServer::allConnectionReadyHandler()
 {
     return 0;
+}
+
+void * drawer_function(void* gridPtr)
+{
+    Network::GridServer * grid = (Network::GridServer *)gridPtr;
+
+    for(uint32_t frame = 0; true; frame++)
+    {
+        usleep(FRAME_FREQUENCY);
+
+        try
+        {
+            printf("UpdateDrawer return[%d]: %d\n", frame, grid->updateDrawer(frame));
+        }
+        catch(std::exception & e)
+        {
+            printf("Failed To Updated Drawer!\n");
+            perror(e.what());
+            return NULL;
+        }
+    }
+
+    printf("Finished Execution!!\n");   
+	return NULL;
 }
 
 
@@ -377,6 +402,50 @@ int GridServer::handler(int fd)
 					return -1;
 				}
 			} // end of sender
+		case SENDER_DRAWER:
+            switch(l_senderMsg)
+            {
+                case(MSG_SETDRAWERCONFIG):
+                {
+                    // Sets the drawer TCP Connection reference, if it is NULL                    
+                    if(!m_drawerConn)
+                    {
+                        m_drawerConn = l_curConnection;
+                    }
+
+                    printf("Recieved Drawer Instruction\n");
+
+                    Msg_DrawerConfig configData;
+                    unsigned char configDataBuf[configData.size];
+
+                    if (l_curConnection->recv(configDataBuf, configData.size) == -1)
+					{
+						DEBUGPRINT("Could not receive a config data.");
+						return -1;
+					}
+					unpack(configDataBuf, Msg_DrawerConfig_format, &configData.send_data, &configData.data_type, &configData.left_x, &configData.left_y, &configData.right_x, &configData.right_y);
+
+                    printf("Config: send_data=%c, data_type=%c, left_x=%f, bottom_y=%f, right_x=%f, top_y=%f\n",
+                           configData.send_data, configData.data_type, configData.left_x, configData.left_y, configData.right_x, configData.right_y);
+
+                    // TODO - Make it only initialize a single pThread
+                    pthread_t thread1;
+                    int iret1 = pthread_create(&thread1, NULL, drawer_function, (void *)this);
+                    if(iret1 != 0)
+                    {
+                        perror("pthread failed");
+                        return -1;
+                    }
+            
+                    return 0;
+                }
+
+                default:
+                {
+                    DEBUGPRINT("No matching message handle for drawer case.\n");
+                    return -1;
+                }
+            }   		
 		default:
 		{
 			printf("no matching msg handler for UNKNOWN\n");
@@ -386,6 +455,131 @@ int GridServer::handler(int fd)
 	} // end of switch
 
     return 0;
+}
+
+int GridServer::updateDrawer(uint32_t framestep)
+{
+    printf("----updateDrawer---------\n");
+
+    int m_totalRobots = 10;
+    int m_totalPucks = 0;
+    int l_totalObjects = m_totalRobots + m_totalPucks;
+
+
+    // Creates an array of random values, to draw the pucks -- TEMPORARY TESTING -- //
+    srand(time(NULL));
+    float randPuckVals[m_totalPucks * 2];
+    for(int i = 0; i < m_totalPucks * 2; i++){randPuckVals[i] = (float)(rand()%600);}
+    // Creates an array of random values for robot positions -- TEMPORARY TESTING -- //
+    //float robotOrientation[this->m_totalRobots];
+    //for(int i = 0; i < this->m_totalRobots; i++){robotPosition[i] = (float)(rand()%100)/100;}
+    float robotPosition[m_totalRobots][2];
+    for(int i = 0; i < m_totalRobots; i++){for(int j = 0; j < 2; j++){robotPosition[i][j] = (float)(rand()%600);}}
+
+
+    Msg_header l_header = {SENDER_GRIDSERVER, MSG_GRIDDATAFULL}; // header for response
+    Msg_MsgSize l_msgSize;
+    memset(&l_msgSize, 0, l_msgSize.size);	
+    l_msgSize.msgSize = l_totalObjects; 	//robots + pucks
+
+    Msg_RobotInfo l_ObjInfo;	//for each object
+
+    unsigned int l_responseMsgSize = 0;	
+    l_responseMsgSize += l_header.size; 					// append header size	
+    l_responseMsgSize += l_msgSize.size;					// append msgSize size
+    l_responseMsgSize += (l_totalObjects * l_ObjInfo.size); // append the total size for number of object info
+    printf("msg size: %i\n", l_responseMsgSize);
+
+    unsigned char msgBuffer[l_responseMsgSize];
+
+    if (pack(msgBuffer, Msg_header_format, l_header.sender, l_header.message) != l_header.size)
+    {
+        DEBUGPRINT("Could not pack header\n");
+        return -1;
+    }
+
+    int l_position = l_header.size;
+
+    if (pack(msgBuffer+l_position, Msg_MsgSize_format, l_msgSize.msgSize) != l_msgSize.size) // pack number of robots
+    {
+        DEBUGPRINT("Could not pack number of robots\n");
+        return -1;
+    }
+
+    l_position += l_msgSize.size; // shift by robot size header
+
+    for(int i = 0; i < m_totalRobots; i++)
+    {
+        // Computes robots altered position (Random)
+        robotPosition[i][0] += float((rand()%200)-100)/50;
+        robotPosition[i][1] += float((rand()%200)-100)/50;
+
+        float posX = robotPosition[i][0];
+        float posY = robotPosition[i][1];
+        float orientation = 1.0;
+
+        // for each object being pushed
+        l_ObjInfo.id = i + 1024;
+        l_ObjInfo.x_pos = posX;
+        l_ObjInfo.y_pos = posY;
+        l_ObjInfo.angle = orientation;
+        l_ObjInfo.has_puck = i%2 == 0 ? 'T' : 'F';
+
+        //DEBUGPRINT("Expected: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
+                   //l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
+                       
+        if (pack(msgBuffer+l_position, Msg_RobotInfo_format,
+                 l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck ) != l_ObjInfo.size)
+        {
+            DEBUGPRINT("Could not pack robot header\n");
+            return -1;
+        }
+
+        l_position += l_ObjInfo.size;
+        
+        //DEBUGPRINT("CURRENT POSITION SIZE %d\n", l_position);		
+    }
+		
+    for(int i = 0; i < m_totalPucks; i++)
+    {
+        float posX = randPuckVals[(2*i)];
+        float posY = randPuckVals[(2*i) + 1];
+
+        // for each object being pushed
+        l_ObjInfo.id = i;
+        l_ObjInfo.x_pos = posX;
+        l_ObjInfo.y_pos = posY;
+        l_ObjInfo.angle = 1.0;
+        l_ObjInfo.has_puck = 'F';
+
+        //DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
+        //           l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck);
+                         
+        if(pack(msgBuffer+l_position, Msg_RobotInfo_format,
+           &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck) != l_ObjInfo.size)
+        {
+            DEBUGPRINT("Could not pack robot header\n");
+            return -1;
+        }
+
+        l_position += l_ObjInfo.size;
+        //DEBUGPRINT("CURRENT POSITION SIZE %d\n", l_position);		
+    }
+
+    if(!m_drawerConn || m_drawerConn->send(msgBuffer, l_responseMsgSize) == -1)
+    {
+        printf("Failed to send!\n");
+        DEBUGPRINT("failed to send");
+        return -1;
+    }
+
+    DEBUGPRINT("Sent Response\n");
+    return 0;	
+
+    /*
+    double elapsed = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
+    cout << framestep << ": " << elapsed << "ms" << endl;
+    */
 }
 
 void Network::GridServer::setTeams(int amount)

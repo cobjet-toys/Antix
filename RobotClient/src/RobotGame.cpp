@@ -50,6 +50,19 @@ int RobotGame::receiveInitialRobots(int grid_id, std::vector<robot_info> robot_i
 }
 */
 
+int RobotGame::initTeam(int id, float x, float y)
+// Creates a home with id at x,y
+{
+    m_homeLocations[id] = std::make_pair(x,y);
+    //printf("added mappign for team, id: %d, location: %f,%f\n", id, m_homeLocations[id].first, m_homeLocations[id].second);
+    return 0;
+}
+
+int setTeamRobot(int teamId, int robotId, float x, float y)
+{
+    return 0;
+}
+
 // Register and UnRegister robots from a particular grid
 int RobotGame::registerRobot(int grid_id, robot_info robot)
 {

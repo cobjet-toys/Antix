@@ -5,17 +5,21 @@
 #include "Home.h"
 #include <list>
 
-
 namespace Network
 {
     class DrawServer;
 }
+
 
 namespace Game
 {
 
 class Team
 {
+/**
+ * Added the abstract of a team, which contains robots, a home, and a color.
+ */
+friend class Robotix;
 friend class Network::DrawServer;
 
 public:
@@ -37,13 +41,24 @@ public:
     /**
      * Iterators for our collection of robots.
      */
-     //TODO: Removed lists, may need later
+    std::list<Robot*>::iterator getFirstRobot();
+    std::list<Robot*>::iterator getLastRobot();
 private:
 
     /**
      * Home location.
      */
     Home* m_Home;
+
+    /**
+     * Population of robots on team.
+     */
+    std::list<Robot*> m_Robots;
+
+    /**
+     * Number of robots per team.
+     */
+    static unsigned int m_RobotPopCount;
 };
 }
 
