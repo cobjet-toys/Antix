@@ -16,6 +16,8 @@ GridServer::GridServer():Server()
 	m_robotsPerTeam = 0;
 	m_teamsAvailable = 0;
     m_drawerConn = 0;
+
+    updateDrawerFlag = false;
 }
 int GridServer::handleNewConnection(int fd)
 {
@@ -27,6 +29,30 @@ int GridServer::allConnectionReadyHandler()
     return 0;
 }
 
+void * drawer_function(void* gridPtr)
+{
+    Network::GridServer * grid = (Network::GridServer *)gridPtr;
+
+    for(uint32_t frame = 0; true; frame++)
+    {
+        usleep(FRAME_FREQUENCY);
+
+        try
+        {
+            //printf("Updated Drawer!\n");    		
+            printf("UpdateDrawer return[%d]: %d\n", frame, grid->updateDrawer(frame));
+        }
+        catch(std::exception & e)
+        {
+            printf("Failed To Updated Drawer!\n");
+            perror(e.what());
+            return NULL;
+        }
+    }
+
+    printf("Finished Execution!!\n");   
+	return NULL;
+}
 
 int GridServer::handler(int fd)
 {
@@ -59,8 +85,8 @@ int GridServer::handler(int fd)
                     //Receive and unpack the number of neighbours.
                     if (l_curConnection->recv(l_SizeBuffer, l_NumNeighbours.size) == -1)
 				    {
-							DEBUGPRINT("Couldn't receive the number of neighbour.\n");
-							return -1;
+						DEBUGPRINT("Couldn't receive the number of neighbour.\n");
+						return -1;
 					}
                     unpack(l_SizeBuffer, Msg_MsgSize_format, &l_NumNeighbours.msgSize);
 
@@ -73,8 +99,8 @@ int GridServer::handler(int fd)
 
                     if (l_curConnection->recv(l_NeighbourBuffer, l_SizeOfNeighbourInfo) == -1)
 				    {
-							DEBUGPRINT("Couldn't receive the grid neighbours.\n");
-							return -1;
+						DEBUGPRINT("Couldn't receive the grid neighbours.\n");
+						return -1;
 					}                    unsigned int l_Offset = 0;
 
                     for (int i = 0; i < l_NumNeighbours.msgSize;i++)
@@ -366,9 +392,36 @@ int GridServer::handler(int fd)
             {
                 case(MSG_SETDRAWERCONFIG):
                 {
-                    //MSG_GRIDDATAFULL;
-                    //MSG_GRIDDATACOMPRESS
+                    // Sets the drawer TCP Connection reference, if it is NULL                    
+                    if(!m_drawerConn)
+                    {
+                        m_drawerConn = l_curConnection;
+                    }
+
                     printf("Recieved Drawer Instruction\n");
+
+                    Msg_DrawerConfig configData;
+                    unsigned char configDataBuf[configData.size];
+
+                    if (l_curConnection->recv(configDataBuf, configData.size) == -1)
+					{
+						DEBUGPRINT("Could not receive a config data.");
+						return -1;
+					}
+					unpack(configDataBuf, Msg_DrawerConfig_format, &configData.send_data, &configData.data_type, &configData.left_x, &configData.left_y, &configData.right_x, &configData.right_y);
+
+                    printf("Config: send_data=%c, data_type=%c, left_x=%f, bottom_y=%f, right_x=%f, top_y=%f\n",
+                           configData.send_data, configData.data_type, configData.left_x, configData.left_y, configData.right_x, configData.right_y);
+
+                    // TODO - Make it only initialize a single pThread
+                    pthread_t thread1;
+                    int iret1 = pthread_create(&thread1, NULL, drawer_function, (void *)this);
+                    if(iret1 != 0)
+                    {
+                        perror("pthread failed");
+                        return -1;
+                    }
+            
                     return 0;
                 }
 
@@ -411,8 +464,8 @@ int GridServer::updateDrawer(uint32_t framestep)
 
     Msg_header l_header = {SENDER_GRIDSERVER, MSG_GRIDDATAFULL}; // header for response
     Msg_MsgSize l_msgSize;
-    memset(&l_msgSize, 0 , l_msgSize.size);	
-    l_msgSize.msgSize = 10000; 	//robots + pucks
+    memset(&l_msgSize, 0, l_msgSize.size);	
+    l_msgSize.msgSize = l_totalObjects; 	//robots + pucks
 
     Msg_RobotInfo l_ObjInfo;	//for each object
 
@@ -448,8 +501,8 @@ int GridServer::updateDrawer(uint32_t framestep)
         robotPosition[i][0] += float((rand()%200)-100)/50;
         robotPosition[i][1] += float((rand()%200)-100)/50;
 
-        float posX = robotPosition[i][0];//(float)i*10+j*5;
-        float posY = robotPosition[i][1];//i*15+j*3;
+        float posX = robotPosition[i][0];
+        float posY = robotPosition[i][1];
         float orientation = 1.0;
 
         // for each object being pushed
@@ -459,8 +512,8 @@ int GridServer::updateDrawer(uint32_t framestep)
         l_ObjInfo.angle = orientation;
         l_ObjInfo.has_puck = i%2 == 0 ? 'T' : 'F';
 
-        DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
-                   l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
+        //DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
+        //           l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
                        
         if (pack(msgBuffer+l_position, Msg_RobotInfo_format,
                  &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck ) != l_ObjInfo.size)
@@ -470,7 +523,7 @@ int GridServer::updateDrawer(uint32_t framestep)
         }
 
         l_position += l_ObjInfo.size;
-        DEBUGPRINT("CURRENT POSITION SIZE %d\n", l_position);		
+        //DEBUGPRINT("CURRENT POSITION SIZE %d\n", l_position);		
     }
 		
     for(int i = 0; i < m_totalPucks; i++)
@@ -485,8 +538,8 @@ int GridServer::updateDrawer(uint32_t framestep)
         l_ObjInfo.angle = 1.0;
         l_ObjInfo.has_puck = 'F';
 
-        DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
-                   l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck);
+        //DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
+        //           l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck);
                          
         if(pack(msgBuffer+l_position, Msg_RobotInfo_format,
            &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck) != l_ObjInfo.size)
@@ -496,7 +549,7 @@ int GridServer::updateDrawer(uint32_t framestep)
         }
 
         l_position += l_ObjInfo.size;
-        DEBUGPRINT("CURRENT POSITION SIZE %d\n", l_position);		
+        //DEBUGPRINT("CURRENT POSITION SIZE %d\n", l_position);		
     }
 
     if(!m_drawerConn || m_drawerConn->send(msgBuffer, l_responseMsgSize) == -1)

@@ -5,6 +5,8 @@
 #include "Messages.h"
 #include "Packer.h"
 
+#define FRAME_FREQUENCY 500000
+
 namespace Network
 {
 class GridServer : public Server
@@ -32,7 +34,7 @@ private:
 	int m_robotsPerTeam;
 	//GridGame gridGameInstance;
 	
-	
+	bool updateDrawerFlag;
     TcpConnection * m_drawerConn;
 };
 }
