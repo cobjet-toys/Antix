@@ -88,7 +88,7 @@ void Robot::updatePosition()
     */
 }
 
-void Robot::updateSensors()
+void Robot::updateSensors( std::vector<sensed_item> sensed_items )
 {
 
 /*

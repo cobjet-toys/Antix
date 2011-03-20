@@ -3,6 +3,11 @@
 #include "MathAux.h"
 #include "Types.h"
 #include "Config.h"
+#include "AntixUtil.h"
+#include <iostream>
+
+using std::cout;
+using std::endl;
 
 RobotGame::RobotGame()
 {
@@ -64,7 +69,7 @@ int RobotGame::registerRobot(int grid_id, robot_info robot)
 
     l_Robot->setSpeed(l_Speed);
 
-    std::vector<Robot*> robots = m_Robots[grid_id];
+    std::vector<Robot*> robots = m_robotsInGrid[grid_id];
     robots.push_back(l_Robot);
 
     return 0;
@@ -92,7 +97,7 @@ int RobotGame::requestSensorData(int grid_id, std::vector<int>* robot_ids)
     // the chunk of sensor data in their area, then the RobotGame will piece that info
     // together when deciding on an action
 
-    std::vector<Robot*> robots = m_Robots[grid_id];
+    std::vector<Robot*> robots = m_robotsInGrid[grid_id];
     std::vector<int> l_robot_ids;
     
     std::vector<Robot*>::iterator end = robots.end();
@@ -102,9 +107,7 @@ int RobotGame::requestSensorData(int grid_id, std::vector<int>* robot_ids)
         DEBUGPRINT( "%d\n", (**it).m_id);
     }
 
-
     robot_ids = &l_robot_ids;
-
 
     return 0;
 }
@@ -114,6 +117,15 @@ int RobotGame::receiveSensorData(map<int, std::vector<sensed_item> >* sensor_dat
     // map of sensed items for each robot id on the grid where this info is coming from
     // will be used to decide on an action, when the robot sees the complete sensor
     // there may be some trouble with pieceing more sensor data together for edge robots
+    
+    SensedItems::iterator iter;
+    for(iter = sensor_data->begin(); iter != sensor_data->end(); iter++)
+    {
+        //cout << (*iter).first << " " << (*iter).second.at(0).id << endl;
+        int robot_id = (*iter).first;
+        Robot* l_robotp = m_robots[robot_id];
+        l_robotp->updateSensors( (*iter).second );
+    }
 
     return 0;
 }

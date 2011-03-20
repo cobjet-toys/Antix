@@ -7,7 +7,9 @@
 #include "Robot.h"
 #include "GameObject.h"
 #include "VisibleObject.h"
+#include "Types.h"
 #include <list>
+#include <vector>
 
 namespace Game
 {
@@ -37,7 +39,7 @@ public:
     /**
      * Update the objects visible to the robot.
      */
-    void updateSensors();
+    void updateSensors( std::vector<sensed_item> sensed_items );
 
     /**
      * Update the position of the robot.

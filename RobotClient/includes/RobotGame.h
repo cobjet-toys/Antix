@@ -44,7 +44,10 @@ public:
 private:
 
     // Map of grid ids to Robot *'s
-    map<int, vector<Robot*> > m_Robots;
+    map<int, vector<Robot*> > m_robotsInGrid;
+
+    // Map of robot_ids to Robot *'s
+    map<int, Robot*> m_robots;
 
     // Map of team ids to home coordinates
     map<int, std::pair<float, float> > m_homeLocations;
