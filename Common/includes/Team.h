@@ -1,43 +1,34 @@
 #ifndef TEAM_H_
 #define TEAM_H_
 
-#include "Robot.h"
+#include "Speed.h"
+#include "Puck.h"
 #include "Home.h"
+#include "Team.h"
+#include "GameObject.h"
+#include "VisibleObject.h"
 #include <list>
-
-
 
 namespace Game
 {
 
-class Team
+class Team : public GameObject
 {
-public:
-    /**
-     * Ctor. Initialize with random color, and home at random position.
-     */
-    Team();
 
-    /**
-     * Delete the robots, home, and color.
-     */
-    ~Team();
+public:
+    
+    Team(Math::Position *pos, unsigned int id);
     
     /**
-     * Get the home for this team.
+     * Delete position object.
      */
-    Home* getHome();
+    ~Team();
 
-    /**
-     * Iterators for our collection of robots.
-     */
-     //TODO: Removed lists, may need later
-private:
+    float getX();
+    float getY();
 
-    /**
-     * Home location.
-     */
-    Home* m_Home;
+private: 
+
 };
 }
 

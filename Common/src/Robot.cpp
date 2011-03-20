@@ -6,39 +6,35 @@
 
 using namespace Game;
 
-//Initialize our static variables.
-float Robot::m_FOV = 0.0;
-float Robot::m_Radius = 0.0;
-float Robot::m_PickupRange = 0.0;
-float Robot::m_SensorRange = 0.0;
-
-Robot::Robot(Math::Position *pos,  Home* home):GameObject(pos), m_PuckHeld(NULL), m_Home(home)
+Robot::Robot(Math::Position *pos, int teamid, unsigned int id):GameObject(pos, id), m_PuckHeld(NULL)
 {
-    m_LastPickup = new Math::Position();
     m_Speed = new Math::Speed();
+
+    m_TeamId = teamid;
+
+    //TODO: get TEAM_SIZE from the config
+    //int TEAM_SIZE = 1000;
+    //m_Team = id/TEAM_SIZE;
+    
+    m_PuckHeld = -1;
+
 }
 
-Robot::Robot(Math::Position *pos, unsigned int id, float FOV, float Radius, float PickupRange, float SensorRange):GameObject(pos, id), m_PuckHeld(NULL)
+
+Robot::Robot(Math::Position *pos, unsigned int id):GameObject(pos, id), m_PuckHeld(NULL)
 {
-    m_LastPickup = new Math::Position();
     m_Speed = new Math::Speed();
 
     //TODO: get TEAM_SIZE from the config
-    int TEAM_SIZE = 1000;
-    m_Team = id/TEAM_SIZE;
-
+    //int TEAM_SIZE = 1000;
+    //m_Team = id/TEAM_SIZE;
+    
     m_PuckHeld = -1;
-
-    m_FOV = FOV;
-    m_Radius = Radius;
-    m_PickupRange = PickupRange;
-    m_SensorRange = SensorRange;
 
 }
 
 Robot::~Robot()
 {
-    delete m_LastPickup;
     delete m_Speed;
 }
 
@@ -49,20 +45,6 @@ int Robot::setSpeed(Speed* speed)
 
 }
 
-float& Robot::getRadius()
-{
-    return m_Radius;
-}
-
-float& Robot::getSensRange()
-{
-    return m_SensorRange;
-}
-
-float& Robot::getFOV()
-{
-    return m_FOV;
-}
 
 void Robot::updatePosition()
 {

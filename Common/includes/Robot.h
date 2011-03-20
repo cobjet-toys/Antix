@@ -3,8 +3,8 @@
 
 #include "Speed.h"
 #include "Puck.h"
-#include "Home.h"
 #include "Robot.h"
+#include "Team.h"
 #include "GameObject.h"
 #include "VisibleObject.h"
 #include <list>
@@ -23,12 +23,10 @@ class Robot : public GameObject
 {
 
 public:
-    /**
-     * Initialize robot at position 'pos' with home 'home'.
-     */
-    Robot(Math::Position *pos, Home* home);
-    
-    Robot(Math::Position *pos, unsigned int id, float FOV, float Radius, float PickupRange, float SensorRange);
+
+    Robot(Math::Position *pos, unsigned int id);
+
+    Robot(Math::Position *pos, int teamid, unsigned int id);
     
     /**
      * Delete position object.
@@ -108,25 +106,12 @@ private:
 
 
     /**
-     * Home of the robot.
-     */
-    Home* m_Home;
-
-    /**
-     * Team of the robot.
-     */
-    int m_Team;
-
-    /**
-     * The last position a puck was found at.
-     */
-    Math::Position* m_LastPickup;
-
-    /**
      * Collection of visible objects, resets at every update.
      */
     std::list< VisiblePuckPtr > m_VisiblePucks;
     std::list< VisibleRobotPtr > m_VisibleRobots;
+
+    int m_TeamId;
 
     /**
      * FOV of any robot.
