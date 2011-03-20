@@ -132,6 +132,10 @@ int RobotGame::requestSensorData(int grid_id, std::vector<int>* robot_ids)
 
 int RobotGame::receiveSensorData(map<int, std::vector<sensed_item> >* sensor_data)
 {
+	if(sensor_data == NULL)
+	{
+		return -1;
+	}
     // map of sensed items for each robot id on the grid where this info is coming from
     // will be used to decide on an action, when the robot sees the complete sensor
     // there may be some trouble with pieceing more sensor data together for edge robots

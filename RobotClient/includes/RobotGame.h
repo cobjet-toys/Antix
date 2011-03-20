@@ -35,7 +35,11 @@ public:
 
     // Handle sensor data
     int requestSensorData(int grid_id, vector<int>* robot_ids);
-    int receiveSensorData(map<int, vector<sensed_item> >* sensor_data);
+    
+	// Updates robot sensor information with newly sensed items
+	// Returns -1 if sensor_data is NULL, 0 otherwise.
+	int receiveSensorData(map<int, vector<sensed_item> >* sensor_data);
+
 
     // Send and recieve actions
     int sendAction(int grid_id, map<int, action>* robot_actions);

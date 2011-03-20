@@ -8,43 +8,44 @@
 using namespace Game;
 using namespace Antix;
 
-Robot::Robot(Math::Position *pos, int teamid, unsigned int id):GameObject(pos, id), m_PuckHeld(NULL)
+Robot::Robot(Math::Position *pos, int teamid, unsigned int id):GameObject(pos, id)
 {
     m_Speed = new Math::Speed();
-
     m_TeamId = teamid;
 
     //TODO: get TEAM_SIZE from the config
     //int TEAM_SIZE = 1000;
     //m_Team = id/TEAM_SIZE;
     
-    m_PuckHeld = -1;
-
+    m_PuckHeld = 0;
 }
 
 
-Robot::Robot(Math::Position *pos, unsigned int id):GameObject(pos, id), m_PuckHeld(NULL)
+Robot::Robot(Math::Position *pos, unsigned int id):GameObject(pos, id)
 {
     m_Speed = new Math::Speed();
 
     //TODO: get TEAM_SIZE from the config
     //int TEAM_SIZE = 1000;
     //m_Team = id/TEAM_SIZE;
-    
-    m_PuckHeld = -1;
-
 }
 
 Robot::~Robot()
 {
+	m_VisiblePucks.clear();
+	m_VisibleRobots.clear();
     delete m_Speed;
 }
 
 int Robot::setSpeed(Speed* speed)
 {
-
+	if(speed == NULL)
+	{
+		return -1;
+	}
+	delete m_Speed;
+	m_Speed = speed;	
     return 0;
-
 }
 
 
