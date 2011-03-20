@@ -9,7 +9,7 @@
 
 int main(int argc, char** argv)
 {
-    setbuf(stdout, NULL);
+    //etbuf(stdout, NULL);
 
     if (argc <2)
     {
@@ -26,8 +26,9 @@ int main(int argc, char** argv)
 	DEBUGPRINT("About to readfile\n");
 	if ((l_res = l_parser.readFile(argv[1], (void *)l_rclient )) == ENOENT) 
 	{
-		printf("Error with parsing file: %s\n", argv[2]);
+		printf("Error with parsing file: %s\n", argv[1]);
 		return -1;
+
 	}
 	if (l_res < 0)
 	{
