@@ -46,6 +46,12 @@ public:
      */
     float getY();
 
+    /**
+     * Get Y coordinate of object.
+     */
+    float getId();
+
+
 private:
     /**
      * Position of the current object.

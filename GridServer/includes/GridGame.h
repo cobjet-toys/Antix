@@ -98,6 +98,8 @@ private:
      */
     //std::vector<Game::GameObject*> m_SortedObjects;
 
+    std::vector<Game::Team*> m_Teams;
+
     //O(1) lookup of robots by id;     
     std::map<int, Game::GameObject*> m_MapPopulation;
 

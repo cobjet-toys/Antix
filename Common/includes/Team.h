@@ -38,6 +38,8 @@ public:
     float getX();
     float getY();
 
+    int m_TeamId;
+
 private: 
 
 };

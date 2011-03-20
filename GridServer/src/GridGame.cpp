@@ -39,18 +39,17 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     robot_SensorRange = 1;
     robot_PickupRange = robot_SensorRange/5.0;
 
-    printf("\n%f\n", robot_FOV);
+    printf("Robot FOV: \n%f\n", robot_FOV);
 
 
-    //Home radius.
     home_Radius = 0.1;
-
     m_WorldSize = 10;
 	m_NumGrids = 2;
-
     m_PuckTotal = 20;
 
+    // Safety
     m_Population.clear();
+    m_Teams.clear();
 
     int l_pucks_per_grid = m_PuckTotal/m_NumGrids;
     int high_puck_range = l_pucks_per_grid * m_GridId;
@@ -63,12 +62,20 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
 
     for (int i = id_from; i <= id_to; i++)
     {
+
+        #ifdef DEBUG
+        std::cout << "Robot id being created:" <<i << std::endl;
        // if you can divide the id by the robots per team, that means that this is a team, create a new team
        // object for the rest of the robots to point to
+
+        std::cout << "WTF id:" <<i << "robots per team: "<< robots_per_team << std::endl;
+        #endif
         if (i%robots_per_team == 0)
         {
+            std::cout << "WTF2 id:" <<i << "robots per team: "<< robots_per_team << std::endl;
             Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
             l_team = new Team(l_RobotPosition, i/robots_per_team);
+            m_Teams.push_back(l_team);
         }
 
         Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
@@ -96,6 +103,15 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     }
 
     //exit(1);
+    
+    //TODO: Wrap this in ifdef debug
+    for(std::vector<Team*>::iterator it = m_Teams.begin(); it != m_Teams.end(); it++)
+    {
+    
+        std::cout << "Id:" << (*it)->getId() << "Team X: " << (*it)->getX() << "Team Y:" << (*it)->getY() << std::endl;
+
+    }
+
 
     // Sort generated pucks
     sortPopulation();

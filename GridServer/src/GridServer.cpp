@@ -24,17 +24,17 @@ GridServer::GridServer():Server()
     newrobot.y_pos = 5;
 
     std::vector<int> teams;
-    teams.push_back(2);
+    teams.push_back(10);
 
     std::vector<int> robots;
-    robots.push_back(2);
+    robots.push_back(10);
 
     std::map<int, std::vector<sensed_item> >* sensed_items_map;
 
     DEBUGPRINT("=====Create Game\n");
 
     // parameters: gridid, num_of_teams, robots_per_team, id_from, id_to
-    gridGameInstance = new GridGame(1, 2, 10, 1, 10);
+    gridGameInstance = new GridGame(1, 2, 10, 10, 30);
     //DEBUGPRINT("=====Initialize teams\n");
     //std::vector<robot_info>* robot_info_vector;
     //gridGameInstance->initializeTeam(teams, robot_info_vector);
@@ -47,6 +47,8 @@ GridServer::GridServer():Server()
     gridGameInstance->printPopulation();
     DEBUGPRINT("=====Get Sensor Data\n");
     gridGameInstance->returnSensorData(teams, sensed_items_map);
+
+    exit(1);
 
 }
 int GridServer::handleNewConnection(int fd)

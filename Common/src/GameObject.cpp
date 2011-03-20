@@ -43,3 +43,10 @@ float GameObject::getY()
 	return (*getPosition()).getY();
 
 }
+
+float GameObject::getId()
+{
+
+	return m_id;
+
+}
