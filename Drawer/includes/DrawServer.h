@@ -32,9 +32,9 @@ namespace Network
     typedef std::map<int, Game::Team*> TeamMap;
 
 
-class DrawServer: public Client
-{
-public:                      
+	class DrawServer: public Client
+	{
+	public:                      
 
 	    DrawServer();
 	    virtual ~DrawServer();
@@ -43,8 +43,8 @@ public:
 
         // Client/connection methods
         virtual int handler(int fd);
-		int initGrid(const char * host, const char * port);
-		int setGridConfig(int grid_fd, char send_data, char data_type, float leftX = 0.0, float leftY = 0.0, float rightX = 0.0, float rightY = 0.0);
+		int initGrid(const char * host, const char * port, int id);
+		int setGridConfig(int grid_fd, char send_data, float topleft_x = 0.0, float topleft_y = 0.0, float bottomright_x = 0.0, float bottomright_y = 0.0);
         void initTeams();
         void updateObject(Msg_RobotInfo newInfo);
 
@@ -81,6 +81,7 @@ public:
         float m_FOVRange;
         float m_homeRadius;
         bool m_FOVEnabled;
+        char m_drawerDataType;
 
         uint32_t m_framestep;
     };

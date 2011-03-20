@@ -39,6 +39,15 @@ enum
     MSG_SETDRAWERCONFIG = 33,
 };
 
+// Drawer enums
+enum
+{
+	DRAWER_STOPDATA = 'F',
+	DRAWER_SENDDATA = 'T',
+	DRAWER_FULLDETAILS = 'F',
+	DRAWER_COMPRESSEDDETAILS = 'C',
+};
+
 typedef struct
 {
     uint32_t id;

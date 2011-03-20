@@ -23,6 +23,7 @@ DrawServer::DrawServer()
     this->m_FOVRange = 0.0;
     this->m_homeRadius = 20.0;
     this->m_framestep = 0;
+    this->m_drawerDataType = DRAWER_FULLDETAILS;
 }
 
 DrawServer::~DrawServer() 
@@ -33,7 +34,6 @@ DrawServer* DrawServer::getInstance()
 {
     if (!m_instance)
     {    
-		printf("getInstance\n");
         m_instance = new DrawServer();
     }
 
@@ -64,7 +64,7 @@ int DrawServer::init(int argc, char** argv)
 }
 */
 
-int DrawServer::initGrid(const char* host, const char* port)
+int DrawServer::initGrid(const char* host, const char* port, int id)
 {
     int l_GridFd = initConnection(host, port);
 
@@ -73,11 +73,11 @@ int DrawServer::initGrid(const char* host, const char* port)
         DEBUGPRINT("Failed creating connection to a grid server\n");
     }
     
-    setGridConfig(l_GridFd, 'T', 'F');
+    setGridConfig(l_GridFd, 'T');
     return l_GridFd;
 }
 
-int DrawServer::setGridConfig(int grid_fd, char send_data, char data_type, float leftX, float leftY, float rightX, float rightY)
+int DrawServer::setGridConfig(int grid_fd, char send_data, float topleft_x, float topleft_y, float bottomright_x, float bottomright_y)
 {
 	//send config to grid
     TcpConnection * l_curConn = m_serverList[grid_fd];
@@ -101,11 +101,11 @@ int DrawServer::setGridConfig(int grid_fd, char send_data, char data_type, float
     
     //Pack config message
 	l_DrawerConfig.send_data = send_data;
-	l_DrawerConfig.data_type = data_type;
-	l_DrawerConfig.left_x = leftX;
-	l_DrawerConfig.left_y = leftY;
-	l_DrawerConfig.right_x = rightX;
-	l_DrawerConfig.right_y = rightY;
+	l_DrawerConfig.data_type = this->m_drawerDataType;
+	l_DrawerConfig.left_x = topleft_x;
+	l_DrawerConfig.left_y = topleft_y;
+	l_DrawerConfig.right_x = bottomright_x;
+	l_DrawerConfig.right_y = bottomright_y;
     pack(l_Buffer+l_BufferOf, Msg_DrawerConfig_format, 
     	l_DrawerConfig.send_data, l_DrawerConfig.data_type, l_DrawerConfig.left_x, l_DrawerConfig.left_y, l_DrawerConfig.right_x, l_DrawerConfig.right_y);
     
@@ -114,24 +114,7 @@ int DrawServer::setGridConfig(int grid_fd, char send_data, char data_type, float
 }
 
 void DrawServer::initTeams()
-{
-    /*
-    while ((teamData = this->m_redisCli->blpop()) != NULL)
-    {
-        int teamID, colR, colG, colB;
-        float homeX, homeY;
-
-        sscanf(teamData->message.c_str(), TEAM_PATTERN, &teamID, &homeX, &homeY, &colR, &colG, &colB);
-        Math::Position *homePos = new Math::Position(homeX, homeY, 0.0);
-        Game::Home * home = new Game::Home(homePos);
-        
-        //figure something out for the colour
-        
-        this->m_teams[teamID] = new Game::Team();
-        this->m_teams[teamID]->m_Home = home;
-    }
-     * */
-    
+{    
     if (this->m_teams.size() == 0)
     {
     	Math::Position *homePos = new Math::Position(55.0, 150.0, 0.0);
@@ -140,15 +123,14 @@ void DrawServer::initTeams()
         this->m_teams[1]->m_Home = home;
     }
 
-    printf("Teams=%d\n", this->m_teams.size());
+    DEBUGPRINT("Teams=%d\n", this->m_teams.size());
 }
 
 void DrawServer::updateObject(Msg_RobotInfo newInfo)
 {
 	//if (newInfo == NULL) return;
 	
-    Math::Position *pos = new Math::Position(
-    	(float)newInfo.x_pos, (float)newInfo.x_pos, (float)newInfo.angle);
+    Math::Position *pos = new Math::Position(newInfo.x_pos, newInfo.x_pos, newInfo.angle);
     if (!pos)
     { 
     	DEBUGPRINT("Object %d: Invalid position\n", newInfo.id);
@@ -235,11 +217,12 @@ int DrawServer::handler(int fd)
                         unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
                                 &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck );
 
-                        DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
-                                l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
+                        //DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
+                          //      l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
                                 
-                        updateObject(l_ObjInfo);
+                        //updateObject(l_ObjInfo);
                     }
+                    DEBUGPRINT("Finished updating objects\n");
 
                 }
                 

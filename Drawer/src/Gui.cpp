@@ -1,14 +1,19 @@
 #include "Gui.h"
+#include "Config.h"
+
+#include <pthread.h>
+#include <unistd.h>
 #ifdef __linux
 #include <GL/glut.h>
 #elif __APPLE__
 #include <GLUT/glut.h>
 #endif
 
+static int threaded = 1;
 
 void printRobots()
 {
-	printf("printRobots()\n");
+	DEBUGPRINT("printRobots()\n");
 	for (Network::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
              it != Network::DrawServer::getInstance()->getLastRobot();it++)
         {
@@ -16,9 +21,18 @@ void printRobots()
         }
 }
 
+void * listener_function(void* args)
+{
+	usleep(500);
+    Network::DrawServer::getInstance()->start();
+    //for(int i=0; i< 1000; i++)
+    	//DEBUGPRINT("%d: listener_function\n", i);
+	return NULL;
+}
+
 void idleFunc()
 {
-    
+
 }
 
 void timerFunc(int dummy)
@@ -327,7 +341,6 @@ void GlDrawCircle(double x, double y, double r, double count)
 	  glEnd();
 }
 
-
 void initGraphics(int argc, char **argv)
 {
     glutInit(&argc, argv);
@@ -347,7 +360,15 @@ void initGraphics(int argc, char **argv)
 
     float lWorldSize = Network::DrawServer::getInstance()->getWorldSize();
     glScalef( 1.0/lWorldSize, 1.0/lWorldSize, 1 ); 
-    glPointSize( 4.0 );
+    glPointSize( 4.0 );   
+    
+    pthread_t thread1;  
+	int ret = pthread_create(&thread1, NULL, listener_function, NULL);
+	if(ret != 0)
+	{
+	    perror("pthread failed: can't start client listener.\n");
+	} 
+    
     glutMainLoop();
 }
 
