@@ -18,7 +18,7 @@ public:
      * All initializatoin of the game happens here.
      * Config options etc...
      */
-     GridGame();
+     GridGame(int gridid, int num_of_teams, int robots_per_team, int id_from, int id_to);
     
     /**
      * Dtor. Delete the pucks and teams.
@@ -30,11 +30,18 @@ public:
      */
     void sortPopulation();
 
+    /*
+    * Returns a team and a vector of robots as requested by the client. 
+    * Must keep some kind of track of which robots its getting so each time this is called
+    * there is not one of the same team or robot sent.
+    */
+    int getRobots(int& teamid, float& team_x, float& team_y, std::vector<robot_info>* robots);
+
     /**
     * Receives a team id and team size and creates all robot with the ids
     * based on the team id. ie team id = 2, team_size= 100, result is robotid range 200-299
     */
-    int initializeTeam(std::vector<int> team_ids, std::vector<robot_info>* robot_info_vector);
+    //int initializeTeam(std::vector<int> team_ids, std::vector<robot_info>* robot_info_vector);
 
     /**
      * Interface function to Network layer for registering a robot.
@@ -122,6 +129,9 @@ private:
     int m_GridId;
 
     int m_PuckTotal;
+
+    int m_Num_Of_Teams;
+    int m_Robots_Per_Team;
 
 
 };

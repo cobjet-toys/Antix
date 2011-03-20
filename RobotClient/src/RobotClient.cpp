@@ -29,7 +29,7 @@ RobotClient::RobotClient():Client()
         r.puck_id = 1;
         robot_info_vector.push_back(r);
     }
-    robotGameInstance->receiveInitialRobots(1, robot_info_vector);
+    //robotGameInstance->receiveInitialRobots(1, robot_info_vector);
     robotGameInstance->requestSensorData(1, robot_ids);
     
 

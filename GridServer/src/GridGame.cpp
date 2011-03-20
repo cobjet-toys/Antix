@@ -26,8 +26,12 @@ using namespace Game;
 typedef std::pair<int, GameObject*> ObjectIDPair;
 typedef std::pair<int, std::vector<sensed_item> > ObjectPair;
 
-GridGame::GridGame()
+GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_from, int id_to)
 {
+
+    m_GridId = gridid;
+    m_Num_Of_Teams = num_of_teams;
+    m_Robots_Per_Team = robots_per_team;
 
     //Robot configurations.
     robot_FOV = Math::dtor(90.0);
@@ -37,23 +41,43 @@ GridGame::GridGame()
 
     printf("\n%d\n", robot_FOV);
 
+
     //Home radius.
     home_Radius = 0.1;
 
     m_WorldSize = 10;
 	m_NumGrids = 2;
-    m_GridId = 1;
 
     m_PuckTotal = 20;
 
     m_Population.clear();
 
-    int high_puck_range = (m_PuckTotal/m_NumGrids)*m_GridId;
-    int low_puck_range = (m_PuckTotal/m_NumGrids)*(m_GridId-1);
-    
+    int l_pucks_per_grid = m_PuckTotal/m_NumGrids;
+    int high_puck_range = l_pucks_per_grid * m_GridId;
+    int low_puck_range = high_puck_range - l_pucks_per_grid + 1;
+
+    //int high_puck_range = (m_PuckTotal/m_NumGrids)*(m_GridId+1);
+    //int low_puck_range = (m_PuckTotal/m_NumGrids)*(m_GridId);
+
+    for (int i = id_from; i <= id_to; i++)
+    {
+        Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
+        Game::Robot* l_Robot = new Robot(l_RobotPosition, i, robot_FOV, robot_Radius, robot_PickupRange, robot_SensorRange);
+        addObjectToPop(l_Robot);
+
+    }
+
+    // TEMPORARY until I write the bit shifting functions
+    high_puck_range = high_puck_range + 1000000;
+    low_puck_range = low_puck_range + 1000000;
+
+    printf("high:%d - low:%d", high_puck_range, low_puck_range);
+
+
     //Generate pucks at random locations.
     for (uint i = low_puck_range; i <= high_puck_range; i++)
     {
+       std::cout << i << std::endl;
        //Get a random location.
        Math::Position* l_PuckPos = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
 
@@ -62,25 +86,10 @@ GridGame::GridGame()
        addObjectToPop(l_Puck);
     }
 
+    //exit(1);
+
     // Sort generated pucks
     sortPopulation();
-
-    /*
-  
-    //Generate the teams. 
-    for (uint i = 0; i < m_TotalTeamCount; i++)
-    {
-       Team* l_Team = new Team();
-       m_Teams.push_back( l_Team ); 
-    }
-
-    if (m_loggingEnabled)
-    {
-        std::ostringstream s;
-        s << "Home=" << m_TotalTeamCount << ", Population=" << Team::m_RobotPopCount;
-    }
-
-    */
 
 }
 
@@ -117,50 +126,8 @@ void GridGame::sortPopulation()
     }
 }
 
+
 /*
-void GridGame::sortRobots()
-{
-    //Sort on the x axis.
-    int i;
-    Robot* l_Key;
-    for(unsigned int j = 1; j < m_Population.size(); j++)
-    {
-        l_Key = m_Population[j];
-        i = j - 1;
-        while(i >= 0 && m_Population[i]->getPosition()->getY() > l_Key->getPosition()->getY())
-        {
-            m_Population[i+1] =m_Population[i];
-            m_YRobs[m_Population[i+1]] = i+1;
-            --i;
-        }
-
-        m_Population[i+1] = l_Key;
-        m_YRobs[l_Key] = i+1;
-    }
-}
-
-
-void GridGame::sortPucks()
-{
-    //Sort on the x axis.
-    int i;
-    Puck* l_Key;
-    for(unsigned int j = 1; j < m_Pucks.size(); j++)
-    {
-        l_Key = m_Pucks[j];
-        i = j - 1;
-        while(i >= 0 && m_Pucks[i]->getPosition()->getY() > l_Key->getPosition()->getY())
-        {
-            m_Pucks[i+1] =m_Pucks[i];
-            --i;
-        }
-
-        m_Pucks[i+1] = l_Key;
-    }
-}
-*/
-
-
 int GridGame::initializeTeam(std::vector<int> teams, std::vector<robot_info>* robot_info_vector)
 {
 
@@ -195,6 +162,8 @@ int GridGame::initializeTeam(std::vector<int> teams, std::vector<robot_info>* ro
 
         return 1;
 }
+
+*/
 
 int GridGame::registerRobot(robot_info robot)
 {
@@ -278,7 +247,7 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<
         counter = position;
         position_obj = m_Population[position];
 
-        printf("Counter: %d - Size client list: %d\n", counter, robot_ids_from_client.size() );
+        printf("Counter: %d - Size client list: %u\n", counter, robot_ids_from_client.size() );
 
         while ( counter <= m_Population.size() )
         {
@@ -345,7 +314,7 @@ int GridGame::addObjectToPop(GameObject* object)
 
     this->m_YObjects[object] = m_Population.size();
 
-    DEBUGPRINT("YObject value: %d\n", m_Population.size());
+    DEBUGPRINT("Total Population of Game Objects: %d\n", m_Population.size());
     
     //TODO: Sort robots at this point?
     

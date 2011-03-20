@@ -19,6 +19,7 @@ RobotGame::~RobotGame()
 }
 
 // Compile grid to team mapping
+/*
 int RobotGame::intitializeTeam(int grid_id, std::vector<int> team_mapping)
 {
     // we know which teams are on which grid
@@ -26,7 +27,9 @@ int RobotGame::intitializeTeam(int grid_id, std::vector<int> team_mapping)
 
     return 0;
 }
+*/
 
+/*
 int RobotGame::receiveInitialRobots(int grid_id, std::vector<robot_info> robot_info_vector)
 {
     
@@ -45,6 +48,7 @@ int RobotGame::receiveInitialRobots(int grid_id, std::vector<robot_info> robot_i
 
     return 0;
 }
+*/
 
 // Register and UnRegister robots from a particular grid
 int RobotGame::registerRobot(int grid_id, robot_info robot)

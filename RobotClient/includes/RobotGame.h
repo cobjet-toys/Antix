@@ -19,9 +19,14 @@ public:
     RobotGame();
     ~RobotGame();
 
+
     // Initialization functions
-    int intitializeTeam(int grid_id, vector<int> team_mapping);
-    int receiveInitialRobots(int grid_id, vector<robot_info> robot_info_vector);
+    //int intitializeTeam(int grid_id, vector<int> team_mapping);
+    //int receiveInitialRobots(int grid_id, vector<robot_info> robot_info_vector);
+
+    // New Initialization functions
+    int initTeam( int id, float x, float y);
+    int setTeamRobot(int teamId, int robotId, float x, float y);
 
     // Register and UnRegister robots from a particular grid
     int registerRobot(int grid_id, robot_info robot);
