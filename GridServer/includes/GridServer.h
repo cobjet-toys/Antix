@@ -5,7 +5,7 @@
 #include "Messages.h"
 #include "Packer.h"
 
-#define FRAME_FREQUENCY 500000
+#define FRAME_FREQUENCY 50000
 
 namespace Network
 {
