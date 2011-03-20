@@ -59,12 +59,21 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     //int high_puck_range = (m_PuckTotal/m_NumGrids)*(m_GridId+1);
     //int low_puck_range = (m_PuckTotal/m_NumGrids)*(m_GridId);
 
+    Team* l_team;
+
     for (int i = id_from; i <= id_to; i++)
     {
-        Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
-        Game::Robot* l_Robot = new Robot(l_RobotPosition, i, robot_FOV, robot_Radius, robot_PickupRange, robot_SensorRange);
-        addObjectToPop(l_Robot);
+       // if you can divide the id by the robots per team, that means that this is a team, create a new team
+       // object for the rest of the robots to point to
+        if (i%robots_per_team == 0)
+        {
+            Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
+            l_team = new Team(l_RobotPosition, i/robots_per_team);
+        }
 
+        Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
+        Game::Robot* l_Robot = new Robot(l_RobotPosition, i );
+        addObjectToPop(l_Robot);
     }
 
     // TEMPORARY until I write the bit shifting functions
@@ -171,7 +180,7 @@ int GridGame::registerRobot(robot_info robot)
     Math::Position* l_RobotPosition = new Position(robot.x_pos, robot.y_pos, robot.angle);
 
     // create new robot based on info from robot_info struct
-    Game::Robot* l_Robot = new Robot(l_RobotPosition, robot.id, robot_FOV, robot_Radius, robot_PickupRange, robot_SensorRange);
+    Game::Robot* l_Robot = new Robot(l_RobotPosition, robot.id);
 			
     // add robot to the population
     addObjectToPop(l_Robot);

@@ -27,7 +27,7 @@ public:
 
     // New Initialization functions
     int initTeam( int id, float x, float y);
-    int setTeamRobot(int teamId, int robotId, float x, float y);
+    int setTeamRobot(int gridId, int teamId, int robotId, float x, float y);
 
     // Register and UnRegister robots from a particular grid
     int registerRobot(int grid_id, robot_info robot);
