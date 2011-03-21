@@ -20,6 +20,7 @@ class Robot;
 //Typedefs that make it easier to deal with VisibleObject collections.
 typedef VisibleObject<Puck*> VisiblePuckPtr;
 typedef VisibleObject<Robot*> VisibleRobotPtr;
+typedef std::vector<Robot*> RobotList;
 
 class Robot : public GameObject
 {
@@ -47,7 +48,8 @@ public:
     /**
      * Update the AI - this is what tells the robot what to do.
      */
-    void updateController();
+    action getAction();
+    
 
     /**
      * Is the robot holding a puck.
@@ -136,5 +138,6 @@ private:
     static float m_SensorRange;
 };
 }
+
 
 #endif

@@ -176,8 +176,13 @@ void Robot::updateSensors( std::vector<sensed_item> sensed_items )
      */
 }
 
-void Robot::updateController()
+action Robot::getAction()
 {
+    action l_action;
+    l_action.action = 1;
+    l_action.speed = 1.0;
+    l_action.angle = 0.0f;
+    return l_action;
 /*
     float l_HeadingError = 0.0;
 

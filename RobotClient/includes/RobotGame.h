@@ -42,8 +42,8 @@ public:
 
 
     // Send and recieve actions
-    int sendAction(int grid_id, map<int, action>* robot_actions);
-    int actionResult(map<int, action_results>* results);
+    int sendAction(int grid_id, map<uid, action>* robot_actions);
+    int actionResult(map<uid, action_results>* results);
 
 private:
 

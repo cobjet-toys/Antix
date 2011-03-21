@@ -153,7 +153,7 @@ int RobotGame::receiveSensorData(map<int, std::vector<sensed_item> >* sensor_dat
 }
 
 // Send and recieve actions
-int RobotGame::sendAction(int grid_id, map<int, action>* robot_actions)
+int RobotGame::sendAction(int grid_id, map<uid, action>* robot_actions)
 {
     // after a decision has been made, send it to the client
     // Shawn mentioned how the client and the grid would do this calculation twice,
@@ -163,13 +163,25 @@ int RobotGame::sendAction(int grid_id, map<int, action>* robot_actions)
     // in the case that it moves, the robot only DECIDES to move, and doesn't calculate
     // it's new position so i don't think we need to change this.
 
+    // Get list of robots for this grid
+    map<uid, action> &l_robotActions = *robot_actions;
+    RobotList robots = m_robotsByGrid[grid_id];
+    RobotList::iterator iter;
+    
+    // Loop through the robots, and get an action to do for each robot
+    for(iter = robots.begin(); iter != robots.end(); iter++)
+    {
+        action l_action = (*iter)->getAction();
+        l_robotActions[(*iter)->m_id] = l_action;
+    }
+
     return 0;
 }
 
-int RobotGame::actionResult(map<int, action_results>* results)
+int RobotGame::actionResult(map<uid, action_results>* results)
 {
     // for a grid, it updates the new positions (and status) of all robots
     // question: shouldn't the action_results type have a robot
-
+    
     return 0;
 }

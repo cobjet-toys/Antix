@@ -12,7 +12,6 @@
 
 using std::string;
 
-
 const string DEFAULT_REDIS_PORT = "6379";
 
 typedef struct{
@@ -21,6 +20,7 @@ typedef struct{
     float y;
 } sensed_item;
 
+//Action is: 1 - setSpeed, 2 - pickup, 3 - drop
 typedef struct{
     int action;
     float speed;
