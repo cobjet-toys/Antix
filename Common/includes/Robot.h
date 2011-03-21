@@ -43,7 +43,7 @@ public:
     /**
      * Update the position of the robot.
      */
-    void updatePosition();
+    void updatePosition( const float x_pos, const float y_pos);
 
     /**
      * Update the AI - this is what tells the robot what to do.

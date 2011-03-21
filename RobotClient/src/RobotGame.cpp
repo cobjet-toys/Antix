@@ -182,6 +182,16 @@ int RobotGame::actionResult(map<uid, action_results>* results)
 {
     // for a grid, it updates the new positions (and status) of all robots
     // question: shouldn't the action_results type have a robot
+    map<uid, action_results>::iterator iter;
+    for(iter = results->begin(); iter != results->end(); iter++)
+    {
+        uid robotId = (*iter).first;
+        action_results result = (*iter).second;
+        Robot* l_robotp = m_robots[robotId];
+        // TODO Currently our action_result message does not send a rotational velocity
+        l_robotp->setSpeed( new Math::Speed( result.speed, 0.0) );
+        l_robotp->setPosition( result.x_pos, result.y_pos, result.angle );
+    }
     
     return 0;
 }

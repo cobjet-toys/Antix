@@ -11,6 +11,8 @@ public:
      */
     Speed();
 
+    Speed(const float fwSpeed, const float rotSpeed);
+
     /**
      * Set rotational velocity to 'rot'.
      */

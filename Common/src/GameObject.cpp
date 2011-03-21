@@ -30,6 +30,15 @@ void GameObject::printInfo()
 
 }
 
+void GameObject::setPosition(const float x_pos, const float y_pos, const float orient)
+{
+    m_Position->setX(x_pos);
+    m_Position->setY(y_pos);
+    m_Position->setOrient(orient);
+    return;
+}
+
+
 float GameObject::getX()
 {
 
@@ -48,5 +57,4 @@ float GameObject::getId()
 {
 
 	return m_id;
-
 }

@@ -39,17 +39,17 @@ Robot::~Robot()
 
 int Robot::setSpeed(Speed* speed)
 {
-	if(speed == NULL)
-	{
-		return -1;
-	}
-	delete m_Speed;
-	m_Speed = speed;	
+    if(speed == NULL)
+    {
+        return -1;
+    }
+    delete m_Speed;
+	m_Speed = speed;
     return 0;
 }
 
 
-void Robot::updatePosition()
+void Robot::updatePosition(const float x_pos, const float y_pos)
 {
     /*
     //Calculate our displacement based on our speed and current position.
