@@ -217,12 +217,12 @@ int DrawServer::handler(int fd)
                         unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
                                 &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck );
 
-                        DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
-                                l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
+                        //DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
+                        //        l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
                                 
                         updateObject(l_ObjInfo);
                     }
-                    DEBUGPRINT("Finished updating objects\n");
+                    //DEBUGPRINT("Finished updating objects\n");
 
                 }
                 

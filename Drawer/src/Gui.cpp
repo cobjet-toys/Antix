@@ -23,10 +23,7 @@ void printRobots()
 
 void * listener_function(void* args)
 {
-	usleep(500);
-    Network::DrawServer::getInstance()->start();
-    //for(int i=0; i< 1000; i++)
-    	//DEBUGPRINT("%d: listener_function\n", i);
+	Network::DrawServer::getInstance()->start();
 	return NULL;
 }
 
@@ -54,15 +51,19 @@ void displayFunc()
     drawRobots();
     //drawTest();
 
+    char buf[20];
+    sprintf(buf, "Frame Count: %d", drawCount++);
+    drawText(buf, 5, 585);
+
     glutSwapBuffers();
     glutTimerFunc(0, timerFunc, 0);
 }
 
 void drawTeams()
 {
-    unsigned int winsize = Network::DrawServer::getInstance()->getWindowSize();
-    float worldsize = Network::DrawServer::getInstance()->getWorldSize();
-    float radius = Network::DrawServer::getInstance()->getHomeRadius();
+    unsigned int winsize = 600;//Network::DrawServer::getInstance()->getWindowSize();
+    float worldsize = 1.0;//Network::DrawServer::getInstance()->getWorldSize();
+    float radius = 20;//Network::DrawServer::getInstance()->getHomeRadius();
 
     for (Network::TeamIter it = Network::DrawServer::getInstance()->getFirstTeam();
          it != Network::DrawServer::getInstance()->getLastTeam(); it++)
@@ -81,10 +82,10 @@ void drawPucks()
 
     glPointSize(4.0);
 
-    unsigned int winsize = Network::DrawServer::getInstance()->getWindowSize();
+    unsigned int winsize = 600;//Network::DrawServer::getInstance()->getWindowSize();
 
     // pack the puck points into a vertex array for fast rendering
-    const size_t len( Network::DrawServer::getInstance()->getPucksCount());
+    const size_t len(Network::DrawServer::getInstance()->getPucksCount());
 
     // keep this buffer around between calls for speed
     static std::vector<GLfloat> pts;
@@ -109,6 +110,10 @@ void drawPucks()
 
     // Deactivate vertex arrays after drawing
     glDisableClientState(GL_VERTEX_ARRAY);
+
+    char tmpBuf[16];
+    sprintf(tmpBuf, "Pucks  #: %d", len);
+    drawText(tmpBuf, 5, 570);
 }
 
 void drawRobots()
@@ -145,8 +150,8 @@ void drawRobots()
         {
            	if(!(*it).second)
           	{
-            		printf("No robot @ %d", (*it).first);
-            		continue;
+        		printf("No robot @ %d", (*it).first);
+        		continue;
           	}
         	
             Math::Position * robotPos = (*it).second->getPosition();
@@ -163,16 +168,15 @@ void drawRobots()
         }
         glEnd();
         
-        char tmpBuf[16];
-        int numOfRobots = (int)Network::DrawServer::getInstance()->getRobotsCount();
-        sprintf(tmpBuf, "#Robots=%d", numOfRobots);
-        drawText(tmpBuf, 5,5);
-
         glDrawArrays(GL_POINTS, 0, len);
 
         // Deactivate vertex arrays after drawing
         glDisableClientState(GL_COLOR_ARRAY);
         glDisableClientState(GL_VERTEX_ARRAY);
+
+        char tmpBuf[16];
+        sprintf(tmpBuf, "Robots #: %d", len);
+        drawText(tmpBuf, 5, 555);
     }
     else 
     {
@@ -338,12 +342,12 @@ void drawRobot(Game::Robot* robot, const GUI::Color* color )
 // utility
 void GlDrawCircle(double x, double y, double r, double count)
 {
-	  glBegin(GL_LINE_LOOP);
-	  for(float a=0; a < (M_PI*2.0); a += M_PI/count)
+	glBegin(GL_LINE_LOOP);
+	for(float a=0; a < (M_PI*2.0); a += M_PI/count)
     {
-		    glVertex2f(x + sin(a) * r, y + cos(a) * r);
+        glVertex2f(x + sin(a) * r, y + cos(a) * r);
     }
-	  glEnd();
+	glEnd();
 }
 
 void initGraphics(int argc, char **argv)

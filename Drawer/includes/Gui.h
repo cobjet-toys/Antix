@@ -16,3 +16,4 @@ void drawTest();
 //void drawHome(Game::Home* home, const GUI::Color* color);
 void mousFunc(int button, int state, int x, int y);
 void GlDrawCircle( double x, double y, double r, double count );
+static int drawCount = 0;

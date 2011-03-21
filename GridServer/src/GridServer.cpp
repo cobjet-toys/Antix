@@ -17,6 +17,9 @@ GridServer::GridServer():Server()
 	m_idRangeTo = 0;
 	m_robotsPerTeam = 0;
 	m_teamsAvailable = 0;
+	
+	m_drawerConn = 0;
+	updateDrawerFlag = 0;
 
     robot_info newrobot;
     newrobot.id = 400;
