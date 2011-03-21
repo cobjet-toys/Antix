@@ -26,9 +26,6 @@ using namespace Game;
 typedef std::pair<int, GameObject*> ObjectIDPair;
 typedef std::pair<int, std::vector<sensed_item> > ObjectPair;
 
-int teamcounter = 0;
-int robotcounter = 0;
-
 GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_from, int id_to)
 {
 
@@ -119,6 +116,10 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     // Sort generated pucks
     //sortPopulation();
 
+    // set team and robot counters used by getRobots function
+    teamcounter = 0;
+    robotcounter = 0;
+
 }
 
 GridGame::~GridGame()
@@ -202,9 +203,11 @@ int GridGame::getRobots(int& teamid, float& team_x, float& team_y, std::vector<r
 
     Team* l_Team = m_Teams[teamcounter];
     teamid = l_Team->getId();
+    team_x = l_Team->getX();
+    team_y = l_Team->getY();
     teamcounter++;
 
-    std::vector<robot_info> l_robot_info_vector;
+    //std::vector<robot_info> l_robot_info_vector = new std::vector<robot_info>();
 
     int i;
 
@@ -216,13 +219,11 @@ int GridGame::getRobots(int& teamid, float& team_x, float& team_y, std::vector<r
         temp.x_pos = l_Robot->getX();
         temp.y_pos = l_Robot->getY();
 
-        l_robot_info_vector.push_back(temp);
-        
-
+        robots->push_back(temp);
     }
 
     robotcounter = i;
-    robots = &l_robot_info_vector;
+    //robots = &l_robot_info_vector;
 
 
 }

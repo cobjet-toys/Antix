@@ -135,6 +135,9 @@ private:
     int m_Num_Of_Teams;
     int m_Robots_Per_Team;
 
+    int teamcounter;
+    int robotcounter;
+
 
 };
 

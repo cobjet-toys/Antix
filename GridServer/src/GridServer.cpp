@@ -51,6 +51,28 @@ GridServer::GridServer():Server()
     DEBUGPRINT("=====Get Sensor Data\n");
     gridGameInstance->returnSensorData(teams, sensed_items_map);
 
+    // TEST for getRobots
+    int teamid;
+    float team_x;
+    float team_y;
+    std::vector<robot_info>* les_robots = new std::vector<robot_info>();
+
+    gridGameInstance->getRobots(teamid, team_x, team_y, les_robots);
+    DEBUGPRINT("=====getRobots====\n");
+    DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
+    for(std::vector<robot_info>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
+    {
+        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x_pos, it->y_pos);
+    }
+
+    gridGameInstance->getRobots(teamid, team_x, team_y, les_robots);
+    DEBUGPRINT("=====getRobots====\n");
+    DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
+    for(std::vector<robot_info>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
+    {
+        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x_pos, it->y_pos);
+    }
+
 
 }
 int GridServer::handleNewConnection(int fd)
