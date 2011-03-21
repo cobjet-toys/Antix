@@ -24,11 +24,11 @@ int NetworkCommon::requestHeader(uint16_t &sender, uint16_t &message, TcpConnect
 		return -1; // recv failed
 	}
 	
-	DEBUGPRINT("Receiving message from client\n");
+	//DEBUGPRINT("Receiving message from client\n");
 	
 	unpack(msg, Msg_header_format, &sender, &message); // @todo need some error checking
 		
-	DEBUGPRINT("%d, %d\n", sender, message);
+	//DEBUGPRINT("%d, %d\n", sender, message);
 	
 	return 0;
 }

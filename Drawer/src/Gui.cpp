@@ -68,10 +68,9 @@ void drawTeams()
     for (Network::TeamIter it = Network::DrawServer::getInstance()->getFirstTeam();
          it != Network::DrawServer::getInstance()->getLastTeam(); it++)
     {
-        Math::Position * homePos = (*it).second->getHome()->getPosition();
-
         glColor3f(255, 255, 255);
 
+        Math::Position * homePos = (*it).second->getPosition();
         GlDrawCircle(homePos->getX()/winsize, homePos->getY()/winsize, radius/winsize, 16);
     }
 }
