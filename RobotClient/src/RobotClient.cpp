@@ -89,8 +89,8 @@ int RobotClient::sendRobotRequests()
     std::vector<int>::const_iterator l_GridEnd = m_Grids.end();
     for (std::vector<int>::const_iterator it = m_Grids.begin(); it != l_GridEnd; it++)
     {
-        // vector<int> l_RobotIds;
-        // requestSensorData((*it), &l_RobotIds);
+        vector<int> l_RobotIds;
+        robotGameInstance->requestSensorData((*it), &l_RobotIds);
         
         l_Size.msgSize = 4000;//REPLACE WITH ACTUAL REQUEST FOR ROBOTS(l_RobotIds.size())
 
@@ -309,7 +309,8 @@ int RobotClient::handler(int fd)
                                    l_SensedItem.x, l_SensedItem.y);
                         }
                     }
-                    //recieveSensorData(&l_SensedInfo);
+                    //TODO
+                    //robotGameInstance->recieveSensorData(&l_SensedInfo);
 
                     m_ReadyGrids++; 
                     DEBUGPRINT("Recevied sensory data from a grid. %d Ready, %zu total\n", m_ReadyGrids, m_Grids.size());
