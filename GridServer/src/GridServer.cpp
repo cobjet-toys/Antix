@@ -465,8 +465,8 @@ int GridServer::updateDrawer(uint32_t framestep)
 {
     printf("----updateDrawer---------\n");
 
-    int m_totalRobots = 10;
-    int m_totalPucks = 0;
+    int m_totalRobots = 25000;
+    int m_totalPucks = 25000;
     int l_totalObjects = m_totalRobots + m_totalPucks;
 
 

@@ -118,9 +118,7 @@ void DrawServer::initTeams()
     if (this->m_teams.size() == 0)
     {
     	Math::Position *homePos = new Math::Position(55.0, 150.0, 0.0);
-        Game::Home * home = new Game::Home(homePos);        
-        this->m_teams[1] = new Game::Team();
-        this->m_teams[1]->m_Home = home;
+        this->m_teams[1] = new Game::Team(homePos, 1);
     }
 
     DEBUGPRINT("Teams=%d\n", this->m_teams.size());
@@ -138,7 +136,7 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
     }
     
     int objId = newInfo.id % TEAM_ID_SHIFT;
-    DEBUGPRINT("%d = %d %% %d\n", objId, newInfo.id, TEAM_ID_SHIFT);
+    //DEBUGPRINT("%d = %d %% %d\n", objId, newInfo.id, TEAM_ID_SHIFT);
     if(objId == 0)
     {
         if (!this->m_pucks[objId])
@@ -160,7 +158,7 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
         			  DEBUGPRINT("No home for team %d\n", 1);//newInfo.id/TEAM_ID_SHIFT);
         			  return;
         		}         			
-  			    this->m_robots[objId] = new Game::Robot(pos, this->m_teams[1]->getHome());//newInfo.id/TEAM_ID_SHIFT]->getHome());
+  			    this->m_robots[objId] = new Game::Robot(pos, this->m_teams[1]->m_TeamId, objId);//newInfo.id/TEAM_ID_SHIFT]->getHome());
       	}          	
       	else
       	{
@@ -177,7 +175,7 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
 
 int DrawServer::handler(int fd)
 {
-    DEBUGPRINT("Handling file descriptor: %i\n", fd);
+    //DEBUGPRINT("Handling file descriptor: %i\n", fd);
 
     //Get our TCPConnection for this socket.    
     TcpConnection * l_Conn = this->m_serverList[fd];	
@@ -201,9 +199,7 @@ int DrawServer::handler(int fd)
                     //Receive the total number of robots we are getting sens info for.
                     Msg_MsgSize l_NumObjects;
 					NetworkCommon::requestMessageSize(l_NumObjects, l_Conn);
-                    DEBUGPRINT("Expecting %d objects.\n", l_NumObjects.msgSize );
-                    
-                    //containers to hold processed/received data
+                    DEBUGPRINT("%d:\tExpecting %d objects.\n", this->m_framestep, l_NumObjects.msgSize );
 
                     //Go through all of the objects we expect position data for.
                     for (int i = 0; i < l_NumObjects.msgSize;i++)
@@ -223,7 +219,7 @@ int DrawServer::handler(int fd)
                         updateObject(l_ObjInfo);
                     }
                     //DEBUGPRINT("Finished updating objects\n");
-
+					this->m_framestep++;
                 }
                 
                 case(MSG_GRIDDATACOMPRESS) : 
