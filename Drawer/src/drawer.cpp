@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include "DrawServer.h"
 #include "Gui.h"
-#include "AntixUtil.h"
 
 /*
  * Usage: ./DrawServer <window_size> <init_file> <world_size> <home_radius> <enable_FOV> [ <FOV_angle> <FOV_range> ]
@@ -24,7 +23,6 @@ int main(int argc, char** argv)
     Network::DrawServer * drawer = Network::DrawServer::getInstance();
     drawer->init();
     drawer->initGrid("localhost", "3333", 0);
-    drawer->initTeams();
 	
 	/*
 	DrawerParser l_parser;	

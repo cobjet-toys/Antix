@@ -37,6 +37,13 @@ enum
     MSG_GRIDDATAFULL = 31,
     MSG_GRIDDATACOMPRESS = 32,
     MSG_SETDRAWERCONFIG = 33,
+    MSG_GRIDTEAMS = 40,
+	MSG_GRIDCONFIRMSTARTED	= 34,
+	MSG_REQUESTGRIDWAITING = 35,
+	MSG_RESPONDGRIDWAITING = 36,
+	MSG_RESPONDGRIDRANGE = 37,
+	MSG_CLOCKPROCEED = 38,
+	MSG_CONFIRMTEAM = 39
 };
 
 // Drawer enums
@@ -139,23 +146,24 @@ typedef struct{
 static const char * Msg_SensedObjectGroupHeader_format = "lh";
 
 
-
 // USED
 typedef struct{
-    uint32_t robotid;
-    uint32_t x;
-    uint32_t y;
+    uint32_t robotid;       //4
+    uint32_t x;             //4
+    uint32_t y;             //4
 	static const size_t size = 12;
 } Msg_SensedObjectGroupItem;
 static const char * Msg_SensedObjectGroupItem_format = "lll";
 
+//action: SetSpeed=0, Pickup=1, Drop=2
 typedef struct{ // USED
-    uint16_t action; 
-    uint32_t speed;
-    uint32_t angle;
-	static const size_t size = 10;
+    uint32_t robotid;       //4
+    uint16_t action;        //2
+    float speed;            //4
+    float angle;            //4
+	static const size_t size = 14;
 } Msg_Action;
-static const char * Msg_Action_format = "hll";
+static const char * Msg_Action_format = "lhff";
 
 typedef struct{
 	uint32_t teamId;
@@ -164,14 +172,15 @@ typedef struct{
 static const char * Msg_TeamId_format = "l";
 
 typedef struct{
-    uint32_t id;
-    float x_pos;
-    float y_pos;
-    float angle;
-    char has_puck;
-	static const size_t size = 17;
+    uint32_t robotid;       //4
+    float x_pos;            //4
+    float y_pos;            //4
+    float speed;            //4
+    float angle;            //4
+    uint32_t puckid;        //4
+	static const size_t size = 24;
 } Msg_RobotInfo;
-static const char * Msg_RobotInfo_format = "lfffc";
+static const char * Msg_RobotInfo_format = "lffffl";
 
 typedef struct{
    	char send_data;			//'T' or 'F'
@@ -183,5 +192,31 @@ typedef struct{
 	static const size_t size = 18;
 } Msg_DrawerConfig;
 static const char * Msg_DrawerConfig_format = "ccffff";
+
+typedef struct{
+	uint32_t id;
+	static const size_t size = 4;
+} Msg_GridId;
+static const char * Msg_GridId_format = "l";
+
+typedef struct{
+	uint32_t from;
+	uint32_t to;
+	static const size_t size = 8;
+} Msg_RobotIdRange;
+static const char * Msg_RobotIdRange_format = "ll";
+
+typedef struct{
+	uint32_t teams;
+	uint32_t robotsPerTeam;
+	static const size_t size = 8;
+} Msg_GridRequestIdRage;
+static const char * Msg_GridRequestIdRage_format = "ll";
+
+typedef struct{
+	char status; // 'R' or 'P'
+	static const size_t size = 1;
+} Msg_ClockStatus;
+static const char * Msg_ClockStatus_format = "c";
 
 #endif

@@ -6,6 +6,7 @@
 #include "Types.h"
 #include "Robot.h"
 #include "Team.h"
+#include "Messages.h"
 
 using std::map;
 using std::vector;
@@ -29,21 +30,17 @@ public:
     int initTeam( Msg_TeamInit team);
     int setTeamRobot(int gridId, int teamId, Msg_InitRobot robot);
 
-    // Register and UnRegister robots from a particular grid
-    int registerRobot(int grid_id, robot_info robot);
-    int unregisterRobot(int grid_id, int robot_id);
-
     // Handle sensor data
-    int requestSensorData(int grid_id, vector<int>* robot_ids);
+    int requestSensorData(int grid_id, vector<uid>* robot_ids);
     
 	// Updates robot sensor information with newly sensed items
 	// Returns -1 if sensor_data is NULL, 0 otherwise.
-	int receiveSensorData(map<int, vector<sensed_item> >* sensor_data);
+	int receiveSensorData(vector< pair<uid, vector<Msg_SensedObjectGroupItem> > >* sensor_data);
 
 
     // Send and recieve actions
-    int sendAction(int grid_id, map<uid, action>* robot_actions);
-    int actionResult(map<uid, action_results>* results);
+    int sendAction(int grid_id, vector<Msg_Action>* robot_actions);
+    int actionResult(vector<Msg_RobotInfo>* results);
 
 private:
 

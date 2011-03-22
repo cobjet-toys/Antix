@@ -19,8 +19,6 @@ int ClockParser::handler(std::vector<std::string> commands, void *args)
 	{
 		std::string command = commands.at(0);
 		
-		
-		
 		if (command == "#")
 		{
 			DEBUGPRINT("Skipped Comment\n");

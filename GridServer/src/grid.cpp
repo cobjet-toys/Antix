@@ -1,6 +1,7 @@
 #include "GridServer.h"
 #include "GridParser.h"
 #include <errno.h>
+#include "Config.h"
 
 int main(int argc, char ** argv)
 {
@@ -17,17 +18,24 @@ int main(int argc, char ** argv)
 	
 	if ((l_res = l_parser.readFile(argv[2], (void *)l_grid )) == ENOENT) 
 	{
-		printf("Error with parsing file: %s\n", argv[2]);
+		printf("FAIL:\tError with parsing file: %s\n", argv[2]);
 		return -1;
 	}
 	if (l_res < 0)
 	{
-		printf("Failed to parse file\n");
+		printf("FAIL:\tFailed to parse file\n");
 		return -1;
 	}
 	
+	if ((l_res = l_parser.verify()) < 0)
+	{
+		DEBUGPRINT("FAIL:\tGame not initialized");
+		return -1;
+	} 
+	
 	if (l_grid->init(argv[1]) < 0) 
 	{
+		DEBUGPRINT("FAIL:\tcannot init port;");
 		return -1;
 	}
 	

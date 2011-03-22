@@ -17,10 +17,21 @@ GridServer::GridServer():Server()
 	m_idRangeTo = 0;
 	m_robotsPerTeam = 0;
 	m_teamsAvailable = 0;
+	m_robotsAvailable = 0;
+	m_robotsConfirmed = 0;
+	m_ControllerFd = -1;
 	
 	m_drawerConn = 0;
 	updateDrawerFlag = 0;
+}
 
+int GridServer::initGridGame()
+{
+	gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam, m_idRangeFrom, m_idRangeTo); // needs to not do this in grid game constructor!
+    /*
+    Msg_RobotInfo newrobot;
+	
+	
     robot_info newrobot;
     newrobot.id = 400;
     newrobot.x_pos = 5;
@@ -34,14 +45,16 @@ GridServer::GridServer():Server()
 
     std::map<int, std::vector<sensed_item> >* sensed_items_map;
 
-    DEBUGPRINT("=====Create Game\n");
+    //DEBUGPRINT("=====Create Game\n");
 
     // parameters: gridid, num_of_teams, robots_per_team, id_from, id_to
-    gridGameInstance = new GridGame(1, 2, 10, 10, 30);
+    //gridGameInstance = new GridGame(1, 2, 10, 10, 30);
     //DEBUGPRINT("=====Initialize teams\n");
     //std::vector<robot_info>* robot_info_vector;
     //gridGameInstance->initializeTeam(teams, robot_info_vector);
+    DEBUGPRINT("=====Printing initial population after initializing gridGameInstance\n");
     gridGameInstance->printPopulation();
+    DEBUGPRINT("=====Getting a team\n");
     DEBUGPRINT("=====Unregister Robot\n");
     gridGameInstance->unregisterRobot(1);
     gridGameInstance->printPopulation();
@@ -55,25 +68,39 @@ GridServer::GridServer():Server()
     int teamid;
     float team_x;
     float team_y;
-    std::vector<robot_info>* les_robots = new std::vector<robot_info>();
+    std::vector<Msg_RobotInfo>* les_robots = new std::vector<Msg_RobotInfo>();
 
     gridGameInstance->getRobots(teamid, team_x, team_y, les_robots);
     DEBUGPRINT("=====getRobots====\n");
+    DEBUGPRINT("Should be depleted false: %d\n", (int)gridGameInstance->robotsDepleted());
     DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
-    for(std::vector<robot_info>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
+    for(std::vector<Msg_RobotInfo>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
     {
         DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x_pos, it->y_pos);
     }
 
     gridGameInstance->getRobots(teamid, team_x, team_y, les_robots);
     DEBUGPRINT("=====getRobots====\n");
+    DEBUGPRINT("Should be depleted true: %d\n", (int)gridGameInstance->robotsDepleted());
     DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
-    for(std::vector<robot_info>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
+    for(std::vector<Msg_RobotInfo>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
     {
         DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x_pos, it->y_pos);
     }
 
-
+    DEBUGPRINT("=====Printing population after getting all of the robots for robotclient\n");
+    gridGameInstance->printPopulation();
+    DEBUGPRINT("=====Unregister Robot\n");
+    gridGameInstance->unregisterRobot(1);
+    gridGameInstance->printPopulation();
+    DEBUGPRINT("=====Register Robot\n");
+    gridGameInstance->registerRobot(newrobot);
+    gridGameInstance->printPopulation();
+    DEBUGPRINT("=====Get Sensor Data\n");
+    gridGameInstance->returnSensorData(teams, sensed_items_map);
+	gridGameInstance->printPopulation();
+    */
+	return 0;
 }
 int GridServer::handleNewConnection(int fd)
 {
@@ -121,7 +148,7 @@ int GridServer::handler(int fd)
 	
 	uint16_t l_sender=-1, l_senderMsg =-1;
 	
-	NetworkCommon::requestHeader(l_sender, l_senderMsg, l_curConnection);
+	NetworkCommon::recvHeader(l_sender, l_senderMsg, l_curConnection);
 
 	DEBUGPRINT("%u, %u\n", l_sender, l_senderMsg);
 	
@@ -167,9 +194,81 @@ int GridServer::handler(int fd)
                         printf("Received a new neighbour at position %hd, with IP %s and Port %s\n",
                                 l_Neighbour.position, l_Neighbour.ip, l_Neighbour.port);
                         //TODO Handle new neighbour.
+						
                     }
-                }
+                    
+                    
+				}
                 break;
+				case (MSG_REQUESTGRIDWAITING):
+				{
+					m_ControllerFd = fd;
+					DEBUGPRINT("STATUS: Controller asked if this grid is ready\n");
+					Msg_GridId l_gridId;
+					unsigned char l_gridIdBuff[l_gridId.size];
+					Msg_header l_header;
+					
+					
+					if (l_curConnection->recv(l_gridIdBuff, l_gridId.size) < 0)
+					{
+						DEBUGPRINT("GRID_SERVER FAILED:\t failed to receive id from controller.\n");
+						return -1;
+					}
+					
+					unpack(l_gridIdBuff, Msg_GridId_format, &m_uId);
+					
+					Msg_GridRequestIdRage l_reqGridRange;
+					
+					unsigned char l_gridBuff[l_header.size + l_gridId.size + l_reqGridRange.size];
+					
+					if (NetworkCommon::packHeader(l_gridBuff, SENDER_GRIDSERVER, MSG_RESPONDGRIDWAITING) < 0)
+					{
+						DEBUGPRINT("GRID_SERVER FAILED:\t Cannot pack ready header to controller.\n");
+						return -1;
+					}
+					
+					if (pack(l_gridBuff+l_header.size, "lll", m_uId, (unsigned long)m_teamsAvailable, (unsigned long)m_robotsPerTeam) != (l_gridId.size + l_reqGridRange.size))
+					{
+						DEBUGPRINT("GRID_SERVER FAILED:\t Cannot send grid waiting header to controller");
+						return -1;
+					}
+					uint32_t id;
+
+					if (NetworkCommon::sendMsg(l_gridBuff, l_header.size+l_gridId.size+l_reqGridRange.size, l_curConnection) < 0)
+					{
+						DEBUGPRINT("GRID_SERVER FAILED:\t Cannot send grid waiting header to controller");
+						return -1;
+					}
+					
+					DEBUGPRINT("GRID_SERVER STATUS:\t Send grid waiting header to controller");
+					
+				}
+				break;
+				case (MSG_RESPONDGRIDRANGE):
+				{
+					DEBUGPRINT("GRID_SERVER STATUS:\t Receiving range information\n");
+					
+					Msg_RobotIdRange l_range;
+					unsigned char l_rangeBuff[l_range.size];
+					
+					if (l_curConnection->recv(l_rangeBuff, l_range.size) < 0)
+					{
+						DEBUGPRINT("GRID_SERVER FAILED:\t could not receive grid range data\n");
+						return -1;
+					}
+					
+					unpack(l_rangeBuff, Msg_RobotIdRange_format, &m_idRangeFrom, &m_idRangeTo);
+					
+					DEBUGPRINT("GRID_SERVER STATUS:\t Id Range from=%lu to=%lu\n", (unsigned long)m_idRangeFrom, (unsigned long)m_idRangeTo);
+				
+					m_robotsAvailable = m_idRangeTo - m_idRangeFrom;
+					
+					DEBUGPRINT("GRID_SERVER STATUS:\t TOTAL ROBOTS %lu\n", (unsigned long)m_robotsAvailable);
+					
+					initGridGame();
+					
+				}
+				break;
             }
         }
         break;
@@ -181,7 +280,7 @@ int GridServer::handler(int fd)
 				{
 					
 					Msg_MsgSize l_msgSize;
-					NetworkCommon::requestMessageSize(l_msgSize, l_curConnection);
+					NetworkCommon::recvMessageSize(l_msgSize, l_curConnection);
 					int l_numRobots = l_msgSize.msgSize;
 					
 					if (l_numRobots <= 0)
@@ -238,7 +337,7 @@ int GridServer::handler(int fd)
 					{
 						sensed_items_map[i] = a1;
 					}
-					DEBUGPRINT("got all robot <= sensory data total of %ui robots with %ui sensory objects\n", a1.size(),sensed_items_map.size());
+					DEBUGPRINT("got all robot <= sensory data total of %zui robots with %zui sensory objects\n", a1.size(),sensed_items_map.size());
 					
 					Msg_header l_header = {SENDER_GRIDSERVER, MSG_RESPONDSENSORDATA}; // header for response
 					memset(&l_msgSize, 0 , l_msgSize.size);
@@ -388,39 +487,43 @@ int GridServer::handler(int fd)
 				
 				case (MSG_REQUESTINITTEAM):
 				{
-                    unsigned int ROBOSPERTEAM = 1000;                    
-					Msg_header l_Header;
-					Msg_MsgSize l_Size = {ROBOSPERTEAM};//INITIALIZE WITH FUNCTION THAT RETRIEVES NUMBER OF ROBS / TEAM
-					Msg_InitRobot l_RoboInfo = {3, 0.1, 0.1};
-
-                    unsigned int l_MessageSize = l_Header.size + l_Size.size + (ROBOSPERTEAM * l_RoboInfo.size); 
-                    unsigned char l_Buffer[l_MessageSize];
-
-                    l_Header.sender = SENDER_GRIDSERVER;
-                    l_Header.message = MSG_RESPONDINITTEAM;
-
-                    unsigned int l_Offset = 0;
-                    pack(l_Buffer+l_Offset, Msg_header_format, l_Header.sender, l_Header.message);
-                    l_Offset += l_Header.size;
-                    
-                    pack(l_Buffer+l_Offset, Msg_MsgSize_format, l_Size.msgSize);
-                    l_Offset += l_Size.size;
-
-                    for(int i = 0; i < ROBOSPERTEAM; i++)
-                    {
-                        pack(l_Buffer+l_Offset, Msg_InitRobot_format, l_RoboInfo.id, l_RoboInfo.x, l_RoboInfo.y);
-                        l_Offset += l_RoboInfo.size;
-                    }
-
-                    if (l_curConnection->send(l_Buffer, l_MessageSize) == -1)
-					{
-						DEBUGPRINT("failed to send");
-						return -1;
-					}
-
+					
 					return 0;
 				}
                 break;
+				
+				case (MSG_CONFIRMTEAM):
+				{
+					
+					if (gridGameInstance->robotsDepleted())
+					{
+						TcpConnection * contCon = m_Clients[m_ControllerFd];
+						
+						Msg_header l_header;
+						Msg_GridId l_msg;
+						
+						unsigned char message[l_header.size + l_msg.size];
+						if (NetworkCommon::packHeader(message, SENDER_GRIDSERVER,MSG_GRIDCONFIRMSTARTED) < 0)
+						{
+							DEBUGPRINT("GRID_SERVER FAILED:\t Failed to pack header confirm started\n");
+							return -1;
+						}
+						if (pack(message+l_header.size, Msg_GridId_format, m_uId) != l_msg.size)
+						{
+							DEBUGPRINT("GRID_SERVER FAILED:\t Failed to pack id for confirm started\n");
+							return -1;
+						}
+						
+						if (NetworkCommon::sendMsg(message, l_header.size+l_msg.size, contCon) < 0)
+						{
+							DEBUGPRINT("GRID_SERVER FAILED:\t Failed to send confirm started message\n");
+							return -1;
+						}
+						DEBUGPRINT("GRID_SERVER STATUS:\t sent grid server confirmation\n");
+					}
+					
+					return 0;
+				}
 				
 				default:
 				{
@@ -433,13 +536,7 @@ int GridServer::handler(int fd)
             {
                 case(MSG_SETDRAWERCONFIG):
                 {
-                    // Sets the drawer TCP Connection reference, if it is NULL                    
-                    if(!m_drawerConn)
-                    {
-                        m_drawerConn = l_curConnection;
-                    }
-
-                    printf("Recieved Drawer Instruction\n");
+                    //DEBUGPRINT("Recieved Drawer Instruction\n");
 
                     Msg_DrawerConfig configData;
                     unsigned char configDataBuf[configData.size];
@@ -451,16 +548,75 @@ int GridServer::handler(int fd)
 					}
 					unpack(configDataBuf, Msg_DrawerConfig_format, &configData.send_data, &configData.data_type, &configData.tl_x, &configData.tl_y, &configData.br_x, &configData.br_y);
 
-                    printf("Config: send_data=%c, data_type=%c, tl_x=%f, tl_y=%f, br_x=%f, br_y=%f\n",
-                           configData.send_data, configData.data_type, configData.tl_x, configData.tl_y, configData.br_x, configData.br_y);
+                    //DEBUGPRINT("Config: send_data=%c, data_type=%c, tl_x=%f, tl_y=%f, br_x=%f, br_y=%f\n",
+                           //configData.send_data, configData.data_type, configData.tl_x, configData.tl_y, configData.br_x, configData.br_y);
 
-                    // TODO - Make it only initialize a single pThread
-                    pthread_t thread1;
-                    int iret1 = pthread_create(&thread1, NULL, drawer_function, (void *)this);
-                    if(iret1 != 0)
-                    {
-                        perror("pthread failed");
-                        return -1;
+					// If this is the first message from the Drawer, send team home data and create update thread
+					if (!m_drawerConn)
+					{
+						//Send team data
+						Msg_header l_header = {SENDER_GRIDSERVER, MSG_GRIDTEAMS}; // header for response
+						Msg_MsgSize l_msgSize;	
+						l_msgSize.msgSize = 1; //number of teams with homes on grid
+
+						Msg_TeamInit l_TeamInfo;	//for each object
+
+						unsigned int l_responseMsgSize = 0;	
+						l_responseMsgSize += l_header.size; 					// append header size	
+						l_responseMsgSize += l_msgSize.size;					// append msgSize size
+						l_responseMsgSize += (l_msgSize.msgSize * l_TeamInfo.size); // append the total size for number of team info
+
+						unsigned char msgBuffer[l_responseMsgSize];
+
+						if (pack(msgBuffer, Msg_header_format, l_header.sender, l_header.message) != l_header.size)
+						{
+							DEBUGPRINT("Could not pack header\n");
+							return -1;
+						}
+
+						int l_position = l_header.size;
+
+						if (pack(msgBuffer+l_position, Msg_MsgSize_format, l_msgSize.msgSize) != l_msgSize.size) // pack number of robots
+						{
+							DEBUGPRINT("Could not pack number of robots\n");
+							return -1;
+						}
+
+						l_position += l_msgSize.size; // shift by robot size header
+
+						for(int i = 0; i < l_msgSize.msgSize; i++)
+						{
+							// for each team being pushed
+							l_TeamInfo.id = i;
+							l_TeamInfo.x = float((rand()%600));		//fake data
+							l_TeamInfo.y = float((rand()%600));		//fake data
+										   
+							if (pack(msgBuffer+l_position, Msg_TeamInit_format,
+									 l_TeamInfo.id, l_TeamInfo.x, l_TeamInfo.y ) != l_TeamInfo.size)
+							{
+								DEBUGPRINT("Could not pack robot header\n");
+								return -1;
+							}
+
+							l_position += l_TeamInfo.size;
+						}
+
+						if(l_curConnection->send(msgBuffer, l_responseMsgSize) == -1)
+						{
+							DEBUGPRINT("Failed to send\n");
+						}
+						DEBUGPRINT("Sent %d teams.\n", l_msgSize.msgSize);
+						
+                        m_drawerConn = l_curConnection;
+
+						//create update thread
+		                pthread_t update_thread;
+		                int iret1 = pthread_create(&update_thread, NULL, drawer_function, (void *)this);
+		                if(iret1 != 0)
+		                {
+		                    perror("pthread failed");
+		                    return -1;
+		                }
                     }
             
                     return 0;
@@ -485,10 +641,8 @@ int GridServer::handler(int fd)
 
 int GridServer::updateDrawer(uint32_t framestep)
 {
-    printf("----updateDrawer---------\n");
-
-    int m_totalRobots = 10000;
-    int m_totalPucks = 10000;
+    int m_totalRobots = 10;		
+    int m_totalPucks = 5;
     int l_totalObjects = m_totalRobots + m_totalPucks;
 
 
@@ -507,6 +661,7 @@ int GridServer::updateDrawer(uint32_t framestep)
     Msg_MsgSize l_msgSize;
     memset(&l_msgSize, 0, l_msgSize.size);	
     l_msgSize.msgSize = l_totalObjects; 	//robots + pucks
+    DEBUGPRINT("Sending %d robots, %d pucks.\n", m_totalRobots, m_totalPucks );
 
     Msg_RobotInfo l_ObjInfo;	//for each object
 
@@ -514,7 +669,6 @@ int GridServer::updateDrawer(uint32_t framestep)
     l_responseMsgSize += l_header.size; 					// append header size	
     l_responseMsgSize += l_msgSize.size;					// append msgSize size
     l_responseMsgSize += (l_totalObjects * l_ObjInfo.size); // append the total size for number of object info
-    printf("msg size: %i\n", l_responseMsgSize);
 
     unsigned char msgBuffer[l_responseMsgSize];
 
@@ -531,6 +685,7 @@ int GridServer::updateDrawer(uint32_t framestep)
         DEBUGPRINT("Could not pack number of robots\n");
         return -1;
     }
+    //printf("Sending %d objects.\n", l_msgSize.msgSize);
 
     l_position += l_msgSize.size; // shift by robot size header
 
@@ -545,17 +700,17 @@ int GridServer::updateDrawer(uint32_t framestep)
         float orientation = 1.0;
 
         // for each object being pushed
-        l_ObjInfo.id = Antix::writeId(i, ROBOT);
+        l_ObjInfo.robotid = Antix::writeId(i, ROBOT);
         l_ObjInfo.x_pos = posX;
         l_ObjInfo.y_pos = posY;
         l_ObjInfo.angle = orientation;
-        l_ObjInfo.has_puck = i%2 == 0 ? 'T' : 'F';
+        l_ObjInfo.puckid = 0;
 
         //DEBUGPRINT("Expected: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
                    //l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
                        
         if (pack(msgBuffer+l_position, Msg_RobotInfo_format,
-                 l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck ) != l_ObjInfo.size)
+                 l_ObjInfo.robotid, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.puckid ) != l_ObjInfo.size)
         {
             DEBUGPRINT("Could not pack robot header\n");
             return -1;
@@ -572,17 +727,17 @@ int GridServer::updateDrawer(uint32_t framestep)
         float posY = randPuckVals[(2*i) + 1];
 
         // for each object being pushed
-        l_ObjInfo.id = Antix::writeId(i, PUCK);
+        l_ObjInfo.robotid = Antix::writeId(i, PUCK);
         l_ObjInfo.x_pos = posX;
         l_ObjInfo.y_pos = posY;
         l_ObjInfo.angle = 1.0;
-        l_ObjInfo.has_puck = 'F';
+        l_ObjInfo.puckid = '0';
 
         //DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
         //           l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck);
                          
         if(pack(msgBuffer+l_position, Msg_RobotInfo_format,
-           &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck) != l_ObjInfo.size)
+           &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.puckid) != l_ObjInfo.size)
         {
             DEBUGPRINT("Could not pack robot header\n");
             return -1;
@@ -594,18 +749,12 @@ int GridServer::updateDrawer(uint32_t framestep)
 
     if(!m_drawerConn || m_drawerConn->send(msgBuffer, l_responseMsgSize) == -1)
     {
-        printf("Failed to send!\n");
-        DEBUGPRINT("failed to send");
+        DEBUGPRINT("Failed to send\n");
         return -1;
     }
-
-    DEBUGPRINT("Sent Response\n");
-    return 0;	
-
-    /*
-    double elapsed = (clock() - start)/(double)CLOCKS_PER_SEC*MILLISECS_IN_SECOND;
-    cout << framestep << ": " << elapsed << "ms" << endl;
-    */
+    
+    
+    return 0;
 }
 
 void Network::GridServer::setTeams(int amount)
