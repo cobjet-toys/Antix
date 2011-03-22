@@ -3,11 +3,13 @@
 
 #include "Speed.h"
 #include "Puck.h"
-#include "Home.h"
 #include "Robot.h"
+#include "Team.h"
 #include "GameObject.h"
 #include "VisibleObject.h"
+#include "Types.h"
 #include <list>
+#include <vector>
 
 namespace Game
 {
@@ -18,22 +20,16 @@ class Robot;
 //Typedefs that make it easier to deal with VisibleObject collections.
 typedef VisibleObject<Puck*> VisiblePuckPtr;
 typedef VisibleObject<Robot*> VisibleRobotPtr;
+typedef std::vector<Robot*> RobotList;
 
 class Robot : public GameObject
 {
-/**
- * Individual robot class.
- */
-friend class Robotix;
 
 public:
-    /**
-     * Initialize robot at position 'pos' with home 'home'.
-     */
-    /**
-     * TODO: Change home to team.
-     */
-    Robot(Math::Position *pos, Home* home);
+
+    Robot(Math::Position *pos, unsigned int id);
+
+    Robot(Math::Position *pos, int teamid, unsigned int id);
     
     /**
      * Delete position object.
@@ -42,17 +38,18 @@ public:
     /**
      * Update the objects visible to the robot.
      */
-    void updateSensors();
+    void updateSensors( std::vector<sensed_item> sensed_items );
 
     /**
      * Update the position of the robot.
      */
-    void updatePosition();
+    void updatePosition( const float x_pos, const float y_pos);
 
     /**
      * Update the AI - this is what tells the robot what to do.
      */
-    void updateController();
+    action getAction();
+    
 
     /**
      * Is the robot holding a puck.
@@ -62,7 +59,7 @@ public:
     /**
      * Drop a puck if one is being held.
      */
-    bool Drop();
+    int Drop();
 
     /**
      * Attempt to puck up the nearest puck.
@@ -70,9 +67,10 @@ public:
     bool Pickup();
 
     /**
-     * Print data about the robot.
+     * Attempt to puck up the nearest puck.
      */
-    void printInfo();
+    int setSpeed(Speed* speed);
+
 
     /**
      * Get X coordinate of robot.
@@ -101,7 +99,8 @@ public:
 
     static float& getFOV();
 
-    virtual void draw();
+
+    unsigned int m_PuckHeld;    
 
 private: 
     /**
@@ -109,26 +108,14 @@ private:
      */
     Math::Speed* m_Speed;
 
-    /**
-     * The puck being held, if any.
-     */
-    Puck* m_PuckHeld;
-
-    /**
-     * Home of the robot.
-     */
-    Home* m_Home;
-
-    /**
-     * The last position a puck was found at.
-     */
-    Math::Position* m_LastPickup;
 
     /**
      * Collection of visible objects, resets at every update.
      */
-    std::list<VisiblePuckPtr> m_VisiblePucks;
-    std::list<VisibleRobotPtr> m_VisibleRobots;
+    std::list< std::pair<float,float> > m_VisiblePucks;
+    std::list< std::pair<float,float> > m_VisibleRobots;
+
+    int m_TeamId;
 
     /**
      * FOV of any robot.
@@ -151,5 +138,6 @@ private:
     static float m_SensorRange;
 };
 }
+
 
 #endif

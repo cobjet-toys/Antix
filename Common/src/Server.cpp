@@ -224,6 +224,8 @@ int Server::start()
 								return -1;
 							}
 						}
+					} else {
+						printf("SERVER ERROR:\t Handleing but not all clients connected\n");
 					}
 				}
 			}

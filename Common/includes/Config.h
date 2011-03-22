@@ -3,10 +3,10 @@
 
 #define DEBUG true
 
-#ifdef DEBUG 
-#define DEBUGPRINT printf
-#else
+#ifdef RELEASE 
 #define DEBUGPRINT(format, args...) ((void)0)
+#else
+#define DEBUGPRINT printf
 #endif
 
 #endif

@@ -15,7 +15,8 @@ enum
 	SENDER_CLOCK = 1, // used
 	SENDER_GRIDSERVER = 2, // used
 	SENDER_CLIENT = 3, // used
-    SENDER_CONTROLLER = 4
+    SENDER_CONTROLLER = 4,    
+    SENDER_DRAWER = 5,
 };
 
 // Describes what the Physical Entities can send to each other (i.e. Step 2, How Does Box Communicate With World)
@@ -32,7 +33,26 @@ enum
 	MSG_REGISTERROBOT = 20, // USED
 	MSG_RESPONDREGISTERROBOT = 21, // USED
 	MSG_UNREGISTERROBOT = 22, // USED
-	MSG_RESPONDUNREGISTERROBOT = 23 // USED
+	MSG_RESPONDUNREGISTERROBOT = 23, // USED
+    MSG_GRIDDATAFULL = 31,
+    MSG_GRIDDATACOMPRESS = 32,
+    MSG_SETDRAWERCONFIG = 33,
+    MSG_GRIDTEAMS = 40,
+	MSG_GRIDCONFIRMSTARTED	= 34,
+	MSG_REQUESTGRIDWAITING = 35,
+	MSG_RESPONDGRIDWAITING = 36,
+	MSG_RESPONDGRIDRANGE = 37,
+	MSG_CLOCKPROCEED = 38,
+	MSG_CONFIRMTEAM = 39
+};
+
+// Drawer enums
+enum
+{
+	DRAWER_STOPDATA = 'F',
+	DRAWER_SENDDATA = 'T',
+	DRAWER_FULLDETAILS = 'F',
+	DRAWER_COMPRESSEDDETAILS = 'C',
 };
 
 typedef struct
@@ -43,6 +63,15 @@ typedef struct
     static const size_t size = 12;
 } Msg_InitRobot;
 static const char* Msg_InitRobot_format = "lff";
+
+typedef struct
+{
+    uint32_t id;
+    float x;
+    float y;
+    static const size_t size = 12;
+} Msg_TeamInit;
+static const char* Msg_TeamInit_format = "lff";
 
 typedef struct
 {
@@ -143,12 +172,49 @@ static const char * Msg_TeamId_format = "l";
 
 typedef struct{
     uint32_t id;
-    uint32_t x_pos;
-    uint32_t y_pos;
-    uint16_t speed;
-    uint32_t angle;
-    uint32_t puck_id;
-	static const size_t size = 22;
+    float x_pos;
+    float y_pos;
+    float angle;
+    uint32_t puck;
+	static const size_t size = 21;
 } Msg_RobotInfo;
+static const char * Msg_RobotInfo_format = "lfffc";
+
+typedef struct{
+   	char send_data;			//'T' or 'F'
+    char data_type;			//'F' or 'C'
+    float tl_x;				// top-left corner x; 0 for full grid
+    float tl_y;				// top-left corner y; 0 for full grid
+    float br_x;				// bottom-right corner x; 0 for full grid
+    float br_y;				// bottom-right corner y; 0 for full grid
+	static const size_t size = 18;
+} Msg_DrawerConfig;
+static const char * Msg_DrawerConfig_format = "ccffff";
+
+typedef struct{
+	uint32_t id;
+	static const size_t size = 4;
+} Msg_GridId;
+static const char * Msg_GridId_format = "l";
+
+typedef struct{
+	uint32_t from;
+	uint32_t to;
+	static const size_t size = 8;
+} Msg_RobotIdRange;
+static const char * Msg_RobotIdRange_format = "ll";
+
+typedef struct{
+	uint32_t teams;
+	uint32_t robotsPerTeam;
+	static const size_t size = 8;
+} Msg_GridRequestIdRage;
+static const char * Msg_GridRequestIdRage_format = "ll";
+
+typedef struct{
+	char status; // 'R' or 'P'
+	static const size_t size = 1;
+} Msg_ClockStatus;
+static const char * Msg_ClockStatus_format = "c";
 
 #endif

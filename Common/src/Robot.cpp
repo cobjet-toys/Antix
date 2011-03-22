@@ -1,46 +1,57 @@
 #include "Robot.h"
 #include <math.h>
 #include "MathAux.h"
+#include "AntixUtil.h"
 #include <stdlib.h>
 #include <stdio.h>
 
 using namespace Game;
+using namespace Antix;
 
-//Initialize our static variables.
-float Robot::m_FOV = 0.0;
-float Robot::m_Radius = 0.0;
-float Robot::m_PickupRange = 0.0;
-float Robot::m_SensorRange = 0.0;
-
-Robot::Robot(Math::Position *pos,  Home* home):GameObject(pos), m_PuckHeld(NULL), m_Home(home)
+Robot::Robot(Math::Position *pos, int teamid, unsigned int id):GameObject(pos, id)
 {
-    m_LastPickup = new Math::Position();
     m_Speed = new Math::Speed();
+    m_TeamId = teamid;
+
+    //TODO: get TEAM_SIZE from the config
+    //int TEAM_SIZE = 1000;
+    //m_Team = id/TEAM_SIZE;
+    
+    m_PuckHeld = 0;
+}
+
+
+Robot::Robot(Math::Position *pos, unsigned int id):GameObject(pos, id)
+{
+    m_Speed = new Math::Speed();
+
+    //TODO: get TEAM_SIZE from the config
+    //int TEAM_SIZE = 1000;
+    //m_Team = id/TEAM_SIZE;
 }
 
 Robot::~Robot()
 {
-    delete m_LastPickup;
+	m_VisiblePucks.clear();
+	m_VisibleRobots.clear();
     delete m_Speed;
 }
 
-float& Robot::getRadius()
+int Robot::setSpeed(Speed* speed)
 {
-    return m_Radius;
+    if(speed == NULL)
+    {
+        return -1;
+    }
+    delete m_Speed;
+	m_Speed = speed;
+    return 0;
 }
 
-float& Robot::getSensRange()
-{
-    return m_SensorRange;
-}
 
-float& Robot::getFOV()
+void Robot::updatePosition(const float x_pos, const float y_pos)
 {
-    return m_FOV;
-}
-
-void Robot::updatePosition()
-{
+    /*
     //Calculate our displacement based on our speed and current position.
     Math::Position* l_CurrentPos = getPosition();
     float l_Dx = m_Speed->getForwSpeed() * cos(l_CurrentPos->getOrient());
@@ -59,11 +70,29 @@ void Robot::updatePosition()
         m_PuckHeld->getPosition()->setX(l_CurrentPos->getX());
         m_PuckHeld->getPosition()->setY(l_CurrentPos->getY()); 
     }
+    */
 }
 
-/* TODO: Add to GridGame
-void Robot::updateSensors()
+void Robot::updateSensors( std::vector<sensed_item> sensed_items )
 {
+    // TODO Might be a more optimal way to do this, diffs?
+    m_VisiblePucks.clear();
+    m_VisibleRobots.clear();
+
+    std::vector<sensed_item>::iterator iter;
+    for( iter = sensed_items.begin(); iter != sensed_items.end(); iter++)
+    {
+        if( getType((*iter).id) == ROBOT )
+        {
+            m_VisibleRobots.push_back( Location( (*iter).x, (*iter).y ) );
+        }
+        else
+        {
+            m_VisiblePucks.push_back( Location( (*iter).x, (*iter).y ) );
+        }
+    }
+
+/*
     //Clear our collection of visible objets.
     m_VisiblePucks.clear();
     m_VisibleRobots.clear();
@@ -144,13 +173,17 @@ void Robot::updateSensors()
         //The puck is in our range and FOV, add it to visible pucks.
         m_VisiblePucks.push_back(VisiblePuckPtr(l_Puck, l_Range, l_RelHeading));
     }
-     
+     */
 }
-*/
 
-/*
-void Robot::updateController()
+action Robot::getAction()
 {
+    action l_action;
+    l_action.action = 1;
+    l_action.speed = 1.0;
+    l_action.angle = 0.0f;
+    return l_action;
+/*
     float l_HeadingError = 0.0;
 
     Position* l_CurrentPos = getPosition();
@@ -237,28 +270,36 @@ void Robot::updateController()
         //Turn to reduce error.
         m_Speed->setRotSpeed(0.2 * l_HeadingError);
     }
+*/
 }
 
 bool Robot::Holding() const
 {
-    return (bool)m_PuckHeld;
+    if (m_PuckHeld == -1)
+    {
+        return true;
+    }
+    else{
+        return false;
+    }
 }
 
-bool Robot::Drop()
+int Robot::Drop()
 {
+    unsigned int temppuck;
+
     //If we're holding a puck, drop it.
     if (Holding())
     {
-        m_PuckHeld->toggleHeld();
         m_PuckHeld = NULL;
-        return true;
     }
-    return false;
+    return temppuck;
 }
 
 bool Robot::Pickup()
 {
-    //If we don't have a puck.
+    /*
+    // TODO: Not deleting this yet, may be needed for actions
     if (!Holding())
     {
         //Check our list of visible pucks.
@@ -275,15 +316,8 @@ bool Robot::Pickup()
             }
         }
     }
+    */
     return false;
-}
-*/
-
-void Robot::printInfo()
-{
-
-	printf("Position: %f, %f\n", (*getPosition()).getX(), (*getPosition()).getY());
-
 }
 
 float Robot::getX()

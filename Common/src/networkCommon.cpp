@@ -5,7 +5,7 @@
 #include <string.h>
 
 
-int NetworkCommon::requestHeader(uint16_t &sender, uint16_t &message, TcpConnection * curConnection)
+int NetworkCommon::recvHeader(uint16_t &sender, uint16_t &message, TcpConnection * curConnection)
 {
 	if (curConnection == NULL) return -2; // make sure no bad connection
 	sender=-1; message =-1;
@@ -24,22 +24,41 @@ int NetworkCommon::requestHeader(uint16_t &sender, uint16_t &message, TcpConnect
 		return -1; // recv failed
 	}
 	
-	DEBUGPRINT("Receiving message from client\n");
+	//DEBUGPRINT("Receiving message from client\n");
 	
 	unpack(msg, Msg_header_format, &sender, &message); // @todo need some error checking
 		
-	DEBUGPRINT("%d, %d\n", sender, message);
+	//DEBUGPRINT("%d, %d\n", sender, message);
 	
 	return 0;
 }
 
-int NetworkCommon::packHeader(char * msgBuff, int sender, int message)
+int NetworkCommon::packHeader(unsigned char * buffer, int sender, int message)
 {
-	
-	return 0;
+	Msg_header l_Header;
+
+    l_Header.sender = sender;
+    l_Header.message = message;
+
+    if (pack(buffer, Msg_header_format, l_Header.sender, l_Header.message) != l_Header.size)
+    {
+        DEBUGPRINT("Failed to pack a header message. Sender: %d, Message: %d", sender, message);
+        return -1;
+    }
+    return 0;	
 }
 
-int NetworkCommon::requestMessageSize(Msg_MsgSize &msg, TcpConnection * curConnection)
+int NetworkCommon::sendMsg(unsigned char* buffer, int msgSize, TcpConnection * curConnection)
+{
+	if (curConnection->send(buffer, msgSize) == -1)
+    {
+        DEBUGPRINT("Failed to send a message.\n");
+        return -1;
+    }
+    return 0;
+}
+
+int NetworkCommon::recvMessageSize(Msg_MsgSize &msg, TcpConnection * curConnection)
 {
 	if (curConnection == NULL) return -2; // make sure no bad connection
 	
@@ -58,7 +77,7 @@ int NetworkCommon::requestMessageSize(Msg_MsgSize &msg, TcpConnection * curConne
 	return 0;
 }
 
-int NetworkCommon::packSizeOfMessage(char * msgBuff, int size)
+int NetworkCommon::packSizeOfMessage(unsigned char * buffer, int size)
 {
 	return 0;
 }

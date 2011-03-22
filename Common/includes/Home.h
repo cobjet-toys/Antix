@@ -11,7 +11,6 @@ namespace Game
  */
 class Home : public GameObject
 {
-friend class Robotix;
 public:
     /**
      * Initialize the home at location 'pos'.

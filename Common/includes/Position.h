@@ -49,7 +49,8 @@ public:
     /**
      * Generate a Position with a random X and Y location, and 0.0 orientation.
      */
-    static Position* randomPosition(const float& maxSize);
+    static Position* randomPosition(const float& worldSize, const float& numGrids, const int& gridid);
+
 private:
     //Location on X axis.
     float m_Xpos;

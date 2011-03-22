@@ -6,6 +6,7 @@
 #include "Packer.h"
 #include <vector>
 #include <map>
+#include "RobotGame.h"
 
 namespace Network
 {
@@ -26,11 +27,16 @@ private:
     int sendRobotRequests();
 
 	std::vector<int> m_Grids;
-    std::map<int, int> m_GridIdsToFd;
-    std::map<int, int> m_GridFdtoIds;
+    std::map<int, int> m_GridIdToFd;
+    std::map<int, int> m_GridFdToId;
     uint16_t m_HeartBeat;
     int m_ClockFd;
     unsigned int m_ReadyGrids;
+    RobotGame* robotGameInstance;
+
+	uint16_t m_totalGridRequests;
+	uint16_t m_totalGridResponses;
+	uint16_t m_totalRobotsReceived;
 };
 }
 

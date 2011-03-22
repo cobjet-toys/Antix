@@ -4,9 +4,11 @@
 #include "Config.h"
 #include <map>
 #include <vector>
+#include "Types.h"
 
 #ifdef DEBUG
 #include <time.h>
+#include <networkCommon.h>
 #endif
 
 using namespace Network;
@@ -18,6 +20,29 @@ static int Timesteps = 0;
 
 RobotClient::RobotClient():Client(), m_ReadyGrids(0)
 {
+    robotGameInstance = new RobotGame();
+
+    // make a robot_info vector for testing
+    std::vector<robot_info> robot_info_vector;
+    std::vector<int>* robot_ids;
+    for(uint i=0; i<10; i++)
+    {
+        robot_info r;
+        r.id = 123 + i;
+        r.x_pos = 1.0;
+        r.y_pos = 1.0;
+        r.speed = 5;
+        r.angle = 1.0;
+        r.puck_id = 1;
+        robot_info_vector.push_back(r);
+    }
+    //robotGameInstance->receiveInitialRobots(1, robot_info_vector);
+    robotGameInstance->requestSensorData(1, robot_ids);
+    
+	m_totalGridRequests = 0;
+	m_totalGridResponses = 0;
+	m_totalRobotsReceived = 0;
+
 }
 
 int RobotClient::sendWrapper(TcpConnection * conn, unsigned char* buffer, int msgSize)
@@ -68,8 +93,8 @@ int RobotClient::sendRobotRequests()
     std::vector<int>::const_iterator l_GridEnd = m_Grids.end();
     for (std::vector<int>::const_iterator it = m_Grids.begin(); it != l_GridEnd; it++)
     {
-        // vector<int> l_RobotIds;
-        // requestSensorData((*it), &l_RobotIds);
+        vector<int> l_RobotIds;
+        robotGameInstance->requestSensorData((*it), &l_RobotIds);
         
         l_Size.msgSize = 4000;//REPLACE WITH ACTUAL REQUEST FOR ROBOTS(l_RobotIds.size())
 
@@ -115,8 +140,8 @@ int RobotClient::initGrid(const char* host, const char* port, const int id)
 		return -1;
     }
     m_Grids.push_back(l_GridFd);
-    m_GridIdsToFd[id] = l_GridFd;
-    m_GridFdsToId[l_GridFd] = id;
+    m_GridIdToFd[id] = l_GridFd;
+    m_GridFdToId[l_GridFd] = id;
 
     return l_GridFd;
 }
@@ -145,8 +170,9 @@ int RobotClient::handleNewGrid(int id)
     unsigned char l_Buffer[l_Header.size];
     packHeaderMessage(l_Buffer, SENDER_CLIENT, MSG_REQUESTINITTEAM);
     
-    int l_GridFd = m_GridIdsToFd[id];
+    int l_GridFd = m_GridIdToFd[id];
     sendWrapper(m_serverList[l_GridFd], l_Buffer, l_Header.size);
+	m_totalGridRequests++;
 }
 
 int RobotClient::handler(int fd)
@@ -222,23 +248,57 @@ int RobotClient::handler(int fd)
 
                     DEBUGPRINT("Expecting ids and positions for %d robots.\n", l_NumRobots.msgSize);
 
-                    int l_GridId = m_GridFdToIds[fd];
+                    int l_GridId = m_GridFdToId[fd];
                     //Receive the robot data.
                     Msg_InitRobot l_Robo;
                     unsigned int l_MessageSize = l_Robo.size*l_NumRobots.msgSize;
-                    unsigned char l_RobosBuffer[l_MessageSize];
+					printf("%ui\n", l_MessageSize);
+                    unsigned char l_RoboBuffer[l_MessageSize];
 
-                    recvWrapper(l_Conn, l_RoboBuffers, l_MessageSize);
+                    recvWrapper(l_Conn, l_RoboBuffer, l_MessageSize);
                     
                     //For each robot, recv, unpack, and add to game.
                     for (int i =0; i < l_NumRobots.msgSize; i++)
                     {
-                        unpack(l_RoboBuffers, Msg_InitRobot_format, &l_Robo.id, &l_Robo.x, &l_Robo.y);
-                        insertRobot(l_GridId, l_Robo.id, l_Robo.x, l_Robo.y);
+                        unpack(l_RoboBuffer, Msg_InitRobot_format, &l_Robo.id, &l_Robo.x, &l_Robo.y);
+                        //insertRobot(l_GridId, l_Robo.id, l_Robo.x, l_Robo.y);
                         DEBUGPRINT("Received a new robot with ID %d, Coord (%f, %f)\n", 
                                 l_Robo.id, l_Robo.x, l_Robo.y);
                     }
+                    
+                    l_NumRobots.msgSize;
+                    m_totalGridResponses += 1;
+					
+					printf("%lu %lu %lu\n", (unsigned long)m_totalGridRequests, (unsigned long)m_totalRobotsReceived, (unsigned long)m_totalGridResponses);
+					
+					/*if (m_totalGridRequests == m_totalGridResponses)
+					{*/
+						DEBUGPRINT("ROBOT_CLIENT STATUS:\t Got all Grid repsonses for INIT TEAMS\n");
+						Msg_GridId l_grid;
 
+						unsigned char l_gridMessage[l_Header.size+l_grid.size];
+						
+						if (NetworkCommon::packHeader(l_gridMessage, SENDER_CLIENT, MSG_CONFIRMTEAM))
+						{
+							DEBUGPRINT("ROBOT_CLIENT STATUS:\t Failed to pack header");
+							return -1;
+						}
+						
+						if (pack(l_gridMessage+l_Header.size, Msg_MsgSize_format, l_NumRobots.msgSize) != l_NumRobots.size)
+						{
+							DEBUGPRINT("ROBOT_CLIENT: STATUS\t Could not pack amount or robots for response\n");
+						}
+						
+						if (NetworkCommon::sendMsg(l_gridMessage, l_Header.size + l_NumRobots.size, l_Conn) < 0)
+						{
+							DEBUGPRINT("ROBOT_CLIENT: STATUS\t Could not send the robot size message\n");
+						}
+						
+						DEBUGPRINT("ROBOT_CLIENT STATUS:\t Sent INIT TEAM RESPONSE for %lu Robots\n", (unsigned long)l_NumRobots.msgSize);
+					//}
+					
+					DEBUGPRINT("derp?\n");
+					//return 0;
                 }
                 break;
                 case(MSG_RESPONDSENSORDATA) :
@@ -288,10 +348,11 @@ int RobotClient::handler(int fd)
                                    l_SensedItem.x, l_SensedItem.y);
                         }
                     }
-                    //recieveSensorData(&l_SensedInfo);
+                    //TODO
+                    //robotGameInstance->recieveSensorData(&l_SensedInfo);
 
                     m_ReadyGrids++; 
-                    DEBUGPRINT("Recevied sensory data from a grid. %d Ready, %d total\n", m_ReadyGrids, m_Grids.size());
+                    DEBUGPRINT("Recevied sensory data from a grid. %d Ready, %zu total\n", m_ReadyGrids, m_Grids.size());
                     if (m_ReadyGrids == m_Grids.size())
                     {   
                         DEBUGPRINT("Finished one loop\n");
@@ -324,4 +385,3 @@ int RobotClient::handler(int fd)
 
     return 0;
 }
-

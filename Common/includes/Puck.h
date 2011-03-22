@@ -17,6 +17,9 @@ public:
      */
     Puck(Position* pos);
 
+    Puck(Position* pos, unsigned int puck_id);
+
+
     /**
      * Returns true if the puck is held, false otherwise.
      */
@@ -26,8 +29,9 @@ public:
      * Toggle the status of the puck.
      */
     void toggleHeld();
+
     
-    virtual void draw();
+    
 private:
     /**
      * Is the puck held.
