@@ -68,6 +68,8 @@ int RobotGame::setTeamRobot(int gridId, int teamId, Msg_InitRobot robot)
     Math::Position* l_robotPosition = new Math::Position(robot.x,robot.y, 0.0); // initial angle is 0.0
     Game::Robot* l_Robot = new Robot(l_robotPosition, teamId, robot.id);
     m_robotsByGrid[gridId].push_back(l_Robot);
+    DEBUGPRINT("Initializing robo with id %d\n", robot.id);
+    m_robots[robot.id] = l_Robot;
 
     return 0;
 }
@@ -105,9 +107,11 @@ int RobotGame::receiveSensorData(vector< std::pair<uid, std::vector<Msg_SensedOb
     vector< std::pair<uid, SensedItemsList> >::iterator iter;
     for(iter = sensor_data->begin(); iter != sensor_data->end(); iter++)
     {
+        DEBUGPRINT("robo id: %d\n", (*iter).first);
         //cout << (*iter).first << " " << (*iter).second.at(0).id << endl;
         int robot_id = (*iter).first;
         Robot* l_robotp = m_robots[robot_id];
+        DEBUGPRINT("Updating sensors for robo %d\n", (*iter).first);
         l_robotp->updateSensors( (*iter).second );
     }
 

@@ -84,7 +84,7 @@ int RobotClient::sendRobotRequests()
         robotGameInstance->requestSensorData(m_GridFdToId[(*it)], &l_RobotIds);
         
         l_Size.msgSize = l_RobotIds.size();//REPLACE WITH ACTUAL REQUEST FOR ROBOTS(l_RobotIds.size())
-        DEBUGPRINT("Requesting sensory info for %d robots\n", l_RobotIds.size());
+        DEBUGPRINT("Requesting sensory info for %uz robots\n", l_RobotIds.size());
 
         unsigned int l_MessageSize = (l_Size.msgSize*l_Req.size)+l_Header.size+l_Size.size;
         unsigned char l_Buffer[l_MessageSize];
@@ -303,8 +303,8 @@ int RobotClient::handler(int fd)
                 break;
                 case(MSG_RESPONDSENSORDATA) :
                 {
-                    
-                    std::map<uid, std::vector<Msg_SensedObjectGroupItem> > l_SensedInfo;
+                    std::vector <std::pair <uid, std::vector<Msg_SensedObjectGroupItem > > > l_SensedInfo;
+                    //std::map<uid, std::vector<Msg_SensedObjectGroupItem> > l_SensedInfo;
 
                     //Receive the total number of robots we are getting sens info for.
                     Msg_MsgSize l_NumRobots;
@@ -329,7 +329,11 @@ int RobotClient::handler(int fd)
                         DEBUGPRINT("Robot %d, with ID %d, has sensed %d objects\n",
                                 i, l_RoboHeader.id, l_RoboHeader.objectCount);
                         
-                        std::vector<Msg_SensedObjectGroupItem> &l_Info = l_SensedInfo[l_RoboHeader.id];
+                        //HACKITY HACK - Increment the id so the robotclient and grid server ids coincide
+                        l_RoboHeader.id += 1;
+
+                        
+                        std::vector<Msg_SensedObjectGroupItem> l_SensedRobos;
                         //Receive all of our sensed items.
                         for (int a = 0; a < l_RoboHeader.objectCount; a++)
                         {
@@ -342,14 +346,16 @@ int RobotClient::handler(int fd)
                            recvWrapper(l_Conn, l_SensedItemBuffer, l_SensedItem.size);
                            unpack(l_SensedItemBuffer, Msg_SensedObjectGroupItem_format, &l_SensedItem.id,
                                    &l_SensedItem.x, &l_SensedItem.y);
-                           l_Info.push_back(l_SensedItem);
+                           l_SensedRobos.push_back(l_SensedItem);
 
                            DEBUGPRINT("Sensed object with ID %d, pos(%d, %d)\n", l_SensedItem.id,
                                    l_SensedItem.x, l_SensedItem.y);
                         }
+                        
+                        std::pair<uid, std::vector<Msg_SensedObjectGroupItem > > l_RoboInfo (l_RoboHeader.id, l_SensedRobos);
+                        l_SensedInfo.push_back(l_RoboInfo);
                     }
-                    //TODO
-                    //robotGameInstance->receiveSensorData(&l_SensedInfo);
+                    robotGameInstance->receiveSensorData(&l_SensedInfo);
 
                     m_ReadyGrids++; 
                     DEBUGPRINT("Recevied sensory data from a grid. %d Ready, %zu total\n", m_ReadyGrids, m_Grids.size());

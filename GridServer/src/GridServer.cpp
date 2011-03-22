@@ -354,7 +354,7 @@ int GridServer::handler(int fd)
 					l_responseMsgSize += (l_robotsTotal * l_robotHeader.size); // append the total size for number of robot ids
 					l_responseMsgSize += (l_totalSensed * l_robotsTotal * l_sensedObject.size); // all sensed items
 					
-					printf("msg size: %i\n", l_responseMsgSize);
+					DEBUGPRINT("msg size: %i\n", l_responseMsgSize);
 					
 					unsigned char msgBuffer[l_responseMsgSize];
 					
