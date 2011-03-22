@@ -109,34 +109,33 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
     
     uint32_t objType, objId;
     Antix::getTypeAndId(newInfo.id, &objType, &objId);
-    DEBUGPRINT("global_id=%d\ttype=%d\tid=%d\n", newInfo.id, objType, objId);
     if(objType == PUCK)
     {
         if (!this->m_pucks[objId])
         {
-        	  this->m_pucks[objId] = new Game::Puck(pos);
+			this->m_pucks[objId] = new Game::Puck(pos);
         }
       	else
       	{
-      		  this->m_pucks[objId]->getPosition()->setX(newInfo.x_pos);
-      		  this->m_pucks[objId]->getPosition()->setY(newInfo.y_pos);        		
+			this->m_pucks[objId]->getPosition()->setX(newInfo.x_pos);
+			this->m_pucks[objId]->getPosition()->setY(newInfo.y_pos);        		
       	}
     }
     else
     {
       	if (!this->m_robots[objId])
       	{
-        		if (!this->m_teams[1])//newInfo.id/TEAM_ID_SHIFT])    
-        		{
-        			  DEBUGPRINT("No home for team %d\n", 1);//newInfo.id/TEAM_ID_SHIFT);
-        			  return;
-        		}         			
-  			    this->m_robots[objId] = new Game::Robot(pos, this->m_teams[1]->m_TeamId, objId);//newInfo.id/TEAM_ID_SHIFT]->getHome());
+    		if (!this->m_teams[0])//newInfo.id/TEAM_ID_SHIFT])    
+    		{
+    			  DEBUGPRINT("No home for team %d\n", 1);//newInfo.id/TEAM_ID_SHIFT);
+    			  return;
+    		}         			
+		    this->m_robots[objId] = new Game::Robot(pos, this->m_teams[0]->m_TeamId, objId);//newInfo.id/TEAM_ID_SHIFT]->getHome());
       	}          	
       	else
       	{
-        		this->m_robots[objId]->getPosition()->setX(newInfo.x_pos);
-        		this->m_robots[objId]->getPosition()->setY(newInfo.y_pos);        		
+    		this->m_robots[objId]->getPosition()->setX(newInfo.x_pos);
+    		this->m_robots[objId]->getPosition()->setY(newInfo.y_pos);        		
       	}
         
         //this->m_robots[newInfo.id]->m_PuckHeld = this->m_pucks[newInfo.puck_id];
@@ -172,7 +171,7 @@ int DrawServer::handler(int fd)
                     //Receive the total number of robots we are getting sens info for.
                     Msg_MsgSize l_NumObjects;
 					NetworkCommon::requestMessageSize(l_NumObjects, l_Conn);
-                    DEBUGPRINT("%d:\tExpecting %d objects.\n", this->m_framestep, l_NumObjects.msgSize );
+                    //DEBUGPRINT("%d:\tExpecting %d objects.\n", this->m_framestep, l_NumObjects.msgSize );
 
                     //Go through all of the objects we expect position data for.
                     for (int i = 0; i < l_NumObjects.msgSize;i++)
@@ -186,20 +185,50 @@ int DrawServer::handler(int fd)
                         unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
                                 &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck );
 
-                        //DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
-                        //        l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
+                        //DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
+                        	        //l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
                                 
                         updateObject(l_ObjInfo);
                     }
-                    //DEBUGPRINT("Finished updating objects\n");
+                    
+                    DEBUGPRINT("%d:\trobots=%d\tpucks=%d.\n", this->m_framestep, this->m_robots.size(), this->m_pucks.size() );
 					this->m_framestep++;
+					return 0;
                 }
                 
                 case(MSG_GRIDDATACOMPRESS) : 
                 {
+					return 0;
                 }
                 
-                //case team initialization info
+                case (MSG_GRIDTEAMS) :
+                {
+                	//Receive the total number of teams we are getting info for.
+                    Msg_MsgSize l_NumObjects;
+					NetworkCommon::requestMessageSize(l_NumObjects, l_Conn);
+                    DEBUGPRINT("MSG_GRIDTEAMS: Expecting %d teams.\n", l_NumObjects.msgSize );
+
+                    //Go through all of the objects we expect data for.
+                    for (int i = 0; i < l_NumObjects.msgSize;i++)
+                    {
+		                Msg_TeamInit l_TeamInfo;
+		                unsigned char l_TeamInfoBuf[l_TeamInfo.size];
+                        bzero(&l_TeamInfo, l_TeamInfo.size);
+                        
+                        recvWrapper(l_Conn, l_TeamInfoBuf, l_TeamInfo.size);
+                        
+                        unpack(l_TeamInfoBuf, Msg_TeamInit_format,
+                                &l_TeamInfo.id, &l_TeamInfo.x, &l_TeamInfo.y);
+
+						if (!this->m_teams[l_TeamInfo.id])
+						{
+							Math::Position *homePos = new Math::Position(l_TeamInfo.x, l_TeamInfo.y, 0.0);
+		    				this->m_teams[l_TeamInfo.id] = new Game::Team(homePos, l_TeamInfo.id);
+	    				}
+    				}
+    				
+					return 0;
+                }
             }
             break;
     }

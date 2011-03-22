@@ -37,6 +37,7 @@ enum
     MSG_GRIDDATAFULL = 31,
     MSG_GRIDDATACOMPRESS = 32,
     MSG_SETDRAWERCONFIG = 33,
+    MSG_GRIDTEAMS = 34,
 };
 
 // Drawer enums
