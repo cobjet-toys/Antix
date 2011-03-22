@@ -7,6 +7,7 @@
 #include "MathAux.h"
 #include "Types.h"
 #include "Messages.h"
+#include "AntixUtil.h"
 #include <list>
 #include <vector>
 #include <map>
@@ -64,6 +65,11 @@ public:
      * Interface function to Network layer for processing actions for each robot.
      */
     int processAction(std::vector<Msg_Action>& robot_actions, std::vector< Msg_RobotInfo >* results);
+
+    /**
+     * Interface function to Network layer for processing actions for each robot.
+     */
+    int getPopulation(std::vector< Msg_RobotInfo >* results);
 
     /**
      * Return the max world size.

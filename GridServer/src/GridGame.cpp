@@ -501,6 +501,37 @@ int GridGame::removeObjectFromPop(int objectid)
 
 }
 
+int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results)
+{
+
+    std::vector<GameObject*>::iterator endit = m_Population.end();
+
+
+    for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != endit; it++)
+    {   
+        // Computes robots altered position (Random)
+        //robotPosition[i][0] += float((rand()%200)-100)/50;
+        //robotPosition[i][1] += float((rand()%200)-100)/50;
+
+        //float posX = robotPosition[i][0];
+        //float posY = robotPosition[i][1];
+        //float orientation = 1.0;
+        Msg_RobotInfo l_ObjInfo;
+
+        // for each object being pushed
+        l_ObjInfo.robotid = Antix::writeId((**it).getId(), ROBOT);
+        l_ObjInfo.x_pos = (**it).getX();
+        l_ObjInfo.y_pos = (**it).getY();
+        l_ObjInfo.angle = ((**it).getPosition())->getOrient();
+        //l_ObjInfo.puckid = (**it).m_PuckHeld; //TODO: Fix for later
+        l_ObjInfo.puckid = 0;
+
+        results->push_back(l_ObjInfo);
+    }
+
+
+}
+
 const float& GridGame::getWorldSize() const
 {
     return m_WorldSize;

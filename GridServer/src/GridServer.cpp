@@ -758,8 +758,16 @@ int GridServer::updateDrawer(uint32_t framestep)
     // Creates an array of random values for robot positions -- TEMPORARY TESTING -- //
     //float robotOrientation[this->m_totalRobots];
     //for(int i = 0; i < this->m_totalRobots; i++){robotPosition[i] = (float)(rand()%100)/100;}
+
+    // Filled out fake data
+    /*
     float robotPosition[m_totalRobots][2];
-    for(int i = 0; i < m_totalRobots; i++){for(int j = 0; j < 2; j++){robotPosition[i][j] = (float)(rand()%600);}}
+    for(int i = 0; i < m_totalRobots; i++){
+        for(int j = 0; j < 2; j++){
+            robotPosition[i][j] = (float)(rand()%600);
+        }
+    }
+    */
 
 
     Msg_header l_header = {SENDER_GRIDSERVER, MSG_GRIDDATAFULL}; // header for response
@@ -794,22 +802,23 @@ int GridServer::updateDrawer(uint32_t framestep)
 
     l_position += l_msgSize.size; // shift by robot size header
 
-    for(int i = 0; i < m_totalRobots; i++)
+    // Getting GameObjects from population from gridGameInstance
+    std::vector<Msg_RobotInfo>* objects = new std::vector<Msg_RobotInfo>;
+    gridGameInstance->getPopulation(objects);
+
+    std::vector<Msg_RobotInfo>::iterator endit = objects->end();
+    //for(int i = 0; i < m_totalRobots; i++)
+    for(std::vector<Msg_RobotInfo>::iterator it = objects->begin(); it != endit; it++)
     {
         // Computes robots altered position (Random)
-        robotPosition[i][0] += float((rand()%200)-100)/50;
-        robotPosition[i][1] += float((rand()%200)-100)/50;
+        //robotPosition[i][0] += float((rand()%200)-100)/50;
+        //robotPosition[i][1] += float((rand()%200)-100)/50;
 
-        float posX = robotPosition[i][0];
-        float posY = robotPosition[i][1];
-        float orientation = 1.0;
+        //float posX = robotPosition[i][0];
+        //float posY = robotPosition[i][1];
+        //float orientation = 1.0;
 
         // for each object being pushed
-        l_ObjInfo.robotid = Antix::writeId(i, ROBOT);
-        l_ObjInfo.x_pos = posX;
-        l_ObjInfo.y_pos = posY;
-        l_ObjInfo.angle = orientation;
-        l_ObjInfo.puckid = 0;
 
         //DEBUGPRINT("Expected: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
                    //l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
@@ -825,7 +834,8 @@ int GridServer::updateDrawer(uint32_t framestep)
         
         //DEBUGPRINT("CURRENT POSITION SIZE %d\n", l_position);		
     }
-		
+
+    /*
     for(int i = 0; i < m_totalPucks; i++)
     {
         float posX = randPuckVals[(2*i)];
@@ -851,6 +861,7 @@ int GridServer::updateDrawer(uint32_t framestep)
         l_position += l_ObjInfo.size;
         //DEBUGPRINT("CURRENT POSITION SIZE %d\n", l_position);		
     }
+    */
 
     if(!m_drawerConn || m_drawerConn->send(msgBuffer, l_responseMsgSize) == -1)
     {
