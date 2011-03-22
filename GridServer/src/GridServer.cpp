@@ -66,24 +66,26 @@ int GridServer::initGridGame()
     int teamid;
     float team_x;
     float team_y;
-    std::vector<Msg_RobotInfo>* les_robots = new std::vector<Msg_RobotInfo>();
+    std::vector<Msg_InitRobot>* les_robots = new std::vector<Msg_InitRobot>();
 
-    gridGameInstance->getRobots(teamid, team_x, team_y, les_robots);
+    Msg_TeamInit team_to_get;
+
+    gridGameInstance->getRobots(team_to_get , les_robots);
     DEBUGPRINT("=====getRobots====\n");
     DEBUGPRINT("Should be depleted false: %d\n", (int)gridGameInstance->robotsDepleted());
     DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
-    for(std::vector<Msg_RobotInfo>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
+    for(std::vector<Msg_InitRobot>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
     {
-        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->robotid, it->x_pos, it->y_pos);
+        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x, it->y);
     }
 
-    gridGameInstance->getRobots(teamid, team_x, team_y, les_robots);
+    gridGameInstance->getRobots(team_to_get, les_robots);
     DEBUGPRINT("=====getRobots====\n");
     DEBUGPRINT("Should be depleted true: %d\n", (int)gridGameInstance->robotsDepleted());
     DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
-    for(std::vector<Msg_RobotInfo>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
+    for(std::vector<Msg_InitRobot>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
     {
-        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->robotid, it->x_pos, it->y_pos);
+        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x, it->y);
     }
 
     DEBUGPRINT("=====Printing population after getting all of the robots for robotclient\n");
