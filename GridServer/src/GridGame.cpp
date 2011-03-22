@@ -29,6 +29,12 @@ typedef std::pair<int, std::vector<sensed_item> > ObjectPair;
 GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_from, int id_to)
 {
 
+    #ifdef DEBUG
+
+    printf("Gridid: %d, Num of teams: %d, robots per team: %d, idfrom: %d, idto: %d", gridid, num_of_teams, robots_per_team, id_from, id_to);
+
+    #endif
+
     m_GridId = gridid;
     m_Num_Of_Teams = num_of_teams;
     m_Robots_Per_Team = robots_per_team;
@@ -201,11 +207,14 @@ int GridGame::initializeTeam(std::vector<int> teams, std::vector<robot_info>* ro
 int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
 {
 
+    DEBUGPRINT("===Executing getRobots");
 
     Team* l_Team = m_Teams[teamcounter];
     team.id = l_Team->getId();
     team.x = l_Team->getX();
     team.y = l_Team->getY();
+
+    DEBUGPRINT("Team id: %d - Team x: %d - Team y: %d", team.id, team.x, team.y);
 
     //std::vector<robot_info> l_robot_info_vector = new std::vector<robot_info>();
 
