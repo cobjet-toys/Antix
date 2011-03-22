@@ -198,14 +198,14 @@ int GridGame::initializeTeam(std::vector<int> teams, std::vector<robot_info>* ro
  */
 
 
-int GridGame::getRobots(int& teamid, float& team_x, float& team_y, std::vector<Msg_RobotInfo>* robots)
+int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
 {
 
 
     Team* l_Team = m_Teams[teamcounter];
-    teamid = l_Team->getId();
-    team_x = l_Team->getX();
-    team_y = l_Team->getY();
+    team.id = l_Team->getId();
+    team.x = l_Team->getX();
+    team.y = l_Team->getY();
 
     //std::vector<robot_info> l_robot_info_vector = new std::vector<robot_info>();
 
@@ -214,12 +214,10 @@ int GridGame::getRobots(int& teamid, float& team_x, float& team_y, std::vector<M
     for (i = robotcounter; i <= robotcounter+m_Robots_Per_Team; i++)
     {
         GameObject* l_Robot = m_Population[i];
-        Msg_RobotInfo temp;
-        temp.robotid = l_Robot->getId();
-        temp.x_pos = l_Robot->getX();
-        temp.y_pos = l_Robot->getY();
-        temp.angle = 0;
-        temp.puckid = 0;  // set to 0 for no puck
+        Msg_InitRobot temp;
+        temp.id = l_Robot->getId();
+        temp.x = l_Robot->getX();
+        temp.y = l_Robot->getY();
 
         robots->push_back(temp);
     }
