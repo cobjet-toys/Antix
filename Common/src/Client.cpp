@@ -108,7 +108,7 @@ int Network::Client::initConnection(const char* host, const char* port)
 		DEBUGPRINT("Could not set socket to non-blocking\n");
 	}
 	
-	if( addHandler(fileDesc, EPOLLET|EPOLLIN|EPOLLHUP|EPOLLPRI, conn ) == -1)
+	if( addHandler(fileDesc, EPOLLET|EPOLLIN|EPOLLHUP, conn ) == -1)
 	{
 		DEBUGPRINT("Could not add handler to tcpConnection\n");
 		return -1;
@@ -122,10 +122,27 @@ int Network::Client::initConnection(const char* host, const char* port)
 int Network::Client::addHandler(int fd, unsigned int events, TcpConnection * connection)
 {
 	m_serverList[fd] = connection;
-	epoll_event* e = new epoll_event[1];
-	e[0].data.fd = fd;
-	e[0].events = events;
-	if (handle_epoll(m_epfd, EPOLL_CTL_ADD, fd, e) != 0)
+	epoll_event e;
+	e.data.fd = fd;
+	e.events = events;
+	if (handle_epoll(m_epfd, EPOLL_CTL_ADD, fd, &e) != 0)
+	{
+		DEBUGPRINT("Failed to add epoll handler\n");
+		return -1;
+	} 
+    else
+    {
+        return 0;
+    }
+}
+
+int Network::Client::modifyHandler(int fd, unsigned int events)
+{
+
+	epoll_event e;
+	e.data.fd = fd;
+	e.events = events;
+	if (handle_epoll(m_epfd, EPOLL_CTL_MOD, fd, &e) != 0)
 	{
 		DEBUGPRINT("Failed to add epoll handler\n");
 		return -1;
@@ -161,15 +178,16 @@ int Network::Client::start()
     for (;;)
 	{
       	int nfd;		
-		nfd = epoll_wait(m_epfd, e, 1000, -1);
-        //printf("nfd: %i\n", nfd);
+		nfd = epoll_wait(m_epfd, e, 1, 500);
+        printf("nfd: %i\n", nfd);
         for (int i = 0; i < nfd; i++)
         {    
             if (e[i].events & EPOLLIN)
 	    	{
 	            //DEBUGPRINT("Handling \n");
 		    	int ret = handler(e[i].data.fd);
-		    	//printf("Handler returned %i\n", ret);
+		    	
+		    	printf("Handler returned %i\n", ret);
 		    	if (ret < 0)
 			    {
 			        if (handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL) != 0)
@@ -177,6 +195,12 @@ int Network::Client::start()
 				    	return -1;
 				    }
 			    }
+			    
+			    if( modifyHandler(e[i].data.fd, EPOLLET|EPOLLIN|EPOLLHUP ) == -1)
+				{
+					DEBUGPRINT("Could not add handler to tcpConnection\n");
+					return -1;
+				}
             } 
            else if (e[i].events & EPOLLRDHUP || e[i].events & EPOLLHUP || e[i].events & EPOLLERR) 
            {

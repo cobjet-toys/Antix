@@ -32,6 +32,7 @@ public:
 private:
 	int handle_epoll(int epfd, int op, int fd, epoll_event* event);
 	int addHandler(int fd, unsigned int events, TcpConnection * connection);
+	int modifyHandler(int fd, unsigned int events);
 	int setnonblock(int fd); //magic!!
 	int m_epfd; //more epic magic!! :)
 	
