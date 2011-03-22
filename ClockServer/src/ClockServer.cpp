@@ -147,7 +147,7 @@ int Network::ClockServer::SendHeartBeat()
 	DEBUGPRINT("beat = %u\n", m_beat);
 	l_heartBeat.hb = m_beat;
 	
-	DEBUGPRINT("Total Clients to send Hb: %i\n",m_clientList.size());
+	DEBUGPRINT("Total Clients to send Hb: %zu\n",m_clientList.size());
 
 	for(std::vector<int>::const_iterator it = m_clientList.begin(); it != l_End; it++)
 	{
