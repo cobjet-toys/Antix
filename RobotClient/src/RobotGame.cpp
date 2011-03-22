@@ -23,7 +23,6 @@ RobotGame::~RobotGame()
 {
 }
 
-<<<<<<< HEAD
 // Compile grid to team mapping
 /*
 int RobotGame::intitializeTeam(int grid_id, std::vector<int> team_mapping)
@@ -57,10 +56,6 @@ int RobotGame::receiveInitialRobots(int grid_id, std::vector<robot_info> robot_i
 */
 
 int RobotGame::initTeam(Msg_TeamInit team)
-=======
-int RobotGame::initTeam(int id, float x, float y)
->>>>>>> 75c7a28d9b03638961fa61f0921690f49bd709aa
-// Creates a home with id at x,y
 {
     m_homeLocations[team.id] = std::make_pair(team.x,team.y);
     //printf("added mappign for team, id: %d, location: %f,%f\n", id, m_homeLocations[id].first, m_homeLocations[id].second);
