@@ -93,7 +93,7 @@ void DrawServer::initTeams()
         this->m_teams[1] = new Game::Team(homePos, 1);
     }
 
-    DEBUGPRINT("Teams=%d\n", this->m_teams.size());
+    DEBUGPRINT("Teams=%zu\n", this->m_teams.size());
 }
 
 void DrawServer::updateObject(Msg_RobotInfo newInfo)
@@ -103,12 +103,12 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
     Math::Position *pos = new Math::Position(newInfo.x_pos, newInfo.x_pos, newInfo.angle);
     if (!pos)
     { 
-    	DEBUGPRINT("Object %d: Invalid position\n", newInfo.id);
+    	DEBUGPRINT("Object %d: Invalid position\n", newInfo.robotid);
     	return;
     }
     
     uint32_t objType, objId;
-    Antix::getTypeAndId(newInfo.id, &objType, &objId);
+    Antix::getTypeAndId(newInfo.robotid, &objType, &objId);
     if(objType == PUCK)
     {
         if (!this->m_pucks[objId])
@@ -158,7 +158,7 @@ int DrawServer::handler(int fd)
 	
 	//Get message header
 	uint16_t l_sender=-1, l_senderMsg =-1;	
-	NetworkCommon::requestHeader(l_sender, l_senderMsg, l_Conn);
+	NetworkCommon::recvHeader(l_sender, l_senderMsg, l_Conn);
 	if (l_sender == -1 || l_senderMsg == -1) return -1;
 		
     switch(l_sender)
@@ -170,7 +170,7 @@ int DrawServer::handler(int fd)
                 {
                     //Receive the total number of robots we are getting sens info for.
                     Msg_MsgSize l_NumObjects;
-					NetworkCommon::requestMessageSize(l_NumObjects, l_Conn);
+					NetworkCommon::recvMessageSize(l_NumObjects, l_Conn);
                     //DEBUGPRINT("%d:\tExpecting %d objects.\n", this->m_framestep, l_NumObjects.msgSize );
 
                     //Go through all of the objects we expect position data for.
@@ -183,7 +183,7 @@ int DrawServer::handler(int fd)
                         recvWrapper(l_Conn, l_ObjInfoBuf, l_ObjInfo.size);
                         
                         unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
-                                &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck );
+                                &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.puckid );
 
                         //DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
                         	        //l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
@@ -191,7 +191,7 @@ int DrawServer::handler(int fd)
                         updateObject(l_ObjInfo);
                     }
                     
-                    DEBUGPRINT("%d:\trobots=%d\tpucks=%d.\n", this->m_framestep, this->m_robots.size(), this->m_pucks.size() );
+                    DEBUGPRINT("%d:\trobots=%zu\tpucks=%zu.\n", this->m_framestep, this->m_robots.size(), this->m_pucks.size() );
 					this->m_framestep++;
 					return 0;
                 }
@@ -205,7 +205,7 @@ int DrawServer::handler(int fd)
                 {
                 	//Receive the total number of teams we are getting info for.
                     Msg_MsgSize l_NumObjects;
-					NetworkCommon::requestMessageSize(l_NumObjects, l_Conn);
+					NetworkCommon::recvMessageSize(l_NumObjects, l_Conn);
                     DEBUGPRINT("MSG_GRIDTEAMS: Expecting %d teams.\n", l_NumObjects.msgSize );
 
                     //Go through all of the objects we expect data for.
