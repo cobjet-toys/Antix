@@ -219,14 +219,15 @@ int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
     //std::vector<robot_info> l_robot_info_vector = new std::vector<robot_info>();
 
     int i;
-
-    for (i = robotcounter; i <= robotcounter+m_Robots_Per_Team; i++)
+	printf("robo counter: %d, robotconter+m_Robos/team: %d\n", robotcounter, robotcounter+m_Robots_Per_Team);
+    for (i = robotcounter; i < robotcounter+m_Robots_Per_Team; i++)
     {
         GameObject* l_Robot = m_Population[i];
         Msg_InitRobot temp;
         temp.id = l_Robot->getId();
         temp.x = l_Robot->getX();
         temp.y = l_Robot->getY();
+		DEBUGPRINT("ID: %d, X: %f, F: %f \n", temp.id, temp.x, temp.y);
 
         robots->push_back(temp);
     }
@@ -408,6 +409,33 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::vect
 int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector< Msg_RobotInfo >* results)
 {
 
+    // basic movement, moving up and down, not checking collisons
+    // not even checking the angle sent by the client.
+
+    // NOT TESTED!
+
+    for(std::vector<Msg_Action>::iterator it = robot_actions.begin(); it != robot_actions.end(); it++)
+    {
+        Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
+        Msg_RobotInfo temp;
+        temp.robotid = l_Robot->getId();
+        temp.x_pos = l_Robot->getX();
+        float new_ypos = l_Robot->getY() + 0.1;
+        if (new_ypos > m_WorldSize)
+        {
+            new_ypos = 0;
+
+        }
+        temp.y_pos = new_ypos;
+        temp.speed = (*it).speed;
+        temp.angle = (*it).angle;
+        temp.puckid = 0;
+
+        l_Robot->setPosition(temp.x_pos, temp.y_pos, temp.angle);
+
+        results->push_back(temp);
+    }
+
     return 0;
 
 
@@ -490,26 +518,3 @@ void GridGame::printPopulation(){
 
 	}
 }
-
-unsigned int readId(unsigned int id)
-{
- /*   if ((id & PUCKVALUE)==PUCKVALUE)
-    {
-        unsigned int value = id || ROBOTVALUE;
-        return value;
-    }
-    return id;
-*/
-}
-
-unsigned int writeId(unsigned int id, int type)
-{/*
-    if (type == 1) // Then it is a puck
-    {
-        unsigned int value = (id || ROBOTVALUE);
-        return value;
-    }
-    return id;
-    */
-}
-

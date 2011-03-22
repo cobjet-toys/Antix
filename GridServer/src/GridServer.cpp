@@ -28,6 +28,7 @@ GridServer::GridServer():Server()
 int GridServer::initGridGame()
 {
 	gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam, m_idRangeFrom, m_idRangeTo); // needs to not do this in grid game constructor!
+	printf("id=%lu, teams=%lu, robots=%lu, idfrom=%lu, idto=%lu\n", (unsigned long)m_uId, (unsigned long)m_teamsAvailable,(unsigned long) m_robotsPerTeam, (unsigned long)m_idRangeFrom, (unsigned long)m_idRangeTo);
     // parameters: gridid, num_of_teams, robots_per_team, id_from, id_to
     /*gridGameInstance = new GridGame(1, 2, 10, 10, 30);
 >>>>>>> 041a2290d55225e08154605315d80d6b23f04714
@@ -495,7 +496,7 @@ int GridServer::handler(int fd)
 					std::vector<Msg_InitRobot> * l_robots = new std::vector<Msg_InitRobot>;
 					gridGameInstance->getRobots(l_Team, l_robots);
 
-					DEBUGPRINT("a\n");
+					DEBUGPRINT("%u\n", l_robots->size());
 					Msg_header l_header;
 					Msg_MsgSize l_size;
 					Msg_InitRobot l_robot;
@@ -505,8 +506,15 @@ int GridServer::handler(int fd)
 					int l_offset = 0;
 					NetworkCommon::packHeader(l_message, SENDER_GRIDSERVER, MSG_RESPONDINITTEAM);
 					
+
+
 					l_offset += l_header.size;
 					DEBUGPRINT("a2\n");
+
+					pack(l_message+l_offset, Msg_TeamInit_format, l_Team.id, l_Team.x, l_Team.y);
+
+					l_offset += l_Team.size;
+
 					l_size.msgSize = l_robots->size();
 					
 					if (pack(l_message+l_offset, Msg_MsgSize_format, l_size.msgSize) != l_size.size)
@@ -520,6 +528,7 @@ int GridServer::handler(int fd)
 						l_robot.id = l_robots->at(i).id;
 						l_robot.x = l_robots->at(i).x;
 						l_robot.y = l_robots->at(i).y;
+						DEBUGPRINT("ID: %d, X: %f, F: %f \n", l_robot.id, l_robot.x, l_robot.y);
 						
 						if (pack(l_message+l_offset, Msg_InitRobot_format, l_robot.id, l_robot.x, l_robot.y) != l_robot.size)
 						{
