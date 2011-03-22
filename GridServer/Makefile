@@ -26,7 +26,7 @@ grid_DEBUG_OBJ = $(addprefix $(grid_DEBUG_OBJ_PATH)/, $(grid_SRC:.cpp=.o))
 
 
 
-grid_debug: common grid_depend grid_debug_objects
+grid_debug: common_debug grid_depend grid_debug_objects
 	@echo "Building DEBUG ----------------------------------------------------------------------"
 	$(shell cd $(grid_DEBUG_PATH)/; $(grid_COMPILER) -g -lpthread -o $(grid_EXECUTABLE) $(grid_DEBUG_OBJ) $(grid_PWD)/$(ROOT_DIR)/build/debug/libcommon.a)
 	@echo "Building DEBUG grid COMPLETE --------------------------------------------------------"
