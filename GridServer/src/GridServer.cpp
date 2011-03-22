@@ -570,34 +570,7 @@ int GridServer::handler(int fd)
 							return -1;
 						}
 						DEBUGPRINT("GRID_SERVER STATUS:\t sent grid server confirmation\n");
-					}
-					//DEBUGPRINT("======CONFIRM================================\n");
-					/*if (gridGameInstance->robotsDepleted())
-					{
-						TcpConnection * contCon = m_Clients[m_ControllerFd];
-						
-						Msg_header l_header;
-						Msg_GridId l_msg;
-						
-						unsigned char message[l_header.size + l_msg.size];
-						if (NetworkCommon::packHeader(message, SENDER_GRIDSERVER,MSG_GRIDCONFIRMSTARTED) < 0)
-						{
-							DEBUGPRINT("GRID_SERVER FAILED:\t Failed to pack header confirm started\n");
-							return -1;
-						}
-						if (pack(message+l_header.size, Msg_GridId_format, m_uId) != l_msg.size)
-						{
-							DEBUGPRINT("GRID_SERVER FAILED:\t Failed to pack id for confirm started\n");
-							return -1;
-						}
-						
-						if (NetworkCommon::sendMsg(message, l_header.size+l_msg.size, contCon) < 0)
-						{
-							DEBUGPRINT("GRID_SERVER FAILED:\t Failed to send confirm started message\n");
-							return -1;
-						}
-						DEBUGPRINT("GRID_SERVER STATUS:\t sent grid server confirmation\n");
-					}*/
+					}				
 					
 					return 0;
 				}
