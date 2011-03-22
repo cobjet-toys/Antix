@@ -177,7 +177,7 @@ int RobotClient::handler(int fd)
 
     //Unpack the buffer into the 'header' message.
     unpack(l_HeaderBuffer, Msg_header_format, &l_Header.sender, &l_Header.message); 
-    DEBUGPRINT("Received message %d from %d\n", l_Header.message, l_Header.sender);
+    DEBUGPRINT("Received message %d from %d\n\n\n\n", l_Header.message, l_Header.sender);
     switch(l_Header.sender)
     {
         //Message is from clock.
@@ -271,29 +271,25 @@ int RobotClient::handler(int fd)
 					
 					/*if (m_totalGridRequests == m_totalGridResponses)
 					{*/
-						DEBUGPRINT("ROBOT_CLIENT STATUS:\t Got all Grid repsonses for INIT TEAMS\n");
-						Msg_GridId l_grid;
+						//DEBUGPRINT("ROBOT_CLIENT STATUS:\t Got all Grid repsonses for INIT TEAMS\n");
+						
 
-						unsigned char l_gridMessage[l_Header.size+l_grid.size];
+						unsigned char l_gridMessage[l_Header.size];
 						
 						if (NetworkCommon::packHeader(l_gridMessage, SENDER_CLIENT, MSG_CONFIRMTEAM))
 						{
-							DEBUGPRINT("ROBOT_CLIENT STATUS:\t Failed to pack header");
+							DEBUGPRINT("ROBOT_CLIENT STATUS:\t Failed to pack header\n");
 							return -1;
 						}
 						
-						if (pack(l_gridMessage+l_Header.size, Msg_MsgSize_format, l_NumRobots.msgSize) != l_NumRobots.size)
-						{
-							DEBUGPRINT("ROBOT_CLIENT: STATUS\t Could not pack amount or robots for response\n");
-						}
 						
-						if (NetworkCommon::sendMsg(l_gridMessage, l_Header.size + l_NumRobots.size, l_Conn) < 0)
+						
+						if (NetworkCommon::sendMsg(l_gridMessage, l_Header.size , l_Conn) < 0)
 						{
 							DEBUGPRINT("ROBOT_CLIENT: STATUS\t Could not send the robot size message\n");
 						}
 						
-						DEBUGPRINT("ROBOT_CLIENT STATUS:\t Sent INIT TEAM RESPONSE for %lu Robots\n", (unsigned long)l_NumRobots.msgSize);
-					//}
+						
 					
 					DEBUGPRINT("derp?\n");
 					//return 0;

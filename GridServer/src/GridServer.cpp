@@ -20,7 +20,7 @@ GridServer::GridServer():Server()
 	m_robotsAvailable = 0;
 	m_robotsConfirmed = 0;
 	m_ControllerFd = -1;
-	
+m_teamsConfirmed =0;	
 	m_drawerConn = 0;
 	updateDrawerFlag = 0;
 }
@@ -149,7 +149,7 @@ int GridServer::handler(int fd)
 	
 	NetworkCommon::recvHeader(l_sender, l_senderMsg, l_curConnection);
 
-	DEBUGPRINT("%u, %u\n", l_sender, l_senderMsg);
+	DEBUGPRINT("sender=%u, message=%u\n", l_sender, l_senderMsg);
 	
 	if (l_sender == -1 || l_senderMsg == -1) return -1; // bad messages
 	
@@ -543,8 +543,9 @@ int GridServer::handler(int fd)
 				
 				case (MSG_CONFIRMTEAM):
 				{
-					
-					if (gridGameInstance->robotsDepleted())
+					DEBUGPRINT("Grid Responded\n");
+					m_teamsConfirmed++;
+					if (m_teamsConfirmed == m_teamsAvailable)
 					{
 						TcpConnection * contCon = m_Clients[m_ControllerFd];
 						
@@ -570,6 +571,33 @@ int GridServer::handler(int fd)
 						}
 						DEBUGPRINT("GRID_SERVER STATUS:\t sent grid server confirmation\n");
 					}
+					//DEBUGPRINT("======CONFIRM================================\n");
+					/*if (gridGameInstance->robotsDepleted())
+					{
+						TcpConnection * contCon = m_Clients[m_ControllerFd];
+						
+						Msg_header l_header;
+						Msg_GridId l_msg;
+						
+						unsigned char message[l_header.size + l_msg.size];
+						if (NetworkCommon::packHeader(message, SENDER_GRIDSERVER,MSG_GRIDCONFIRMSTARTED) < 0)
+						{
+							DEBUGPRINT("GRID_SERVER FAILED:\t Failed to pack header confirm started\n");
+							return -1;
+						}
+						if (pack(message+l_header.size, Msg_GridId_format, m_uId) != l_msg.size)
+						{
+							DEBUGPRINT("GRID_SERVER FAILED:\t Failed to pack id for confirm started\n");
+							return -1;
+						}
+						
+						if (NetworkCommon::sendMsg(message, l_header.size+l_msg.size, contCon) < 0)
+						{
+							DEBUGPRINT("GRID_SERVER FAILED:\t Failed to send confirm started message\n");
+							return -1;
+						}
+						DEBUGPRINT("GRID_SERVER STATUS:\t sent grid server confirmation\n");
+					}*/
 					
 					return 0;
 				}

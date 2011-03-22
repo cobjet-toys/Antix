@@ -31,12 +31,14 @@ public:
 private:
     uint32_t m_uId;
     uint32_t m_hb_rcvd;
-	int m_teamsAvailable;
 	uint32_t m_idRangeFrom;
 	uint32_t m_idRangeTo;
+
 	int m_robotsPerTeam;
+	int m_teamsAvailable;
 	int m_robotsAvailable;
 	int m_robotsConfirmed;
+ int m_teamsConfirmed;
 	int m_ControllerFd;
 	//GridGame gridGameInstance;
     GridGame* gridGameInstance;	
