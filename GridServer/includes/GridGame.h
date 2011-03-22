@@ -7,6 +7,7 @@
 #include "MathAux.h"
 #include "Types.h"
 #include "Messages.h"
+#include "AntixUtil.h"
 #include <list>
 #include <vector>
 #include <map>
@@ -66,6 +67,11 @@ public:
     int processAction(std::vector<Msg_Action>& robot_actions, std::vector< Msg_RobotInfo >* results);
 
     /**
+     * Interface function to Network layer for processing actions for each robot.
+     */
+    int getPopulation(std::vector< Msg_RobotInfo >* results);
+
+    /**
      * Return the max world size.
      */
     const float& getWorldSize() const;
@@ -109,12 +115,6 @@ private:
 
     //O(1) lookup of our sorted vector;     
     std::map<Game::GameObject*, int> m_YObjects;
-
-    // read an ID
-    unsigned int readId(unsigned int id);
-
-    // read an ID
-    unsigned int writeId(unsigned int id, int type);
 
     //Returns the max window size.
     unsigned int m_WindowSize;

@@ -61,7 +61,7 @@ void displayFunc()
 
 void drawTeams()
 {
-    unsigned int winsize = 600;//Network::DrawServer::getInstance()->getWindowSize();
+    unsigned int winsize = 10;//Network::DrawServer::getInstance()->getWindowSize();
     float worldsize = 1.0;//Network::DrawServer::getInstance()->getWorldSize();
     float radius = 20;//Network::DrawServer::getInstance()->getHomeRadius();
 
@@ -81,7 +81,7 @@ void drawPucks()
 
     glPointSize(4.0);
 
-    unsigned int winsize = 600;//Network::DrawServer::getInstance()->getWindowSize();
+    unsigned int winsize = 10;//Network::DrawServer::getInstance()->getWindowSize();
 
     // pack the puck points into a vertex array for fast rendering
     const size_t len(Network::DrawServer::getInstance()->getPucksCount());
@@ -117,7 +117,7 @@ void drawPucks()
 
 void drawRobots()
 {
-    unsigned int winsize   = Network::DrawServer::getInstance()->getWindowSize();
+    unsigned int winsize   = 10;
     float worldsize        = Network::DrawServer::getInstance()->getWorldSize();
     float radius           = Network::DrawServer::getInstance()->getHomeRadius();
 

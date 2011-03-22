@@ -171,22 +171,26 @@ int DrawServer::handler(int fd)
                     //Receive the total number of robots we are getting sens info for.
                     Msg_MsgSize l_NumObjects;
 					NetworkCommon::recvMessageSize(l_NumObjects, l_Conn);
-                    //DEBUGPRINT("%d:\tExpecting %d objects.\n", this->m_framestep, l_NumObjects.msgSize );
+                    DEBUGPRINT("%d:\tExpecting %d objects.\n", this->m_framestep, l_NumObjects.msgSize );
 
+                    
                     //Go through all of the objects we expect position data for.
                     for (int i = 0; i < l_NumObjects.msgSize;i++)
                     {
+                        DEBUGPRINT("1\n");
 		                Msg_RobotInfo l_ObjInfo;
 		                unsigned char l_ObjInfoBuf[l_ObjInfo.size];
                         bzero(&l_ObjInfo, l_ObjInfo.size);
-                        
-                        recvWrapper(l_Conn, l_ObjInfoBuf, l_ObjInfo.size);
-                        
-                        unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
-                                &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.puckid );
+                        DEBUGPRINT("2\n");
 
-                        //DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
-                        	        //l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
+                        recvWrapper(l_Conn, l_ObjInfoBuf, l_ObjInfo.size);
+                        DEBUGPRINT("3\n");
+
+                        unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
+                                &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.speed, &l_ObjInfo.puckid );
+
+                        DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\n",
+                        	        l_ObjInfo.robotid, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.puckid );
                                 
                         updateObject(l_ObjInfo);
                     }

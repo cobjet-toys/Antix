@@ -29,6 +29,12 @@ typedef std::pair<int, std::vector<sensed_item> > ObjectPair;
 GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_from, int id_to)
 {
 
+    #ifdef DEBUG
+
+    printf("Gridid: %d, Num of teams: %d, robots per team: %d, idfrom: %d, idto: %d", gridid, num_of_teams, robots_per_team, id_from, id_to);
+
+    #endif
+
     m_GridId = gridid;
     m_Num_Of_Teams = num_of_teams;
     m_Robots_Per_Team = robots_per_team;
@@ -201,11 +207,14 @@ int GridGame::initializeTeam(std::vector<int> teams, std::vector<robot_info>* ro
 int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
 {
 
+    DEBUGPRINT("===Executing getRobots");
 
     Team* l_Team = m_Teams[teamcounter];
     team.id = l_Team->getId();
     team.x = l_Team->getX();
     team.y = l_Team->getY();
+
+    DEBUGPRINT("Team id: %d - Team x: %d - Team y: %d", team.id, team.x, team.y);
 
     //std::vector<robot_info> l_robot_info_vector = new std::vector<robot_info>();
 
@@ -405,8 +414,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
 
     // NOT TESTED!
 
-    for(std::vector<Msg_Action>::iterator it = robot_actions.begin();
-it != robot_actions.end(); it++)
+    for(std::vector<Msg_Action>::iterator it = robot_actions.begin(); it != robot_actions.end(); it++)
     {
         Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
         Msg_RobotInfo temp;
@@ -416,7 +424,6 @@ it != robot_actions.end(); it++)
         if (new_ypos > m_WorldSize)
         {
             new_ypos = 0;
-
         }
         temp.y_pos = new_ypos;
         temp.speed = (*it).speed;
@@ -494,6 +501,39 @@ int GridGame::removeObjectFromPop(int objectid)
 
 }
 
+int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results)
+{
+
+    std::vector<GameObject*>::iterator endit = m_Population.end();
+
+
+    for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != endit; it++)
+    {   
+        // Computes robots altered position (Random)
+        //robotPosition[i][0] += float((rand()%200)-100)/50;
+        //robotPosition[i][1] += float((rand()%200)-100)/50;
+
+        //float posX = robotPosition[i][0];
+        //float posY = robotPosition[i][1];
+        //float orientation = 1.0;
+        DEBUGPRINT("Pushing a robot on drawer results\n");
+        Msg_RobotInfo l_ObjInfo;
+
+        // for each object being pushed
+        l_ObjInfo.robotid = Antix::writeId((**it).getId(), ROBOT);
+        l_ObjInfo.x_pos = (**it).getX();
+        l_ObjInfo.y_pos = (**it).getY();
+        l_ObjInfo.angle = ((**it).getPosition())->getOrient();
+        //l_ObjInfo.puckid = (**it).m_PuckHeld; //TODO: Fix for later
+        l_ObjInfo.puckid = 0;
+
+        results->push_back(l_ObjInfo);
+    }
+    DEBUGPRINT("Done pushing robots to drawer\n");
+
+
+}
+
 const float& GridGame::getWorldSize() const
 {
     return m_WorldSize;
@@ -508,26 +548,3 @@ void GridGame::printPopulation(){
 
 	}
 }
-
-unsigned int readId(unsigned int id)
-{
- /*   if ((id & PUCKVALUE)==PUCKVALUE)
-    {
-        unsigned int value = id || ROBOTVALUE;
-        return value;
-    }
-    return id;
-*/
-}
-
-unsigned int writeId(unsigned int id, int type)
-{/*
-    if (type == 1) // Then it is a puck
-    {
-        unsigned int value = (id || ROBOTVALUE);
-        return value;
-    }
-    return id;
-    */
-}
-
