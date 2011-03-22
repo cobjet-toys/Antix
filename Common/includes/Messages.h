@@ -37,7 +37,13 @@ enum
     MSG_GRIDDATAFULL = 31,
     MSG_GRIDDATACOMPRESS = 32,
     MSG_SETDRAWERCONFIG = 33,
-    MSG_GRIDTEAMS = 34,
+    MSG_GRIDTEAMS = 40,
+	MSG_GRIDCONFIRMSTARTED	= 34,
+	MSG_REQUESTGRIDWAITING = 35,
+	MSG_RESPONDGRIDWAITING = 36,
+	MSG_RESPONDGRIDRANGE = 37,
+	MSG_CLOCKPROCEED = 38,
+	MSG_CONFIRMTEAM = 39
 };
 
 // Drawer enums
@@ -184,5 +190,31 @@ typedef struct{
 	static const size_t size = 18;
 } Msg_DrawerConfig;
 static const char * Msg_DrawerConfig_format = "ccffff";
+
+typedef struct{
+	uint32_t id;
+	static const size_t size = 4;
+} Msg_GridId;
+static const char * Msg_GridId_format = "l";
+
+typedef struct{
+	uint32_t from;
+	uint32_t to;
+	static const size_t size = 8;
+} Msg_RobotIdRange;
+static const char * Msg_RobotIdRange_format = "ll";
+
+typedef struct{
+	uint32_t teams;
+	uint32_t robotsPerTeam;
+	static const size_t size = 8;
+} Msg_GridRequestIdRage;
+static const char * Msg_GridRequestIdRage_format = "ll";
+
+typedef struct{
+	char status; // 'R' or 'P'
+	static const size_t size = 1;
+} Msg_ClockStatus;
+static const char * Msg_ClockStatus_format = "c";
 
 #endif
