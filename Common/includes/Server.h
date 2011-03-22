@@ -22,6 +22,7 @@ public:
 	int start();
 	
 private:
+	int modifyHandler(int fd, unsigned int events);
 	int addHandler(int fd, unsigned int events, TcpConnection * connection);
 	int setnonblock(int fd);
     int handle_epoll(int epfd, int op, int fd, epoll_event* event);
