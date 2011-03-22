@@ -27,9 +27,9 @@ GridServer::GridServer():Server()
 
 int GridServer::initGridGame()
 {
-	//gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam, m_idRangeFrom, m_idRangeTo); // needs to not do this in grid game constructor!
+	gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam, m_idRangeFrom, m_idRangeTo); // needs to not do this in grid game constructor!
     // parameters: gridid, num_of_teams, robots_per_team, id_from, id_to
-    gridGameInstance = new GridGame(1, 2, 10, 10, 30);
+    /*gridGameInstance = new GridGame(1, 2, 10, 10, 30);
     Msg_RobotInfo newrobot;
 	
 	
@@ -41,9 +41,9 @@ int GridServer::initGridGame()
     teams.push_back(10);
 
     std::vector<int> robots;
-    robots.push_back(10);
+    robots.push_back(10);*/
 
-    std::vector<RobotSensedObjectsPair>* sensed_items = new std::vector<RobotSensedObjectsPair>;
+    //std::vector<RobotSensedObjectsPair>* sensed_items = new std::vector<RobotSensedObjectsPair>;
 
     /*//DEBUGPRINT("=====Create Game\n");
 
@@ -489,6 +489,7 @@ int GridServer::handler(int fd)
 					Msg_TeamInit l_Team;
 					std::vector<Msg_InitRobot> * l_robots = new std::vector<Msg_InitRobot>;
 					gridGameInstance->getRobots(l_Team, l_robots);
+
 					DEBUGPRINT("a\n");
 					Msg_header l_header;
 					Msg_MsgSize l_size;
