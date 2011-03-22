@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
+#include "Config.h"
 
 using namespace Network;
 
@@ -139,6 +140,23 @@ int Server::init(const char* port, int maxConnections)
 }
 
 
+int Server::modifyHandler(int fd, unsigned int events)
+{
+
+	epoll_event e;
+	e.data.fd = fd;
+	e.events = events;
+	if (handle_epoll(m_epfd, EPOLL_CTL_MOD, fd, &e) != 0)
+	{
+		DEBUGPRINT("Failed to add epoll handler\n");
+		return -1;
+	} 
+    else
+    {
+        return 0;
+    }
+}
+
 int Server::addHandler(int fd, unsigned int events, TcpConnection * connection)
 {
 	m_Clients[fd] = connection;
@@ -224,6 +242,13 @@ int Server::start()
 								return -1;
 							}
 						}
+						
+						if( modifyHandler(e[i].data.fd, EPOLLET|EPOLLIN|EPOLLHUP ) == -1)
+						{
+							DEBUGPRINT("Could not add handler to tcpConnection\n");
+							return -1;
+						}						
+						
 					} else {
 						printf("SERVER ERROR:\t Handleing but not all clients connected\n");
 					}
