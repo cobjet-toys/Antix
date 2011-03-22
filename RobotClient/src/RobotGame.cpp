@@ -133,12 +133,14 @@ int RobotGame::sendAction(int grid_id, vector<Msg_Action>* robot_actions)
     vector<Msg_Action>& l_robotActions = *robot_actions;
     RobotList robots = m_robotsByGrid[grid_id];
     RobotList::iterator iter;
-    
+   
+    DEBUGPRINT("Gettin actions for grid id %d with %d robots\n", grid_id, robots.size()); 
     // Loop through the robots, and get an action to do for each robot
     for(iter = robots.begin(); iter != robots.end(); iter++)
     {
+        DEBUGPRINT("Accessing robot with with id %d\n", (*iter)->getId());
         Msg_Action l_action = (*iter)->getAction();
-        l_robotActions[(*iter)->getId()] = l_action;
+        l_robotActions.push_back(l_action);
     }
 
     return 0;

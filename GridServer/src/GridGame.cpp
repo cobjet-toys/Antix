@@ -400,9 +400,35 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::vect
 int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector< Msg_RobotInfo >* results)
 {
 
+    // basic movement, moving up and down, not checking collisons
+    // not even checking the angle sent by the client.
+
+    // NOT TESTED!
+
+    for(std::vector<Msg_Action>::iterator it = robot_actions.begin();
+it != robot_actions.end(); it++)
+    {
+        Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
+        Msg_RobotInfo temp;
+        temp.robotid = l_Robot->getId();
+        temp.x_pos = l_Robot->getX();
+        float new_ypos = l_Robot->getY() + 0.1;
+        if (new_ypos > m_WorldSize)
+        {
+            new_ypos = 0;
+
+        }
+        temp.y_pos = new_ypos;
+        temp.speed = (*it).speed;
+        temp.angle = (*it).angle;
+        temp.puckid = 0;
+
+        l_Robot->setPosition(temp.x_pos, temp.y_pos, temp.angle);
+
+        results->push_back(temp);
+    }
+
     return 0;
-
-
 }
 
 
