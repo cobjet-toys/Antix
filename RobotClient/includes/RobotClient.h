@@ -32,6 +32,7 @@ private:
     uint16_t m_HeartBeat;
     int m_ClockFd;
     unsigned int m_ReadyGrids;
+    unsigned int m_ReadyActionGrids;
     RobotGame* robotGameInstance;
 
 	uint16_t m_totalGridRequests;

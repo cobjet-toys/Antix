@@ -305,12 +305,28 @@ int ControllerClient::handler(int fd)
 					
 					DEBUGPRINT("CONTROLLER_CLIENT STATUS:\t Grid Id %lu has responded with READY\n", (unsigned long)l_gridId.id);
 					
-					++m_totalRobotClientsReady;
-					
+					++m_totalGridsReady;
+					DEBUGPRINT("gridReady=%u, gridstotal=%u\n", m_totalGridsReady, m_totalGrids);
 					if (m_totalGridsReady == m_totalGrids)
 					{
 						DEBUGPRINT("CONTROLLER_CLIENT STATUS:\t ALL GRIDS + CLIENTS READY\n");
 						DEBUGPRINT("CONTROLLER_CLIENT STATUS:\t Can now send information to clock\n");
+
+						Msg_header l_header;
+						unsigned char l_buffer[l_header.size];
+						
+						if (NetworkCommon::packHeader(l_buffer, SENDER_CONTROLLER, MSG_CLOCKPROCEED) < 0)
+						{
+							return -1;
+						}
+
+						TcpConnection * l_con = m_serverList[m_ClockFd];
+						
+						if (NetworkCommon::sendMsg(l_buffer,l_header.size,l_con) < 0)
+						{
+							return -1;
+						}
+
 					}
 					
 				}

@@ -63,14 +63,14 @@ int Network::ClockServer::handler(int fd)
 					DEBUGPRINT("Unpack the heartbeat\n");
 					unpack(l_Buffer+l_Header.size, Msg_HB_format, &l_heartBeat.hb);
 					
-					DEBUGPRINT("Heartbeat character is %d", l_heartBeat.hb);
+					DEBUGPRINT("Heartbeat character is %d\n", l_heartBeat.hb);
                     if (m_beat == l_heartBeat.hb && m_clientMap[fd] == true)
 					{
 						m_responded++;
 						m_clientMap[fd] = false;
 					}
 					
-					if (m_responded == m_servers_total) SendHeartBeat();
+					if (m_responded == m_servers_total-1) SendHeartBeat();
                 }
             }
             break;

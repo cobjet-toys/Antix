@@ -1,6 +1,7 @@
 #include "TcpConnection.h"
 #include <errno.h>
 #include <string.h>
+#include "Config.h"
 
 TcpConnection::TcpConnection()
 {
@@ -133,7 +134,7 @@ int TcpConnection::send(unsigned char * message, int messageSize)
 		}
         l_Total += l_Sent;
         l_BytesLeft -= l_Sent;
-		printf("send left = %i\n",l_BytesLeft);		
+		DEBUGPRINT("send left = %i\n",l_BytesLeft);		
     }
     
     return l_Sent==-1?-1:0;

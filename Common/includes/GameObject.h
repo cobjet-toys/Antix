@@ -49,7 +49,7 @@ public:
     /**
      * Get id of object.
      */
-    float getId();
+    int getId();
 
     void setPosition(const float x_pos, const float y_pos, const float orient);
 

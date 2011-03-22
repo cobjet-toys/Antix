@@ -4,6 +4,7 @@
 #include "AntixUtil.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "Config.h"
 
 using namespace Game;
 using namespace Antix;
@@ -78,10 +79,12 @@ void Robot::updateSensors( SensedItemsList sensedItems )
     // TODO Might be a more optimal way to do this, diffs?
     m_VisiblePucks.clear();
     m_VisibleRobots.clear();
+    DEBUGPRINT("Updating sensor info for robot\n");
 
     SensedItemsList::iterator iter;
     for( iter = sensedItems.begin(); iter != sensedItems.end(); iter++)
     {
+        DEBUGPRINT("Adding sensed item: %d, %d, %d\n", (*iter).id, (*iter).x, (*iter).y);
         if( getType((*iter).id) == ROBOT )
         {
             m_VisibleRobots.push_back( Location( (*iter).x, (*iter).y ) );

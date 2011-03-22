@@ -20,7 +20,7 @@ GridServer::GridServer():Server()
 	m_robotsAvailable = 0;
 	m_robotsConfirmed = 0;
 	m_ControllerFd = -1;
-	
+m_teamsConfirmed =0;	
 	m_drawerConn = 0;
 	updateDrawerFlag = 0;
 }
@@ -154,7 +154,7 @@ int GridServer::handler(int fd)
 	
 	NetworkCommon::recvHeader(l_sender, l_senderMsg, l_curConnection);
 
-	DEBUGPRINT("%u, %u\n", l_sender, l_senderMsg);
+	DEBUGPRINT("sender=%u, message=%u\n", l_sender, l_senderMsg);
 	
 	if (l_sender == -1 || l_senderMsg == -1) return -1; // bad messages
 	
@@ -359,7 +359,7 @@ int GridServer::handler(int fd)
 					l_responseMsgSize += (l_robotsTotal * l_robotHeader.size); // append the total size for number of robot ids
 					l_responseMsgSize += (l_totalSensed * l_robotsTotal * l_sensedObject.size); // all sensed items
 					
-					printf("msg size: %i\n", l_responseMsgSize);
+					DEBUGPRINT("msg size: %i\n", l_responseMsgSize);
 					
 					unsigned char msgBuffer[l_responseMsgSize];
 					
@@ -437,6 +437,56 @@ int GridServer::handler(int fd)
 				
 				case (MSG_PROCESSACTION):
 				{
+                    Msg_header l_Header;
+                    Msg_MsgSize l_Size;
+                    Msg_Action l_Action;
+
+                    NetworkCommon::recvMessageSize(l_Size, l_curConnection);
+
+                    unsigned int l_MessageSize = l_Size.msgSize*l_Action.size;
+                    unsigned char l_ActionBuffer[l_MessageSize];
+                  	if (l_curConnection->recv(l_ActionBuffer, l_MessageSize) == -1)
+					{
+						DEBUGPRINT("Could not get Msg_Actions for processs actions\n");
+						return 0;
+					}
+
+                    std::vector<Msg_Action> l_Actions;
+                    unsigned int l_Offset = 0;
+                    DEBUGPRINT("Received a total of %d action requests\n", l_Size.msgSize);
+                    for (int i = 0; i < l_Size.msgSize; i++)
+                    {
+                        unpack(l_ActionBuffer+l_Offset, Msg_Action_format, &l_Action.robotid, &l_Action.action, 
+                                &l_Action.speed, &l_Action.angle);
+                        l_Actions.push_back(l_Action);
+                        l_Offset += l_Action.size;
+                    }
+
+                    std::vector<Msg_RobotInfo> l_Results;
+
+                    gridGameInstance->processAction(l_Actions, &l_Results);
+
+                    DEBUGPRINT("Received %d results\n", l_Results.size());
+
+                    Msg_RobotInfo l_Result;
+                    l_MessageSize = l_Header.size+l_Size.size+(l_Result.size*l_Size.msgSize);
+
+                    l_Offset = 0;
+                    unsigned char l_ResultsBuffer[l_MessageSize];
+                    NetworkCommon::packHeader(l_ResultsBuffer+l_Offset, SENDER_GRIDSERVER,MSG_RESPONDPROCESSACTION);
+                    l_Offset += l_Header.size;
+
+                    pack(l_ResultsBuffer+l_Offset, Msg_MsgSize_format, l_Size.msgSize);
+                    l_Offset += l_Size.size;
+
+                    for (int i = 0; i < l_Size.msgSize; i++)
+                    {
+                        pack(l_ResultsBuffer+l_Offset, Msg_RobotInfo_format, l_Results[i].robotid, l_Results[i].x_pos, l_Results[i].y_pos, l_Results[i].speed, l_Results[i].angle, l_Results[i].puckid);
+                        l_Offset += l_Result.size;
+                    }
+
+                    NetworkCommon::sendMsg(l_ResultsBuffer, l_MessageSize, l_curConnection);
+
 					/*int l_numRobots = -1;
 					
 					NetworkCommon::requestMessageSize(l_numRobots, l_curConnection);
@@ -548,8 +598,9 @@ int GridServer::handler(int fd)
 				
 				case (MSG_CONFIRMTEAM):
 				{
-					
-					if (gridGameInstance->robotsDepleted())
+					DEBUGPRINT("Grid Responded\n");
+					m_teamsConfirmed++;
+					if (m_teamsConfirmed == m_teamsAvailable)
 					{
 						TcpConnection * contCon = m_Clients[m_ControllerFd];
 						
@@ -574,7 +625,7 @@ int GridServer::handler(int fd)
 							return -1;
 						}
 						DEBUGPRINT("GRID_SERVER STATUS:\t sent grid server confirmation\n");
-					}
+					}				
 					
 					return 0;
 				}

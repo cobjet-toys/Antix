@@ -414,7 +414,12 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
 
     // NOT TESTED!
 
+<<<<<<< HEAD
     for(std::vector<Msg_Action>::iterator it = robot_actions.begin(); it != robot_actions.end(); it++)
+=======
+    for(std::vector<Msg_Action>::iterator it = robot_actions.begin();
+it != robot_actions.end(); it++)
+>>>>>>> 866f652d57fcb86f80ac8ceb41c3e0dc554764f6
     {
         Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
         Msg_RobotInfo temp;
@@ -424,6 +429,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
         if (new_ypos > m_WorldSize)
         {
             new_ypos = 0;
+<<<<<<< HEAD
 
         }
         temp.y_pos = new_ypos;
@@ -437,8 +443,21 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
     }
 
     return 0;
+=======
+>>>>>>> 866f652d57fcb86f80ac8ceb41c3e0dc554764f6
 
+        }
+        temp.y_pos = new_ypos;
+        temp.speed = (*it).speed;
+        temp.angle = (*it).angle;
+        temp.puckid = 0;
 
+        l_Robot->setPosition(temp.x_pos, temp.y_pos, temp.angle);
+
+        results->push_back(temp);
+    }
+
+    return 0;
 }
 
 

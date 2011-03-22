@@ -53,7 +53,7 @@ float GameObject::getY()
 
 }
 
-float GameObject::getId()
+int GameObject::getId()
 {
 
 	return m_id;

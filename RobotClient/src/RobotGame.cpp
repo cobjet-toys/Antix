@@ -68,6 +68,8 @@ int RobotGame::setTeamRobot(int gridId, int teamId, Msg_InitRobot robot)
     Math::Position* l_robotPosition = new Math::Position(robot.x,robot.y, 0.0); // initial angle is 0.0
     Game::Robot* l_Robot = new Robot(l_robotPosition, teamId, robot.id);
     m_robotsByGrid[gridId].push_back(l_Robot);
+    DEBUGPRINT("Initializing robo with id %d\n", robot.id);
+    m_robots[robot.id] = l_Robot;
 
     return 0;
 }
@@ -82,17 +84,13 @@ int RobotGame::requestSensorData(int grid_id, IDList* robot_ids)
     // together when deciding on an action
 
     std::vector<Robot*> robots = m_robotsByGrid[grid_id];
-    IDList l_robot_ids;
     
     std::vector<Robot*>::iterator end = robots.end();
 
     for(std::vector<Robot*>::iterator it = robots.begin(); it != end; it++){
-        l_robot_ids.push_back( (**it).m_id );
+        robot_ids->push_back( (**it).m_id );
         DEBUGPRINT( "%d\n", (**it).m_id);
     }
-
-    robot_ids = &l_robot_ids;
-
     return 0;
 }
 
@@ -109,9 +107,11 @@ int RobotGame::receiveSensorData(vector< std::pair<uid, std::vector<Msg_SensedOb
     vector< std::pair<uid, SensedItemsList> >::iterator iter;
     for(iter = sensor_data->begin(); iter != sensor_data->end(); iter++)
     {
+        DEBUGPRINT("robo id: %d\n", (*iter).first);
         //cout << (*iter).first << " " << (*iter).second.at(0).id << endl;
         int robot_id = (*iter).first;
         Robot* l_robotp = m_robots[robot_id];
+        DEBUGPRINT("Updating sensors for robo %d\n", (*iter).first);
         l_robotp->updateSensors( (*iter).second );
     }
 
@@ -133,12 +133,14 @@ int RobotGame::sendAction(int grid_id, vector<Msg_Action>* robot_actions)
     vector<Msg_Action>& l_robotActions = *robot_actions;
     RobotList robots = m_robotsByGrid[grid_id];
     RobotList::iterator iter;
-    
+   
+    DEBUGPRINT("Gettin actions for grid id %d with %d robots\n", grid_id, robots.size()); 
     // Loop through the robots, and get an action to do for each robot
     for(iter = robots.begin(); iter != robots.end(); iter++)
     {
+        DEBUGPRINT("Accessing robot with with id %d\n", (*iter)->getId());
         Msg_Action l_action = (*iter)->getAction();
-        l_robotActions[(*iter)->getId()] = l_action;
+        l_robotActions.push_back(l_action);
     }
 
     return 0;
