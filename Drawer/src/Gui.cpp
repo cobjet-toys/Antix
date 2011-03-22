@@ -111,7 +111,7 @@ void drawPucks()
     glDisableClientState(GL_VERTEX_ARRAY);
 
     char tmpBuf[16];
-    sprintf(tmpBuf, "Pucks  #: %d", len);
+    sprintf(tmpBuf, "Pucks  #: %lu", len);
     drawText(tmpBuf, 5, 570);
 }
 
@@ -174,7 +174,7 @@ void drawRobots()
         glDisableClientState(GL_VERTEX_ARRAY);
 
         char tmpBuf[16];
-        sprintf(tmpBuf, "Robots #: %d", len);
+        sprintf(tmpBuf, "Robots #: %lu", len);
         drawText(tmpBuf, 5, 555);
     }
     else 

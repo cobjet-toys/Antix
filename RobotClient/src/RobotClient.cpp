@@ -335,11 +335,11 @@ int RobotClient::handler(int fd)
                             
                            //Receive and insert into our map of sensed items.
                            recvWrapper(l_Conn, l_SensedItemBuffer, l_SensedItem.size);
-                           unpack(l_SensedItemBuffer, Msg_SensedObjectGroupItem_format, &l_SensedItem.robotid,
+                           unpack(l_SensedItemBuffer, Msg_SensedObjectGroupItem_format, &l_SensedItem.id,
                                    &l_SensedItem.x, &l_SensedItem.y);
                            l_Info.push_back(l_SensedItem);
 
-                           DEBUGPRINT("Sensed object with ID %d, pos(%d, %d)\n", l_SensedItem.robotid,
+                           DEBUGPRINT("Sensed object with ID %d, pos(%d, %d)\n", l_SensedItem.id,
                                    l_SensedItem.x, l_SensedItem.y);
                         }
                     }
