@@ -27,8 +27,8 @@ public:
     //int receiveInitialRobots(int grid_id, vector<robot_info> robot_info_vector);
 
     // New Initialization functions
-    int initTeam( int id, float x, float y);
-    int setTeamRobot(int gridId, int teamId, int robotId, float x, float y);
+    int initTeam( Msg_TeamInit team);
+    int setTeamRobot(int gridId, int teamId, Msg_InitRobot robot);
 
     // Handle sensor data
     int requestSensorData(int grid_id, vector<uid>* robot_ids);
