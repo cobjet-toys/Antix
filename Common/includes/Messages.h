@@ -172,7 +172,6 @@ typedef struct{
 static const char * Msg_TeamId_format = "l";
 
 typedef struct{
-<<<<<<< HEAD
     uint32_t robotid;       //4
     float x_pos;            //4
     float y_pos;            //4
@@ -180,14 +179,6 @@ typedef struct{
     float angle;            //4
     uint32_t puckid;        //4
 	static const size_t size = 24;
-=======
-    uint32_t id;
-    float x_pos;
-    float y_pos;
-    float angle;
-    uint32_t puck;
-	static const size_t size = 21;
->>>>>>> c7f06ca7b3eae98ae23222dd3d474b51f424b1a9
 } Msg_RobotInfo;
 static const char * Msg_RobotInfo_format = "lffffl";
 
