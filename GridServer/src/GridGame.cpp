@@ -210,14 +210,15 @@ int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
     //std::vector<robot_info> l_robot_info_vector = new std::vector<robot_info>();
 
     int i;
-
-    for (i = robotcounter; i <= robotcounter+m_Robots_Per_Team; i++)
+	printf("robo counter: %d, robotconter+m_Robos/team: %d\n", robotcounter, robotcounter+m_Robots_Per_Team);
+    for (i = robotcounter; i < robotcounter+m_Robots_Per_Team; i++)
     {
         GameObject* l_Robot = m_Population[i];
         Msg_InitRobot temp;
         temp.id = l_Robot->getId();
         temp.x = l_Robot->getX();
         temp.y = l_Robot->getY();
+		DEBUGPRINT("ID: %d, X: %f, F: %f \n", temp.id, temp.x, temp.y);
 
         robots->push_back(temp);
     }

@@ -247,6 +247,8 @@ int RobotClient::handler(int fd)
                     Msg_InitRobot l_Robo;
                     unsigned int l_MessageSize = l_Robo.size*l_NumRobots.msgSize;
 					printf("%ui\n", l_MessageSize);
+			
+					unsigned int l_Offset = 0;
                     unsigned char l_RoboBuffer[l_MessageSize];
 
                     recvWrapper(l_Conn, l_RoboBuffer, l_MessageSize);
@@ -254,11 +256,12 @@ int RobotClient::handler(int fd)
                     //For each robot, recv, unpack, and add to game.
                     for (int i =0; i < l_NumRobots.msgSize; i++)
                     {
-                        unpack(l_RoboBuffer, Msg_InitRobot_format, &l_Robo.id, &l_Robo.x, &l_Robo.y);
+                        unpack(l_RoboBuffer+l_Offset, Msg_InitRobot_format, &l_Robo.id, &l_Robo.x, &l_Robo.y);
                         robotGameInstance->setTeamRobot(m_GridFdToId[fd], l_Team.id, l_Robo);
                         //insertRobot(l_GridId, l_Robo.id, l_Robo.x, l_Robo.y);
                         DEBUGPRINT("Received a new robot with ID %d, Coord (%f, %f)\n", 
                                 l_Robo.id, l_Robo.x, l_Robo.y);
+						l_Offset += l_Robo.size;
                     }
                     
                     l_NumRobots.msgSize;

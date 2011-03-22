@@ -255,7 +255,7 @@ int ControllerClient::handler(int fd)
 					
 					Msg_RobotIdRange l_range;
 					l_range.from = m_curRange;
-					l_range.to = m_curRange + totalRobots;
+					l_range.to = m_curRange + totalRobots-1;
 					
 					m_curRange = l_range.to;
 					
