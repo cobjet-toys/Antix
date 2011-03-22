@@ -1,70 +1,55 @@
 #include "Robot.h"
 #include <math.h>
 #include "MathAux.h"
+#include "AntixUtil.h"
 #include <stdlib.h>
 #include <stdio.h>
 
 using namespace Game;
+using namespace Antix;
 
-//Initialize our static variables.
-float Robot::m_FOV = 0.0;
-float Robot::m_Radius = 0.0;
-float Robot::m_PickupRange = 0.0;
-float Robot::m_SensorRange = 0.0;
-
-Robot::Robot(Math::Position *pos,  Home* home):GameObject(pos), m_PuckHeld(NULL), m_Home(home)
+Robot::Robot(Math::Position *pos, int teamid, unsigned int id):GameObject(pos, id)
 {
-    m_LastPickup = new Math::Position();
     m_Speed = new Math::Speed();
+    m_TeamId = teamid;
+
+    //TODO: get TEAM_SIZE from the config
+    //int TEAM_SIZE = 1000;
+    //m_Team = id/TEAM_SIZE;
+    
+    m_PuckHeld = 0;
 }
 
-Robot::Robot(Math::Position *pos, unsigned int id, float FOV, float Radius, float PickupRange, float SensorRange):GameObject(pos, id), m_PuckHeld(NULL)
+
+Robot::Robot(Math::Position *pos, unsigned int id):GameObject(pos, id)
 {
-    m_LastPickup = new Math::Position();
     m_Speed = new Math::Speed();
 
     //TODO: get TEAM_SIZE from the config
-    int TEAM_SIZE = 1000;
-    m_Team = id/TEAM_SIZE;
-
-    m_PuckHeld = -1;
-
-    m_FOV = FOV;
-    m_Radius = Radius;
-    m_PickupRange = PickupRange;
-    m_SensorRange = SensorRange;
-
+    //int TEAM_SIZE = 1000;
+    //m_Team = id/TEAM_SIZE;
 }
 
 Robot::~Robot()
 {
-    delete m_LastPickup;
+	m_VisiblePucks.clear();
+	m_VisibleRobots.clear();
     delete m_Speed;
 }
 
 int Robot::setSpeed(Speed* speed)
 {
-
+    if(speed == NULL)
+    {
+        return -1;
+    }
+    delete m_Speed;
+	m_Speed = speed;
     return 0;
-
 }
 
-float& Robot::getRadius()
-{
-    return m_Radius;
-}
 
-float& Robot::getSensRange()
-{
-    return m_SensorRange;
-}
-
-float& Robot::getFOV()
-{
-    return m_FOV;
-}
-
-void Robot::updatePosition()
+void Robot::updatePosition(const float x_pos, const float y_pos)
 {
     /*
     //Calculate our displacement based on our speed and current position.
@@ -88,8 +73,24 @@ void Robot::updatePosition()
     */
 }
 
-void Robot::updateSensors()
+void Robot::updateSensors( std::vector<sensed_item> sensed_items )
 {
+    // TODO Might be a more optimal way to do this, diffs?
+    m_VisiblePucks.clear();
+    m_VisibleRobots.clear();
+
+    std::vector<sensed_item>::iterator iter;
+    for( iter = sensed_items.begin(); iter != sensed_items.end(); iter++)
+    {
+        if( getType((*iter).id) == ROBOT )
+        {
+            m_VisibleRobots.push_back( Location( (*iter).x, (*iter).y ) );
+        }
+        else
+        {
+            m_VisiblePucks.push_back( Location( (*iter).x, (*iter).y ) );
+        }
+    }
 
 /*
     //Clear our collection of visible objets.
@@ -175,8 +176,13 @@ void Robot::updateSensors()
      */
 }
 
-void Robot::updateController()
+action Robot::getAction()
 {
+    action l_action;
+    l_action.action = 1;
+    l_action.speed = 1.0;
+    l_action.angle = 0.0f;
+    return l_action;
 /*
     float l_HeadingError = 0.0;
 

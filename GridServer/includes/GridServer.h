@@ -6,7 +6,9 @@
 #include "Packer.h"
 #include "GridGame.h"
 
-#define FRAME_FREQUENCY 500
+#include "AntixUtil.h"
+
+#define FRAME_FREQUENCY 50000	//used as microseconds = 50 ms
 
 namespace Network
 {

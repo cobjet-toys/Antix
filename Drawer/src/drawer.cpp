@@ -8,33 +8,19 @@
 #include <stdlib.h>
 #include "DrawServer.h"
 #include "Gui.h"
+#include "AntixUtil.h"
 
 /*
  * Usage: ./DrawServer <window_size> <init_file> <world_size> <home_radius> <enable_FOV> [ <FOV_angle> <FOV_range> ]
  */
 int main(int argc, char** argv)
 {
-	if (argc < 2) 
+	if (argc < 3) 
 	{
-		perror("Please specify a port for the server");
+		perror("Please specify a port and a config file for the Drawer");
 		return (EXIT_FAILURE);
 	}
-	
-    /*
-    if (argc < 7)
-    {
-        perror("Usage: ./DrawServer <port number> <init_file> <window_size> <world_size> <home_radius> <enable_FOV> [ <FOV_angle> <FOV_range> ] ");
-        return (EXIT_FAILURE);
-    }
-
-    if (atoi(argv[6]) != 0 && argc < 9)
-    {
-        perror("Usage: ./DrawServer <port number> <init_file> <window_size> <world_size> <home_radius> <enable_FOV> [ <FOV_angle> <FOV_range> ] ");
-        return (EXIT_FAILURE);
-    }
-     * */     
     
-    //Network::DrawServer::getInstance()->init(argc, argv);
     Network::DrawServer * drawer = Network::DrawServer::getInstance();
     drawer->init();
     drawer->initGrid("localhost", "3333", 0);

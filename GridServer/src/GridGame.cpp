@@ -39,18 +39,17 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     robot_SensorRange = 1;
     robot_PickupRange = robot_SensorRange/5.0;
 
-    printf("\n%f\n", robot_FOV);
+    printf("Robot FOV: \n%f\n", robot_FOV);
 
 
-    //Home radius.
     home_Radius = 0.1;
-
     m_WorldSize = 10;
 	m_NumGrids = 2;
-
     m_PuckTotal = 20;
 
+    // Safety
     m_Population.clear();
+    m_Teams.clear();
 
     int l_pucks_per_grid = m_PuckTotal/m_NumGrids;
     int high_puck_range = l_pucks_per_grid * m_GridId;
@@ -59,12 +58,29 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     //int high_puck_range = (m_PuckTotal/m_NumGrids)*(m_GridId+1);
     //int low_puck_range = (m_PuckTotal/m_NumGrids)*(m_GridId);
 
+    Team* l_team;
+
     for (int i = id_from; i <= id_to; i++)
     {
-        Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
-        Game::Robot* l_Robot = new Robot(l_RobotPosition, i, robot_FOV, robot_Radius, robot_PickupRange, robot_SensorRange);
-        addObjectToPop(l_Robot);
 
+        #ifdef DEBUG
+        std::cout << "Robot id being created:" <<i << std::endl;
+       // if you can divide the id by the robots per team, that means that this is a team, create a new team
+       // object for the rest of the robots to point to
+
+        std::cout << "WTF id:" <<i << "robots per team: "<< robots_per_team << std::endl;
+        #endif
+        if (i%robots_per_team == 0)
+        {
+            std::cout << "WTF2 id:" <<i << "robots per team: "<< robots_per_team << std::endl;
+            Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
+            l_team = new Team(l_RobotPosition, i/robots_per_team);
+            m_Teams.push_back(l_team);
+        }
+
+        Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
+        Game::Robot* l_Robot = new Robot(l_RobotPosition, i );
+        addObjectToPop(l_Robot);
     }
 
     // TEMPORARY until I write the bit shifting functions
@@ -87,9 +103,22 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     }
 
     //exit(1);
+    
+    //TODO: Wrap this in ifdef debug
+    for(std::vector<Team*>::iterator it = m_Teams.begin(); it != m_Teams.end(); it++)
+    {
+    
+        std::cout << "Id:" << (*it)->getId() << "Team X: " << (*it)->getX() << "Team Y:" << (*it)->getY() << std::endl;
+
+    }
+
 
     // Sort generated pucks
-    sortPopulation();
+    //sortPopulation();
+
+    // set team and robot counters used by getRobots function
+    teamcounter = 0;
+    robotcounter = 0;
 
 }
 
@@ -163,7 +192,41 @@ int GridGame::initializeTeam(std::vector<int> teams, std::vector<robot_info>* ro
         return 1;
 }
 
-*/
+ */
+
+
+int GridGame::getRobots(int& teamid, float& team_x, float& team_y, std::vector<robot_info>* robots)
+{
+
+    // WARNING!!!!!! THIS FUNCTION HAS NOT BEEN TESTED! COMMITTED AS I WILL NOT BE HERE TOMORROW
+    // SO IF YOU USE THIS FUNCTION TOMORROW, BE CAREFUL!!
+
+    Team* l_Team = m_Teams[teamcounter];
+    teamid = l_Team->getId();
+    team_x = l_Team->getX();
+    team_y = l_Team->getY();
+    teamcounter++;
+
+    //std::vector<robot_info> l_robot_info_vector = new std::vector<robot_info>();
+
+    int i;
+
+    for (i = robotcounter; i <= robotcounter+m_Robots_Per_Team; i++)
+    {
+        GameObject* l_Robot = m_Population[i];
+        robot_info temp;
+        temp.id = l_Robot->getId();
+        temp.x_pos = l_Robot->getX();
+        temp.y_pos = l_Robot->getY();
+
+        robots->push_back(temp);
+    }
+
+    robotcounter = i;
+    //robots = &l_robot_info_vector;
+
+
+}
 
 int GridGame::registerRobot(robot_info robot)
 {
@@ -171,7 +234,7 @@ int GridGame::registerRobot(robot_info robot)
     Math::Position* l_RobotPosition = new Position(robot.x_pos, robot.y_pos, robot.angle);
 
     // create new robot based on info from robot_info struct
-    Game::Robot* l_Robot = new Robot(l_RobotPosition, robot.id, robot_FOV, robot_Radius, robot_PickupRange, robot_SensorRange);
+    Game::Robot* l_Robot = new Robot(l_RobotPosition, robot.id);
 			
     // add robot to the population
     addObjectToPop(l_Robot);

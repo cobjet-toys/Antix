@@ -46,7 +46,15 @@ public:
      */
     float getY();
 
-private:
+    /**
+     * Get id of object.
+     */
+    float getId();
+
+    void setPosition(const float x_pos, const float y_pos, const float orient);
+
+
+protected:
     /**
      * Position of the current object.
      */

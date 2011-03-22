@@ -1,9 +1,5 @@
 #include "DrawServer.h"
-#include "Home.h"
-#include "Robot.h"
-#include "Puck.h"
-#include "Team.h"
-#include "Position.h"
+#include "AntixUtil.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -39,30 +35,6 @@ DrawServer* DrawServer::getInstance()
 
     return m_instance;
 }
-
-/*
-int DrawServer::init(int argc, char** argv)
-{
-	if (Client::init() < 0)
-		return -1;
-
-    if (argc > 2)
-    {
-        //<window_size> <world_size> <home_radius> <enable_FOV> [ <FOV_angle> <FOV_range> ]
-        this->m_windowSize = atoi(argv[2]);
-        this->m_worldSize = strtof(argv[3], NULL);
-        this->m_homeRadius = strtof(argv[4], NULL);
-        this->m_FOVEnabled = atoi(argv[5]);
-        if (this->m_FOVEnabled)
-        {
-            this->m_FOVAngle = strtof(argv[6], NULL);
-            this->m_FOVRange = strtof(argv[7], NULL);
-        }
-    }   
-    
-    return 0;
-}
-*/
 
 int DrawServer::initGrid(const char* host, const char* port, int id)
 {
@@ -102,12 +74,12 @@ int DrawServer::setGridConfig(int grid_fd, char send_data, float topleft_x, floa
     //Pack config message
 	l_DrawerConfig.send_data = send_data;
 	l_DrawerConfig.data_type = this->m_drawerDataType;
-	l_DrawerConfig.left_x = topleft_x;
-	l_DrawerConfig.left_y = topleft_y;
-	l_DrawerConfig.right_x = bottomright_x;
-	l_DrawerConfig.right_y = bottomright_y;
+	l_DrawerConfig.tl_x = topleft_x;
+	l_DrawerConfig.tl_y = topleft_y;
+	l_DrawerConfig.br_x = bottomright_x;
+	l_DrawerConfig.br_y = bottomright_y;
     pack(l_Buffer+l_BufferOf, Msg_DrawerConfig_format, 
-    	l_DrawerConfig.send_data, l_DrawerConfig.data_type, l_DrawerConfig.left_x, l_DrawerConfig.left_y, l_DrawerConfig.right_x, l_DrawerConfig.right_y);
+    	l_DrawerConfig.send_data, l_DrawerConfig.data_type, l_DrawerConfig.tl_x, l_DrawerConfig.tl_y, l_DrawerConfig.br_x, l_DrawerConfig.br_y);
     
     
     return sendWrapper(l_curConn, l_Buffer, l_MessageSize);   
@@ -118,9 +90,7 @@ void DrawServer::initTeams()
     if (this->m_teams.size() == 0)
     {
     	Math::Position *homePos = new Math::Position(55.0, 150.0, 0.0);
-        Game::Home * home = new Game::Home(homePos);        
-        this->m_teams[1] = new Game::Team();
-        this->m_teams[1]->m_Home = home;
+        this->m_teams[1] = new Game::Team(homePos, 1);
     }
 
     DEBUGPRINT("Teams=%d\n", this->m_teams.size());
@@ -137,9 +107,10 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
     	return;
     }
     
-    int objId = newInfo.id % TEAM_ID_SHIFT;
-    DEBUGPRINT("%d = %d %% %d\n", objId, newInfo.id, TEAM_ID_SHIFT);
-    if(objId == 0)
+    uint32_t objType, objId;
+    Antix::getTypeAndId(newInfo.id, &objType, &objId);
+    DEBUGPRINT("global_id=%d\ttype=%d\tid=%d\n", newInfo.id, objType, objId);
+    if(objType == PUCK)
     {
         if (!this->m_pucks[objId])
         {
@@ -160,7 +131,7 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
         			  DEBUGPRINT("No home for team %d\n", 1);//newInfo.id/TEAM_ID_SHIFT);
         			  return;
         		}         			
-  			    this->m_robots[objId] = new Game::Robot(pos, this->m_teams[1]->getHome());//newInfo.id/TEAM_ID_SHIFT]->getHome());
+  			    this->m_robots[objId] = new Game::Robot(pos, this->m_teams[1]->m_TeamId, objId);//newInfo.id/TEAM_ID_SHIFT]->getHome());
       	}          	
       	else
       	{
@@ -177,7 +148,7 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
 
 int DrawServer::handler(int fd)
 {
-    DEBUGPRINT("Handling file descriptor: %i\n", fd);
+    //DEBUGPRINT("Handling file descriptor: %i\n", fd);
 
     //Get our TCPConnection for this socket.    
     TcpConnection * l_Conn = this->m_serverList[fd];	
@@ -201,9 +172,7 @@ int DrawServer::handler(int fd)
                     //Receive the total number of robots we are getting sens info for.
                     Msg_MsgSize l_NumObjects;
 					NetworkCommon::requestMessageSize(l_NumObjects, l_Conn);
-                    DEBUGPRINT("Expecting %d objects.\n", l_NumObjects.msgSize );
-                    
-                    //containers to hold processed/received data
+                    DEBUGPRINT("%d:\tExpecting %d objects.\n", this->m_framestep, l_NumObjects.msgSize );
 
                     //Go through all of the objects we expect position data for.
                     for (int i = 0; i < l_NumObjects.msgSize;i++)
@@ -217,13 +186,13 @@ int DrawServer::handler(int fd)
                         unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
                                 &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck );
 
-                        DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
-                                l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
+                        //DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
+                        //        l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
                                 
                         updateObject(l_ObjInfo);
                     }
-                    DEBUGPRINT("Finished updating objects\n");
-
+                    //DEBUGPRINT("Finished updating objects\n");
+					this->m_framestep++;
                 }
                 
                 case(MSG_GRIDDATACOMPRESS) : 

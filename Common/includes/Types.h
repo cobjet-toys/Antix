@@ -12,16 +12,7 @@
 
 using std::string;
 
-
 const string DEFAULT_REDIS_PORT = "6379";
-
-typedef unsigned int uid;
-typedef std::pair<string, string> ConnectionPair;
-typedef std::pair<int, int> TeamGridPair;
-typedef std::vector<ConnectionPair> ConnectionList;
-typedef std::vector<string> StringList;
-typedef ConnectionList::iterator ConListIterator;
-typedef std::map<uid, std::vector<TeamGridPair> > ClientList;
 
 typedef struct{
     unsigned int id;
@@ -29,6 +20,7 @@ typedef struct{
     float y;
 } sensed_item;
 
+//Action is: 1 - setSpeed, 2 - pickup, 3 - drop
 typedef struct{
     int action;
     float speed;
@@ -52,5 +44,18 @@ typedef struct{
     unsigned int puck_id;
 } robot_info;
 
+typedef unsigned int uid;
+typedef std::pair<string, string> ConnectionPair;
+typedef std::pair<int, int> TeamGridPair;
+typedef std::pair<float, float> Location;
+typedef std::vector<ConnectionPair> ConnectionList;
+typedef std::vector<string> StringList;
+typedef ConnectionList::iterator ConListIterator;
+typedef std::map<uid, std::vector<TeamGridPair> > ClientList;
+typedef std::map<int, std::vector<sensed_item> > SensedItems;
+
+// For checking output of Antix::getTypes()
+const int ROBOT = 0;
+const int PUCK = 1;
 
 #endif // __TYPES_H__

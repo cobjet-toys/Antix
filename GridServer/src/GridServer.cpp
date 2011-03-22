@@ -17,6 +17,9 @@ GridServer::GridServer():Server()
 	m_idRangeTo = 0;
 	m_robotsPerTeam = 0;
 	m_teamsAvailable = 0;
+	
+	m_drawerConn = 0;
+	updateDrawerFlag = 0;
 
     robot_info newrobot;
     newrobot.id = 400;
@@ -24,17 +27,17 @@ GridServer::GridServer():Server()
     newrobot.y_pos = 5;
 
     std::vector<int> teams;
-    teams.push_back(2);
+    teams.push_back(10);
 
     std::vector<int> robots;
-    robots.push_back(2);
+    robots.push_back(10);
 
     std::map<int, std::vector<sensed_item> >* sensed_items_map;
 
     DEBUGPRINT("=====Create Game\n");
 
     // parameters: gridid, num_of_teams, robots_per_team, id_from, id_to
-    gridGameInstance = new GridGame(1, 2, 10, 1, 10);
+    gridGameInstance = new GridGame(1, 2, 10, 10, 30);
     //DEBUGPRINT("=====Initialize teams\n");
     //std::vector<robot_info>* robot_info_vector;
     //gridGameInstance->initializeTeam(teams, robot_info_vector);
@@ -47,6 +50,29 @@ GridServer::GridServer():Server()
     gridGameInstance->printPopulation();
     DEBUGPRINT("=====Get Sensor Data\n");
     gridGameInstance->returnSensorData(teams, sensed_items_map);
+
+    // TEST for getRobots
+    int teamid;
+    float team_x;
+    float team_y;
+    std::vector<robot_info>* les_robots = new std::vector<robot_info>();
+
+    gridGameInstance->getRobots(teamid, team_x, team_y, les_robots);
+    DEBUGPRINT("=====getRobots====\n");
+    DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
+    for(std::vector<robot_info>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
+    {
+        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x_pos, it->y_pos);
+    }
+
+    gridGameInstance->getRobots(teamid, team_x, team_y, les_robots);
+    DEBUGPRINT("=====getRobots====\n");
+    DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
+    for(std::vector<robot_info>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
+    {
+        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x_pos, it->y_pos);
+    }
+
 
 }
 int GridServer::handleNewConnection(int fd)
@@ -423,10 +449,10 @@ int GridServer::handler(int fd)
 						DEBUGPRINT("Could not receive a config data.");
 						return -1;
 					}
-					unpack(configDataBuf, Msg_DrawerConfig_format, &configData.send_data, &configData.data_type, &configData.left_x, &configData.left_y, &configData.right_x, &configData.right_y);
+					unpack(configDataBuf, Msg_DrawerConfig_format, &configData.send_data, &configData.data_type, &configData.tl_x, &configData.tl_y, &configData.br_x, &configData.br_y);
 
-                    printf("Config: send_data=%c, data_type=%c, left_x=%f, bottom_y=%f, right_x=%f, top_y=%f\n",
-                           configData.send_data, configData.data_type, configData.left_x, configData.left_y, configData.right_x, configData.right_y);
+                    printf("Config: send_data=%c, data_type=%c, tl_x=%f, tl_y=%f, br_x=%f, br_y=%f\n",
+                           configData.send_data, configData.data_type, configData.tl_x, configData.tl_y, configData.br_x, configData.br_y);
 
                     // TODO - Make it only initialize a single pThread
                     pthread_t thread1;
@@ -461,8 +487,8 @@ int GridServer::updateDrawer(uint32_t framestep)
 {
     printf("----updateDrawer---------\n");
 
-    int m_totalRobots = 10;
-    int m_totalPucks = 0;
+    int m_totalRobots = 10000;
+    int m_totalPucks = 10000;
     int l_totalObjects = m_totalRobots + m_totalPucks;
 
 
@@ -519,7 +545,7 @@ int GridServer::updateDrawer(uint32_t framestep)
         float orientation = 1.0;
 
         // for each object being pushed
-        l_ObjInfo.id = i + 1024;
+        l_ObjInfo.id = Antix::writeId(i, ROBOT);
         l_ObjInfo.x_pos = posX;
         l_ObjInfo.y_pos = posY;
         l_ObjInfo.angle = orientation;
@@ -546,7 +572,7 @@ int GridServer::updateDrawer(uint32_t framestep)
         float posY = randPuckVals[(2*i) + 1];
 
         // for each object being pushed
-        l_ObjInfo.id = i;
+        l_ObjInfo.id = Antix::writeId(i, PUCK);
         l_ObjInfo.x_pos = posX;
         l_ObjInfo.y_pos = posY;
         l_ObjInfo.angle = 1.0;
