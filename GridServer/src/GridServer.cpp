@@ -45,7 +45,7 @@ int GridServer::initGridGame()
 
     std::vector<RobotSensedObjectsPair>* sensed_items = new std::vector<RobotSensedObjectsPair>;
 
-    //DEBUGPRINT("=====Create Game\n");
+    /*//DEBUGPRINT("=====Create Game\n");
 
     //DEBUGPRINT("=====Initialize teams\n");
     //std::vector<robot_info>* robot_info_vector;
@@ -96,7 +96,7 @@ int GridServer::initGridGame()
     gridGameInstance->printPopulation();
     DEBUGPRINT("=====Get Sensor Data\n");
     gridGameInstance->returnSensorData(teams, sensed_items);
-	gridGameInstance->printPopulation();
+	gridGameInstance->printPopulation();*/
 
 	return 0;
 }
