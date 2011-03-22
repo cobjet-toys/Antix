@@ -31,12 +31,12 @@ GridServer::GridServer():Server()
 
 int GridServer::initGridGame()
 {
-	gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam, m_idRangeFrom, m_idRangeTo); // needs to not do this in grid game constructor!
-    /*
+	//gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam, m_idRangeFrom, m_idRangeTo); // needs to not do this in grid game constructor!
+    // parameters: gridid, num_of_teams, robots_per_team, id_from, id_to
+    gridGameInstance = new GridGame(1, 2, 10, 10, 30);
     Msg_RobotInfo newrobot;
 	
 	
-    robot_info newrobot;
     newrobot.id = 400;
     newrobot.x_pos = 5;
     newrobot.y_pos = 5;
@@ -51,8 +51,6 @@ int GridServer::initGridGame()
 
     //DEBUGPRINT("=====Create Game\n");
 
-    // parameters: gridid, num_of_teams, robots_per_team, id_from, id_to
-    //gridGameInstance = new GridGame(1, 2, 10, 10, 30);
     //DEBUGPRINT("=====Initialize teams\n");
     //std::vector<robot_info>* robot_info_vector;
     //gridGameInstance->initializeTeam(teams, robot_info_vector);
@@ -103,7 +101,7 @@ int GridServer::initGridGame()
     DEBUGPRINT("=====Get Sensor Data\n");
     gridGameInstance->returnSensorData(teams, sensed_items_map);
 	gridGameInstance->printPopulation();
-    */
+
 	return 0;
 }
 int GridServer::handleNewConnection(int fd)
