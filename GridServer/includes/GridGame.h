@@ -58,7 +58,7 @@ public:
      * Interface function to Network layer for returning sensor data for a list of robots
      * for a set of robots on a client
      */
-    int returnSensorData(std::vector<int> robot_ids_from_client, std::map<int, std::vector<sensed_item> >* sensed_items_map);
+    int returnSensorData(std::vector<int> robot_ids_from_client, std::vector< RobotSensedObjectsPair >* sensor_data);
 
     /**
      * Interface function to Network layer for processing actions for each robot.

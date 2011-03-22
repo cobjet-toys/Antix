@@ -36,7 +36,7 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     //Robot configurations.
     robot_FOV = Math::dtor(90.0);
     robot_Radius = 0.01;
-    robot_SensorRange = 1;
+    robot_SensorRange = 4;
     robot_PickupRange = robot_SensorRange/5.0;
 
     printf("Robot FOV: \n%f\n", robot_FOV);
@@ -282,7 +282,8 @@ int GridGame::unregisterRobot(unsigned int robotid)
 
 }
 
-int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<int, std::vector<sensed_item> >* sensed_items_map)
+///int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<int, std::vector<sensed_item> >* sensed_items_map)
+int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::vector< RobotSensedObjectsPair >* sensor_data)
 {
 
     for( std::map<GameObject*, int>::iterator it = m_YObjects.begin(); it != m_YObjects.end(); it++){
@@ -291,7 +292,7 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<
 
     }
 
-    std::map<int, std::vector<sensed_item> > l_sensed_items_map; 
+    //std::map<int, std::vector<sensed_item> > l_sensed_items_map; 
 
     std::vector<int>::iterator clientend = robot_ids_from_client.end();
     for(std::vector<int>::iterator it = robot_ids_from_client.begin(); it != clientend; it++)
@@ -306,9 +307,8 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<
 
         GameObject* position_obj = m_Population[position];
 
-        
-        std::vector<sensed_item> temp_vector;
-        
+        std::vector<Msg_SensedObjectGroupItem> temp_vector;
+
         int counter = position;
 
         while ( counter >= 0 )
@@ -317,7 +317,7 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<
                 //TODO: Check Y bound as well
 
                 if ( abs(tempobj->getX() - position_obj->getX()) < robot_SensorRange ){
-                    sensed_item temp_sensed;
+                    Msg_SensedObjectGroupItem temp_sensed;
                     temp_sensed.id = (*position_obj).m_id;
                     temp_sensed.x = position_obj->getX();
                     temp_sensed.y = position_obj->getX();
@@ -343,7 +343,7 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<
                 //TODO: Check Y bound as well
 
                 if ( abs(position_obj->getX() - tempobj->getX()) < robot_SensorRange ){
-                    sensed_item temp_sensed;
+                    Msg_SensedObjectGroupItem temp_sensed;
                     temp_sensed.id = (*position_obj).m_id;
                     temp_sensed.x = position_obj->getX();
                     temp_sensed.y = position_obj->getX();
@@ -358,8 +358,11 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<
             }
         }
 
-        l_sensed_items_map[(*it)] = temp_vector;
+        //l_sensed_items_map[(*it)] = temp_vector;
+        //sensed_items.push_back(RobotSensedObjectsPair<(*it), temp_vector>);
+        sensor_data->push_back(RobotSensedObjectsPair((*it), temp_vector));
        
+        /*
         #ifdef DEBUG
         int total = 0;
 
@@ -369,23 +372,27 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<
         }
         std::cout << "Total:" <<total << std::endl;
         #endif
+        */
 
     }
 
-    sensed_items_map = &l_sensed_items_map;
+    //sensed_items_map = &l_sensed_items_map;
 
+    
     #ifdef DEBUG
-    for( std::map<int, std::vector<sensed_item> >::iterator it = l_sensed_items_map.begin(); it != l_sensed_items_map.end(); it++){
+    //for( std::map<int, std::vector<sensed_item> >::iterator it = l_sensed_items_map.begin(); it != l_sensed_items_map.end(); it++){
+    for( std::vector< RobotSensedObjectsPair >::iterator it = sensor_data->begin(); it != sensor_data->end(); it++){
 
         std::cout << "robot id:" << it->first << " => "; 
         
-        for( std::vector<sensed_item>::iterator iit = (it->second).begin(); iit != (it->second).end(); iit++){
+        for( std::vector<Msg_SensedObjectGroupItem>::iterator iit = (it->second).begin(); iit != (it->second).end(); iit++){
             std::cout << (*iit).id << ",";
         }
         std::cout << std::endl;
 
     }
     #endif
+    
 
     return 1;
 

@@ -82,7 +82,7 @@ void Robot::updateSensors( SensedItemsList sensedItems )
     SensedItemsList::iterator iter;
     for( iter = sensedItems.begin(); iter != sensedItems.end(); iter++)
     {
-        if( getType((*iter).robotid) == ROBOT )
+        if( getType((*iter).id) == ROBOT )
         {
             m_VisibleRobots.push_back( Location( (*iter).x, (*iter).y ) );
         }

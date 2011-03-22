@@ -148,7 +148,7 @@ static const char * Msg_SensedObjectGroupHeader_format = "lh";
 
 // USED
 typedef struct{
-    uint32_t robotid;       //4
+    uint32_t id;       //4
     uint32_t x;             //4
     uint32_t y;             //4
 	static const size_t size = 12;

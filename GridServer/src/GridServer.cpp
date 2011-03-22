@@ -33,7 +33,7 @@ int GridServer::initGridGame()
     Msg_RobotInfo newrobot;
 	
 	
-    newrobot.id = 400;
+    newrobot.robotid = 400;
     newrobot.x_pos = 5;
     newrobot.y_pos = 5;
 
@@ -43,7 +43,7 @@ int GridServer::initGridGame()
     std::vector<int> robots;
     robots.push_back(10);
 
-    std::map<int, std::vector<sensed_item> >* sensed_items_map;
+    std::vector<RobotSensedObjectsPair>* sensed_items = new std::vector<RobotSensedObjectsPair>;
 
     //DEBUGPRINT("=====Create Game\n");
 
@@ -60,7 +60,7 @@ int GridServer::initGridGame()
     gridGameInstance->registerRobot(newrobot);
     gridGameInstance->printPopulation();
     DEBUGPRINT("=====Get Sensor Data\n");
-    gridGameInstance->returnSensorData(teams, sensed_items_map);
+    gridGameInstance->returnSensorData(teams, sensed_items);
 
     // TEST for getRobots
     int teamid;
@@ -74,7 +74,7 @@ int GridServer::initGridGame()
     DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
     for(std::vector<Msg_RobotInfo>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
     {
-        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x_pos, it->y_pos);
+        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->robotid, it->x_pos, it->y_pos);
     }
 
     gridGameInstance->getRobots(teamid, team_x, team_y, les_robots);
@@ -83,7 +83,7 @@ int GridServer::initGridGame()
     DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
     for(std::vector<Msg_RobotInfo>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
     {
-        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x_pos, it->y_pos);
+        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->robotid, it->x_pos, it->y_pos);
     }
 
     DEBUGPRINT("=====Printing population after getting all of the robots for robotclient\n");
@@ -95,7 +95,7 @@ int GridServer::initGridGame()
     gridGameInstance->registerRobot(newrobot);
     gridGameInstance->printPopulation();
     DEBUGPRINT("=====Get Sensor Data\n");
-    gridGameInstance->returnSensorData(teams, sensed_items_map);
+    gridGameInstance->returnSensorData(teams, sensed_items);
 	gridGameInstance->printPopulation();
 
 	return 0;
@@ -403,9 +403,9 @@ int GridServer::handler(int fd)
 							// for each object seen by such robot
 							l_sensedObject.y = vecIt->y;
 							l_sensedObject.x = vecIt->x;
-							l_sensedObject.robotid = vecIt->id;
-							DEBUGPRINT("Packing sensed object id=%d x=%d y=%d | of buffer %d\n", l_sensedObject.robotid, l_sensedObject.x, l_sensedObject.y, l_position);
-							if (pack(msgBuffer+l_position, Msg_SensedObjectGroupItem_format, l_sensedObject.robotid, l_sensedObject.x, l_sensedObject.y) != l_sensedObject.size)
+							l_sensedObject.id = vecIt->id;
+							DEBUGPRINT("Packing sensed object id=%d x=%d y=%d | of buffer %d\n", l_sensedObject.id, l_sensedObject.x, l_sensedObject.y, l_position);
+							if (pack(msgBuffer+l_position, Msg_SensedObjectGroupItem_format, l_sensedObject.id, l_sensedObject.x, l_sensedObject.y) != l_sensedObject.size)
 							{
 								DEBUGPRINT("Could not pack robot header\n");
 								return -1;
