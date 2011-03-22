@@ -18,7 +18,7 @@ static time_t init_sec = time(NULL);
 static int Timesteps = 0;
 
 
-RobotClient::RobotClient():Client(), m_ReadyGrids(0)
+RobotClient::RobotClient():Client(), m_ReadyGrids(0), m_ReadyActionGrids(0)
 {
     robotGameInstance = new RobotGame();
 
@@ -301,6 +301,33 @@ int RobotClient::handler(int fd)
 					//return 0;
                 }
                 break;
+                case(MSG_RESPONDPROCESSACTION) :
+                {
+                    DEBUGPRINT("Received action responese\n");
+                    m_ReadyActionGrids++;
+                    if (m_ReadyActionGrids == m_Grids.size())
+                    {
+                        TcpConnection* l_ClockConn = m_serverList[m_ClockFd];
+                        //Prepare our 'header' message.
+                        Msg_header l_Header;
+                        Msg_HB l_HB = {m_HeartBeat};
+
+                        unsigned int l_MessageSize = l_Header.size+l_HB.size;
+                        unsigned char l_HBBuffer[l_MessageSize];
+                        packHeaderMessage(l_HBBuffer, SENDER_CLIENT, MSG_HEARTBEAT);
+                      
+                        //Pack the hearbeat into the header message buffer.
+                        if (pack(l_HBBuffer+l_Header.size, Msg_HB_format, l_HB.hb) != l_HB.size)
+                        {
+                            DEBUGPRINT("Failed to pack the HB message\n");
+                            return -1;
+                        }
+                        sendWrapper(l_ClockConn, l_HBBuffer, l_MessageSize);
+                        DEBUGPRINT("Sent heartbeat.\n");
+                        m_ReadyActionGrids = 0;
+                    }
+                    break;
+                }
                 case(MSG_RESPONDSENSORDATA) :
                 {
                     std::vector <std::pair <uid, std::vector<Msg_SensedObjectGroupItem > > > l_SensedInfo;
@@ -361,25 +388,49 @@ int RobotClient::handler(int fd)
                     DEBUGPRINT("Recevied sensory data from a grid. %d Ready, %zu total\n", m_ReadyGrids, m_Grids.size());
                     if (m_ReadyGrids == m_Grids.size())
                     {   
-                        DEBUGPRINT("Finished one loop\n");
-                        TcpConnection* l_ClockConn = m_serverList[m_ClockFd];
-                        //Prepare our 'header' message.
+                        DEBUGPRINT("Finished receiving sensory info.\n");
                         Msg_header l_Header;
-                        Msg_HB l_HB = {m_HeartBeat};
+                        unsigned char l_ActionBuffer[l_Header.size];
 
-                        unsigned int l_MessageSize = l_Header.size+l_HB.size;
-                        unsigned char l_HBBuffer[l_MessageSize];
-                        packHeaderMessage(l_HBBuffer, SENDER_CLIENT, MSG_HEARTBEAT);
-                        
-                        //Pack the hearbeat into the header message buffer.
-                        if (pack(l_HBBuffer+l_Header.size, Msg_HB_format, l_HB.hb) != l_HB.size)
+                        packHeaderMessage(l_ActionBuffer, SENDER_CLIENT, MSG_PROCESSACTION);
+
+                        std::map<int, int>::const_iterator end = m_GridIdToFd.end();
+                        for(std::map<int, int>::const_iterator it = m_GridIdToFd.begin(); it != end; it++)
                         {
-                            DEBUGPRINT("Failed to pack the HB message\n");
-                            return -1;
+                            sendWrapper(m_serverList[(*it).second], l_ActionBuffer, l_Header.size);
                         }
-                        sendWrapper(l_ClockConn, l_HBBuffer, l_MessageSize);
-                        DEBUGPRINT("Sent heartbeat.\n");
 
+/*                        std::vector<Msg_Action> l_RoboActions;
+                        std::map<int, int>::const_iterator end = m_GridIdToFd.end();
+                        DEBUGPRINT("Getting actions from simulation\n");
+                        for(std::map<int, int>::const_iterator it = m_GridIdToFd.begin(); it != end; it++)
+                        {
+                            robotGameInstance->sendAction((*it).first, &l_RoboActions);
+                            DEBUGPRINT("Received %d actions for grid %d \n", l_RoboActions.size(), (*it).first);
+                            //TODO SEND ACTIONS.
+                            Msg_header l_Header;
+                            Msg_MsgSize l_Size = {l_RoboActions.size()};
+                            Msg_Action l_Action;
+
+                            unsigned int l_MessageSize = l_Header.size+l_Size.size+ (l_Action.size*l_RoboActions.size());
+                            unsigned char l_ActionBuffer[l_MessageSize];
+                            unsigned int l_Offset = 0;
+
+                            packHeaderMessage(l_ActionBuffer+l_Offset, SENDER_CLIENT, MSG_PROCESSACTION);
+                            l_Offset += l_Header.size;
+
+                            pack(l_ActionBuffer+l_Offset, Msg_MsgSize_format, l_Size.msgSize);
+                            l_Offset += l_Size.size;
+
+                            for (int i = 0; i < l_RoboActions.size(); i++)
+                            {
+                                pack(l_ActionBuffer+l_Offset, Msg_Action_format, l_RoboActions[i].robotid, l_RoboActions[i].action, l_RoboActions[i].speed,l_RoboActions[i].angle);
+                                l_Offset += l_Action.size;
+                            }
+
+                            sendWrapper(m_serverList[(*it).second],l_ActionBuffer, l_MessageSize);
+                            DEBUGPRINT("Sent process action request to grid server\n");
+                        } */
                         m_ReadyGrids = 0;
                     }
                      

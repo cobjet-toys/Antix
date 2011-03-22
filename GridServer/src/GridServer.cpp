@@ -432,6 +432,11 @@ int GridServer::handler(int fd)
 				
 				case (MSG_PROCESSACTION):
 				{
+                    Msg_header l_Header;
+                    unsigned char l_ActionBuffer[l_Header.size];
+                    NetworkCommon::packHeader(l_ActionBuffer, SENDER_GRIDSERVER,MSG_RESPONDPROCESSACTION);
+
+                    NetworkCommon::sendMsg(l_ActionBuffer, l_Header.size, l_curConnection);
 					/*int l_numRobots = -1;
 					
 					NetworkCommon::requestMessageSize(l_numRobots, l_curConnection);
