@@ -82,17 +82,13 @@ int RobotGame::requestSensorData(int grid_id, IDList* robot_ids)
     // together when deciding on an action
 
     std::vector<Robot*> robots = m_robotsByGrid[grid_id];
-    IDList l_robot_ids;
     
     std::vector<Robot*>::iterator end = robots.end();
 
     for(std::vector<Robot*>::iterator it = robots.begin(); it != end; it++){
-        l_robot_ids.push_back( (**it).m_id );
+        robot_ids->push_back( (**it).m_id );
         DEBUGPRINT( "%d\n", (**it).m_id);
     }
-
-    robot_ids = &l_robot_ids;
-
     return 0;
 }
 

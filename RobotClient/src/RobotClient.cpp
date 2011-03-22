@@ -80,9 +80,11 @@ int RobotClient::sendRobotRequests()
     for (std::vector<int>::const_iterator it = m_Grids.begin(); it != l_GridEnd; it++)
     {
         vector<uid> l_RobotIds;
-        robotGameInstance->requestSensorData((*it), &l_RobotIds);
+        DEBUGPRINT("Requesting sensory info from grid id: %d\n", m_GridFdToId[(*it)]);
+        robotGameInstance->requestSensorData(m_GridFdToId[(*it)], &l_RobotIds);
         
-        l_Size.msgSize = 4000;//REPLACE WITH ACTUAL REQUEST FOR ROBOTS(l_RobotIds.size())
+        l_Size.msgSize = l_RobotIds.size();//REPLACE WITH ACTUAL REQUEST FOR ROBOTS(l_RobotIds.size())
+        DEBUGPRINT("Requesting sensory info for %d robots\n", l_RobotIds.size());
 
         unsigned int l_MessageSize = (l_Size.msgSize*l_Req.size)+l_Header.size+l_Size.size;
         unsigned char l_Buffer[l_MessageSize];
@@ -97,10 +99,13 @@ int RobotClient::sendRobotRequests()
          //Add the number of elements we are sending
         pack(l_Buffer+l_CurrBuffIndex, Msg_MsgSize_format, l_Size.msgSize);
         l_CurrBuffIndex += l_Size.size;
+
+        DEBUGPRINT("Requesting sensory info for %d robots\n", l_Size.msgSize);
                
         for (int i = 0; i < l_Size.msgSize;i++)
         {
-            l_Req.id = 1234; //REPLACE WITH ACTUAL ROBOT ID l_Req.id = l_RobotIds[i];
+            l_Req.id = l_RobotIds[i]; //REPLACE WITH ACTUAL ROBOT ID l_Req.id = l_RobotIds[i];
+            DEBUGPRINT("Add id %d to request.", l_Req.id);
             if (pack(l_Buffer+l_CurrBuffIndex, Msg_RequestSensorData_format, l_Req.id) != l_Req.size)
             {
                 DEBUGPRINT("Error packing sensor request into the buffer\n");
@@ -108,6 +113,7 @@ int RobotClient::sendRobotRequests()
             }
             l_CurrBuffIndex += l_Req.size;
         }
+        DEBUGPRINT("\n");
         sendWrapper(m_serverList[(*it)], l_Buffer, l_MessageSize);
  
         unpack(l_Buffer, Msg_header_format, &l_Header.sender, &l_Header.message);
