@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "Messages.h"
 
 using std::string;
 

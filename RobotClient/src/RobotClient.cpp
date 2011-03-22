@@ -233,6 +233,14 @@ int RobotClient::handler(int fd)
                 {
                     DEBUGPRINT("Receiving robot ids and positions for a team.\n");
 
+                    Msg_TeamInit l_Team;
+                    unsigned char l_TeamBuffer[l_Team.size];
+
+                    recvWrapper(l_Conn, l_TeamBuffer, l_Team.size);
+
+                    unpack(l_TeamBuffer, Msg_TeamInit_format, &l_Team.id, &l_Team.x, &l_Team.y);
+
+                    robotGameInstance->initTeam(l_Team); 
                     //Receive the number of robots we are expecting.
                     Msg_MsgSize l_NumRobots;
                     unsigned char l_NumRoboBuffer[l_NumRobots.size];
@@ -255,6 +263,7 @@ int RobotClient::handler(int fd)
                     for (int i =0; i < l_NumRobots.msgSize; i++)
                     {
                         unpack(l_RoboBuffer, Msg_InitRobot_format, &l_Robo.id, &l_Robo.x, &l_Robo.y);
+                        robotGameInstance->setTeamRobot(m_GridFdToId[fd], l_Team.id, l_Robo);
                         //insertRobot(l_GridId, l_Robo.id, l_Robo.x, l_Robo.y);
                         DEBUGPRINT("Received a new robot with ID %d, Coord (%f, %f)\n", 
                                 l_Robo.id, l_Robo.x, l_Robo.y);

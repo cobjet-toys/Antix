@@ -55,19 +55,19 @@ int RobotGame::receiveInitialRobots(int grid_id, std::vector<robot_info> robot_i
 }
 */
 
-int RobotGame::initTeam(int id, float x, float y)
+int RobotGame::initTeam(Msg_TeamInit team)
 // Creates a home with id at x,y
 {
-    m_homeLocations[id] = std::make_pair(x,y);
+    m_homeLocations[team.id] = std::make_pair(team.x,team.y);
     //printf("added mappign for team, id: %d, location: %f,%f\n", id, m_homeLocations[id].first, m_homeLocations[id].second);
     return 0;
 }
 
-int RobotGame::setTeamRobot(int gridId, int teamId, int robotId, float x, float y)
+int RobotGame::setTeamRobot(int gridId, int teamId, Msg_InitRobot robot)
 // Creates a robot and adds it to the grid to robot vector mapping. Creates the robot at position x,y, and team teamId.
 {
-    Math::Position* l_robotPosition = new Math::Position(x,y, 0.0); // initial angle is 0.0
-    Game::Robot* l_Robot = new Robot(l_robotPosition, teamId, robotId);
+    Math::Position* l_robotPosition = new Math::Position(robot.x,robot.y, 0.0); // initial angle is 0.0
+    Game::Robot* l_Robot = new Robot(l_robotPosition, teamId, robot.id);
     m_robotsByGrid[gridId].push_back(l_Robot);
 
     return 0;
