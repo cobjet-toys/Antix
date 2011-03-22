@@ -26,14 +26,20 @@ public:
     int beginSimulation();
 
 private:
-    int packHeaderMessage(unsigned char* buffer, uint16_t sender, uint16_t message);
-    int recvWrapper(TcpConnection* conn, unsigned char* buffer, int msgSize);
-    int sendWrapper(TcpConnection* conn, unsigned char* buffer, int msgSize);
 
     std::map<int, std::pair<const char*, const char*> > m_GridConInfo;
     std::vector<int> m_RobotClients;
 	std::vector<int> m_Grids;
     int m_ClockFd;
+
+	uint32_t m_totalGrids;
+	uint32_t m_totalRobotClients;
+	
+	uint32_t m_totalGridsPending;
+	uint32_t m_totalGridsReady;
+	uint32_t m_totalRobotClientsReady;
+	
+	uint32_t m_curRange;
 };
 }
 

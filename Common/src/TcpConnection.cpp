@@ -128,12 +128,12 @@ int TcpConnection::send(unsigned char * message, int messageSize)
         //Check for error.
         if (l_Sent == -1)
 		{
-            //printf("Error: %s\n", strerror(errno));
+            printf("Error: %s\n", strerror(errno));
             continue;
 		}
         l_Total += l_Sent;
         l_BytesLeft -= l_Sent;
-		//printf("send left = %i\n",l_BytesLeft);		
+		printf("send left = %i\n",l_BytesLeft);		
     }
     
     return l_Sent==-1?-1:0;

@@ -4,6 +4,8 @@
 #include "Config.h"
 #include <map>
 #include <vector>
+#include "TcpConnection.h"
+#include "networkCommon.h"
 
 #ifdef DEBUG
 #include <time.h>
@@ -18,53 +20,60 @@ static int Timesteps = 0;
 
 ControllerClient::ControllerClient():Client()
 {
+	m_totalGrids = 0;
+	m_totalRobotClients = 0;
+	m_totalGridsReady = 0;
+	m_totalRobotClientsReady = 0;
+	m_curRange = 0;
+	m_totalGridsPending = 0;
 }
 
-int ControllerClient::sendWrapper(TcpConnection * conn, unsigned char* buffer, int msgSize)
-{
-    if (conn->send(buffer, msgSize) == -1)
-    {
-        DEBUGPRINT("Failed to send a message.\n");
-        return -1;
-    }
-    return 0;
-}
-
-int ControllerClient::recvWrapper(TcpConnection* conn, unsigned char* buffer, int msgSize)
-{
-    if (conn->recv(buffer, msgSize) == -1)
-    {
-        DEBUGPRINT("Failed to receive a message.\n");
-        return -1;
-    }
-    return 0;
-}
-
-int ControllerClient::packHeaderMessage(unsigned char* buffer, uint16_t sender, uint16_t message)
-{
-    Msg_header l_Header;
-
-    l_Header.sender = sender;
-    l_Header.message = message;
-
-    if (pack(buffer, Msg_header_format, l_Header.sender, l_Header.message) != l_Header.size)
-    {
-        DEBUGPRINT("Failed to pack a header message. Sender: %d, Message: %d", sender, message);
-        return -1;
-    }
-    return 0;
-}
 int ControllerClient::initGrid(const char* host, const char* port)
 {
+	m_totalGrids++;
+	
     int l_GridFd = initConnection(host, port);
 
     if (l_GridFd < 0)
     {
-        DEBUGPRINT("Failed creating connection to a grid server\n");
+        DEBUGPRINT("CONTROLLER_CLIENT: FAILED: Creating connection to %s:%s\n", host, port);
+		return -1;
     }
     m_Grids.push_back(l_GridFd);
     m_GridConInfo[l_GridFd] = std::make_pair (host, port);
 
+	TcpConnection * l_con = m_serverList[l_GridFd];
+	if (l_con == NULL) 
+	{
+		DEBUGPRINT("CONTROLLER_CLIENT: FAILED:\t Cannot init connection to %s:%s, connection.\n", host, port);
+		return -1;
+	}
+	Msg_header l_header;
+	Msg_GridId l_gridId;
+	
+	unsigned char l_headerBuff[l_header.size+l_gridId.size];
+	
+	if (NetworkCommon::packHeader(l_headerBuff, SENDER_CONTROLLER, MSG_REQUESTGRIDWAITING) < 0)
+	{
+		DEBUGPRINT("CONTROLLER_CLIENT: FAILED:\t Cannot pack ready header to %s:%s, connection.\n", host, port);
+		return -1;
+	}
+	
+	if (pack(l_headerBuff+l_header.size, Msg_GridId_format, m_totalGrids) != l_gridId.size)
+	{
+		DEBUGPRINT("CONTROLLER_CLIENT: FAILED:\t failed packing id to %s:%s, connection.\n", host, port);
+		return -1;
+	}
+	
+	if (NetworkCommon::sendMsg(l_headerBuff, l_header.size+l_gridId.size, l_con) < 0)
+	{
+		DEBUGPRINT("CONTROLLER_CLIENT: FAILED:\t Cannot send ready header to %s:%s, connection.\n", host, port);
+		return -1;
+	}
+	
+	DEBUGPRINT("CONTROLLER_CLIENT: STATUS:\t Ready header sent to GRID %s:%s, connection.\n", host, port);
+	
+	
     return l_GridFd;
 }
 
@@ -93,7 +102,7 @@ int ControllerClient::initNeighbourGrids()
         {
             l_RightGrid = m_Grids[i+1];
         }
-        DEBUGPRINT("Got grid fds\n");
+        DEBUGPRINT("CONTROLLER_CLIENT: STATUS\t Have Grid File Descriptors\n");
         //Send the nearby grids.
         Msg_header l_Header;
 
@@ -110,9 +119,9 @@ int ControllerClient::initNeighbourGrids()
    
         unsigned int l_Offset = 0; 
 
-        DEBUGPRINT("Created first neighbour message and buffer\n");
+        DEBUGPRINT("CONTROLLER_CLIENT: STATUS\t Created neighbour\n");
         //Pack header.
-        packHeaderMessage(l_Buffer+l_Offset, SENDER_CONTROLLER, MSG_GRIDNEIGHBOURS);
+        NetworkCommon::packHeader(l_Buffer+l_Offset, SENDER_CONTROLLER, MSG_GRIDNEIGHBOURS);
         l_Offset += l_Header.size;
 
         //Pack size.
@@ -131,7 +140,7 @@ int ControllerClient::initNeighbourGrids()
 
         pack(l_Buffer+l_Offset, Msg_gridNeighbour_format, l_Neighbour.position, l_Neighbour.ip, l_Neighbour.port);
 
-        sendWrapper(m_serverList[m_Grids[i]], l_Buffer, l_BuffSize);
+        NetworkCommon::sendMsg(l_Buffer, l_BuffSize, m_serverList[m_Grids[i]]);
     }
 }
 
@@ -141,7 +150,8 @@ int ControllerClient::initRobotClient(const char* host, const char* port)
 
     if (l_RoboClient < 0)
     {
-        DEBUGPRINT("Failed creating connection to a grid server\n");
+        DEBUGPRINT("CONTROLLER_CLIENT: FAILED\t creating connection to a grid server\n");
+		return -1;
     }
     m_RobotClients.push_back(l_RoboClient);
 
@@ -154,7 +164,8 @@ int ControllerClient::initClock(const char* host, const char* port)
 
     if (l_ClockFd < 0)
     {
-        DEBUGPRINT("Failed creating connection to a grid server\n");
+        DEBUGPRINT("CONTROLLER_CLIENT: FAILED\t creating connection to a grid server\n");
+		return -1;
     }
     m_ClockFd = l_ClockFd;
 
@@ -170,14 +181,14 @@ int ControllerClient::beginSimulation()
     unsigned int l_MsgSize = l_Header.size;
     unsigned char l_Buffer[l_MsgSize];
 
-    packHeaderMessage(l_Buffer, SENDER_CONTROLLER, MSG_HEARTBEAT);
+    NetworkCommon::packHeader(l_Buffer, SENDER_CONTROLLER, MSG_HEARTBEAT);
 
-    sendWrapper(l_ClockCon, l_Buffer, l_MsgSize);
+    NetworkCommon::sendMsg(l_Buffer, l_MsgSize, l_ClockCon);
 }
 
 int ControllerClient::handler(int fd)
 {
-	DEBUGPRINT("Handling file descriptor: %i\n", fd);
+	DEBUGPRINT("CONTROLLER_CLIENT: STATUS\t Handling file descriptor: %i\n", fd);
 
     //Create a 'header' message and buffer to receive into.
     Msg_header l_Header;
@@ -187,11 +198,12 @@ int ControllerClient::handler(int fd)
     TcpConnection *l_Conn =  m_serverList[fd];
         
     //Receive the header message.
-    recvWrapper(l_Conn, l_HeaderBuffer, l_Header.size);
+    NetworkCommon::recvHeader(l_Header.sender, l_Header.message, l_Conn);
 
     //Unpack the buffer into the 'header' message.
-    unpack(l_HeaderBuffer, Msg_header_format, &l_Header.sender, &l_Header.message); 
-    DEBUGPRINT("Received message %d from %d\n", l_Header.message, l_Header.sender);
+    //unpack(l_HeaderBuffer, Msg_header_format, &l_Header.sender, &l_Header.message); 
+    DEBUGPRINT("CONTROLLER_CLIENT: STATUS\t Received message %d from %d\n", l_Header.message, l_Header.sender);
+	
     switch(l_Header.sender)
     {
         //Message is from clock.
@@ -204,13 +216,106 @@ int ControllerClient::handler(int fd)
         case(SENDER_GRIDSERVER):
             switch(l_Header.message)
             {
-                //TODO GRID MESSAGES
-            }
-            break;
-        case(SENDER_CLIENT):
-            switch(l_Header.message)
-            {
-                //TODO CLIENT MESSAGES
+				case (MSG_RESPONDGRIDWAITING):
+				{
+					Msg_GridId l_gridId;
+					Msg_GridRequestIdRage l_reqGridRange;
+					
+					unsigned char l_id[l_gridId.size + l_reqGridRange.size];
+
+					memset(&l_id, 0, l_gridId.size + l_reqGridRange.size);
+					memset(&l_gridId, 0, l_gridId.size);
+					memset(&l_reqGridRange, 0, l_reqGridRange.size);
+					
+					if (l_Conn->recv(l_id, l_gridId.size) < 0)
+					{
+						DEBUGPRINT("CONTROLLER_CLIENT: FAILED\t to recieve ID\n");
+						return -1;
+					}
+
+					if (l_Conn->recv(l_id+l_gridId.size, l_reqGridRange.size) < 0)
+					{
+						DEBUGPRINT("CONTROLLER_CLIENT: FAILED\t to recieve size\n");
+						return -1;
+					}
+
+					unpack(l_id, "lll", &l_gridId.id, &l_reqGridRange.teams, &l_reqGridRange.robotsPerTeam);
+					
+					if (l_gridId.id < 0 || l_reqGridRange.teams < 0 || l_reqGridRange.robotsPerTeam < 0)
+					{
+						DEBUGPRINT("CONTROLLER_CLIENT: FAILED\t Id or Number of Teams or Team Size less than zero\n");
+						return -1;
+					}
+					
+					DEBUGPRINT("CONTROLLER_CLIENT: STATUS\t Have response from grid ID %lu Teams = %lu robotsPerTeam = %lu\n", (unsigned long)l_gridId.id, (unsigned long)l_reqGridRange.teams, (unsigned long)l_reqGridRange.robotsPerTeam);
+					
+					uint32_t totalRobots = l_reqGridRange.teams * l_reqGridRange.robotsPerTeam;
+					
+					m_curRange+=1;
+					
+					Msg_RobotIdRange l_range;
+					l_range.from = m_curRange;
+					l_range.to = m_curRange + totalRobots;
+					
+					m_curRange = l_range.to;
+					
+					unsigned char l_rangeBuff[l_range.size + l_Header.size];
+					
+					if (NetworkCommon::packHeader(l_rangeBuff, SENDER_CONTROLLER, MSG_RESPONDGRIDRANGE) < 0)
+					{
+						DEBUGPRINT("CONTROLLER_CLIENT FAILED:\t Cannot pack ready header to grid.\n");
+						return -1;
+					}
+					
+					if (pack(l_rangeBuff+l_Header.size, Msg_RobotIdRange_format, l_range.from, l_range.to) != l_range.size)
+					{
+						DEBUGPRINT("CONTROLLER_CLIENT FAILED:\t Cannot pack range data for grid\n");
+						return -1;
+					}
+					uint32_t id;
+
+					if (NetworkCommon::sendMsg(l_rangeBuff, l_Header.size+l_range.size, l_Conn) < 0)
+					{
+						DEBUGPRINT("CONTROLLER_CLIENT FAILED:\t Cannot send grid range data\n");
+						return -1;
+					}
+					
+					++m_totalGridsPending;
+					
+					if (m_totalGrids == m_totalGridsPending)
+					{
+						initNeighbourGrids();
+						
+					}
+				}	
+				break;
+					
+				case(MSG_GRIDCONFIRMSTARTED):
+				{
+					Msg_GridId l_gridId;
+					unsigned char message[l_gridId.size];
+					
+					if (l_Conn->recv(message, l_gridId.size) < 0)
+					{
+						DEBUGPRINT("CONTROLLER_CLIENT FAILED:\t Did not receive the grid id from complete message.");
+						return -1;
+					}
+					
+					unpack(message, Msg_GridId_format, &l_gridId.id);
+					
+					DEBUGPRINT("CONTROLLER_CLIENT STATUS:\t Grid Id %lu has responded with READY\n", (unsigned long)l_gridId.id);
+					
+					++m_totalRobotClientsReady;
+					
+					if (m_totalGridsReady == m_totalGrids)
+					{
+						DEBUGPRINT("CONTROLLER_CLIENT STATUS:\t ALL GRIDS + CLIENTS READY\n");
+						DEBUGPRINT("CONTROLLER_CLIENT STATUS:\t Can now send information to clock\n");
+					}
+					
+				}
+				break;
+				
             }
             break;
     }

@@ -8,6 +8,7 @@
 
 #ifdef DEBUG
 #include <time.h>
+#include <networkCommon.h>
 #endif
 
 using namespace Network;
@@ -38,6 +39,9 @@ RobotClient::RobotClient():Client(), m_ReadyGrids(0)
     //robotGameInstance->receiveInitialRobots(1, robot_info_vector);
     robotGameInstance->requestSensorData(1, robot_ids);
     
+	m_totalGridRequests = 0;
+	m_totalGridResponses = 0;
+	m_totalRobotsReceived = 0;
 
 }
 
@@ -168,6 +172,7 @@ int RobotClient::handleNewGrid(int id)
     
     int l_GridFd = m_GridIdToFd[id];
     sendWrapper(m_serverList[l_GridFd], l_Buffer, l_Header.size);
+	m_totalGridRequests++;
 }
 
 int RobotClient::handler(int fd)
@@ -247,6 +252,7 @@ int RobotClient::handler(int fd)
                     //Receive the robot data.
                     Msg_InitRobot l_Robo;
                     unsigned int l_MessageSize = l_Robo.size*l_NumRobots.msgSize;
+					printf("%ui\n", l_MessageSize);
                     unsigned char l_RoboBuffer[l_MessageSize];
 
                     recvWrapper(l_Conn, l_RoboBuffer, l_MessageSize);
@@ -259,7 +265,40 @@ int RobotClient::handler(int fd)
                         DEBUGPRINT("Received a new robot with ID %d, Coord (%f, %f)\n", 
                                 l_Robo.id, l_Robo.x, l_Robo.y);
                     }
+                    
+                    l_NumRobots.msgSize;
+                    m_totalGridResponses += 1;
+					
+					printf("%lu %lu %lu\n", (unsigned long)m_totalGridRequests, (unsigned long)m_totalRobotsReceived, (unsigned long)m_totalGridResponses);
+					
+					/*if (m_totalGridRequests == m_totalGridResponses)
+					{*/
+						DEBUGPRINT("ROBOT_CLIENT STATUS:\t Got all Grid repsonses for INIT TEAMS\n");
+						Msg_GridId l_grid;
 
+						unsigned char l_gridMessage[l_Header.size+l_grid.size];
+						
+						if (NetworkCommon::packHeader(l_gridMessage, SENDER_CLIENT, MSG_CONFIRMTEAM))
+						{
+							DEBUGPRINT("ROBOT_CLIENT STATUS:\t Failed to pack header");
+							return -1;
+						}
+						
+						if (pack(l_gridMessage+l_Header.size, Msg_MsgSize_format, l_NumRobots.msgSize) != l_NumRobots.size)
+						{
+							DEBUGPRINT("ROBOT_CLIENT: STATUS\t Could not pack amount or robots for response\n");
+						}
+						
+						if (NetworkCommon::sendMsg(l_gridMessage, l_Header.size + l_NumRobots.size, l_Conn) < 0)
+						{
+							DEBUGPRINT("ROBOT_CLIENT: STATUS\t Could not send the robot size message\n");
+						}
+						
+						DEBUGPRINT("ROBOT_CLIENT STATUS:\t Sent INIT TEAM RESPONSE for %lu Robots\n", (unsigned long)l_NumRobots.msgSize);
+					//}
+					
+					DEBUGPRINT("derp?\n");
+					//return 0;
                 }
                 break;
                 case(MSG_RESPONDSENSORDATA) :
@@ -346,4 +385,3 @@ int RobotClient::handler(int fd)
 
     return 0;
 }
-

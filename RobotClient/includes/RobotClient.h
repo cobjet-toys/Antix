@@ -33,6 +33,10 @@ private:
     int m_ClockFd;
     unsigned int m_ReadyGrids;
     RobotGame* robotGameInstance;
+
+	uint16_t m_totalGridRequests;
+	uint16_t m_totalGridResponses;
+	uint16_t m_totalRobotsReceived;
 };
 }
 

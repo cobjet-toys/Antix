@@ -8,11 +8,11 @@ class ClockParser: public FileParser
 {
 
 public:
-	ClockParser();
-	~ClockParser();
+    ClockParser();
+    ~ClockParser();
 private:
-	virtual int handler(std::vector<std::string> commands, void *args);
-	
+    virtual int handler(std::vector<std::string> commands, void *args);
+
 };
 
 #endif
