@@ -1,6 +1,6 @@
 controller_COMPILER = g++
 
-controller_SRC = controller.cpp ControllerClient.cpp
+controller_SRC = controller.cpp ControllerClient.cpp ControllerParser.cpp 
 controller_EXECUTABLE = controller.bin
 
 # ----- do not edit under this line unless you know what you are doing :)

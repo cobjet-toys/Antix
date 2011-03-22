@@ -8,11 +8,13 @@ class TcpConnection;
 namespace NetworkCommon
 {
 
-	int requestHeader(uint16_t &sender, uint16_t &message, TcpConnection * curConnection);
-	int packHeader(char * msgBuff, int sender, int message);
-	int requestMessageSize(Msg_MsgSize &msg, TcpConnection * curConnection);
-	int packSizeOfMessage(char * msgBuff, int size);
+	int recvHeader(uint16_t &sender, uint16_t &message, TcpConnection * curConnection);
+	int packHeader(unsigned char * buffer, int sender, int message);
+	int sendMsg(unsigned char* buffer, int msgSize, TcpConnection * conn);
 	
+	int recvMessageSize(Msg_MsgSize &msg, TcpConnection * curConnection);
+	int packSizeOfMessage(unsigned char * buffer, int size);
+
 }
 
 #endif

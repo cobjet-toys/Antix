@@ -28,7 +28,7 @@ int main(int argc, char ** argv)
 		return -1;
 	}
 
-	l_serv->init(argv[1], atoi(argv[2]));
+	l_serv->init(argv[1], atoi(argv[2])+1);
 	l_serv->start();
 	
 	return 0;

@@ -3,6 +3,7 @@
 #include "Packer.h"
 #include <string.h>
 #include "Config.h"
+#include <networkCommon.h>
 
 Network::ClockServer::ClockServer()
 {
@@ -11,6 +12,8 @@ Network::ClockServer::ClockServer()
 	m_clientMap.empty();
 	m_beat = 0;
 	m_responded = 0;
+	m_clockConn = NULL;
+	m_ready = false;
 }
 
 Network::ClockServer::~ClockServer()
@@ -44,6 +47,7 @@ int Network::ClockServer::handler(int fd)
     {
         //Message is from clock.
         case(SENDER_CLIENT):
+		{
             switch(l_Header.message)
             {
                 //Message is heart beat.
@@ -66,10 +70,25 @@ int Network::ClockServer::handler(int fd)
 						m_clientMap[fd] = false;
 					}
 					
-					if (m_responded == m_servers_total) allConnectionReadyHandler();
+					if (m_responded == m_servers_total) SendHeartBeat();
                 }
             }
             break;
+		}
+		break;
+		case(SENDER_CONTROLLER):
+		{
+			switch(l_Header.message)
+			{
+				DEBUGPRINT("CLOCK_SERVER STATUS:\t Processing Message from Controller\n");
+				case(MSG_CLOCKPROCEED):
+				{
+					DEBUGPRINT("CLOCK_SERVER STATUS:\t READY TO PROCEED msg from controller\n");
+					SendHeartBeat();
+				}
+				break;
+			}
+		}
     }
 
 	
@@ -78,13 +97,28 @@ int Network::ClockServer::handler(int fd)
 
 int Network::ClockServer::handleNewConnection(int fd)
 {
-	DEBUGPRINT("Adding new Client: %i\n", fd);
-	m_clientMap[fd] = false;
-	m_clientList.push_back(fd);
+	if (m_ready)
+	{
+		DEBUGPRINT("CLOCK_SERVER STATUS:\t Adding new ROBOT_Client: %i\n", fd);
+		m_clientMap[fd] = false;
+		m_clientList.push_back(fd);
+	} else {
+		DEBUGPRINT("CLOCK_SERVER STATUS:\t Controller Connected\n");
+		m_clockConn = m_Clients[0];
+		m_ready = true;
+	}
 	return 0;
 }
 
 int Network::ClockServer::allConnectionReadyHandler()
+{
+	
+	DEBUGPRINT("CLOCK_SERVER STATUS:\t Controller and all RobotClients connected\n");
+	return 0;
+	
+}
+
+int Network::ClockServer::SendHeartBeat()
 {
 	m_responded = 0;
 	DEBUGPRINT("All Clients ready\n");

@@ -11,12 +11,12 @@
 #include "Packer.h"
 #include "networkCommon.h"
 #include "Config.h"
+#include "AntixUtil.h"
+#include "Types.h"
 
 #include <map>
 #include <vector>
 #include <time.h>
-
-#define TEAM_ID_SHIFT       1024
 
 class Team;
 class Puck;
@@ -39,7 +39,6 @@ namespace Network
 	    DrawServer();
 	    virtual ~DrawServer();
         static DrawServer* getInstance();
-        //int init(int argc, char** argv);
 
         // Client/connection methods
         virtual int handler(int fd);
