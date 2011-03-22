@@ -516,6 +516,7 @@ int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results)
         //float posX = robotPosition[i][0];
         //float posY = robotPosition[i][1];
         //float orientation = 1.0;
+        DEBUGPRINT("Pushing a robot on drawer results\n");
         Msg_RobotInfo l_ObjInfo;
 
         // for each object being pushed
@@ -528,6 +529,7 @@ int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results)
 
         results->push_back(l_ObjInfo);
     }
+    DEBUGPRINT("Done pushing robots to drawer\n");
 
 
 }

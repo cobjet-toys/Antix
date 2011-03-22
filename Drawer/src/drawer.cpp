@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     
     Network::DrawServer * drawer = Network::DrawServer::getInstance();
     drawer->init();
-    drawer->initGrid("localhost", "3333", 0);
+    drawer->initGrid("127.0.0.1", "10001", 0);
 	
 	/*
 	DrawerParser l_parser;	
