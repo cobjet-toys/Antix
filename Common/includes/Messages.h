@@ -146,23 +146,24 @@ typedef struct{
 static const char * Msg_SensedObjectGroupHeader_format = "lh";
 
 
-
 // USED
 typedef struct{
-    uint32_t robotid;
-    uint32_t x;
-    uint32_t y;
+    uint32_t robotid;       //4
+    uint32_t x;             //4
+    uint32_t y;             //4
 	static const size_t size = 12;
 } Msg_SensedObjectGroupItem;
 static const char * Msg_SensedObjectGroupItem_format = "lll";
 
+//action: SetSpeed=0, Pickup=1, Drop=2
 typedef struct{ // USED
-    uint16_t action; 
-    uint32_t speed;
-    uint32_t angle;
-	static const size_t size = 10;
+    uint32_t robotid;       //4
+    uint16_t action;        //2
+    float speed;            //4
+    float angle;            //4
+	static const size_t size = 14;
 } Msg_Action;
-static const char * Msg_Action_format = "hll";
+static const char * Msg_Action_format = "lhff";
 
 typedef struct{
 	uint32_t teamId;
@@ -171,14 +172,15 @@ typedef struct{
 static const char * Msg_TeamId_format = "l";
 
 typedef struct{
-    uint32_t id;
-    float x_pos;
-    float y_pos;
-    float angle;
-    uint32_t puck;
-	static const size_t size = 21;
+    uint32_t robotid;       //4
+    float x_pos;            //4
+    float y_pos;            //4
+    float speed;            //4
+    float angle;            //4
+    uint32_t puckid;        //4
+	static const size_t size = 24;
 } Msg_RobotInfo;
-static const char * Msg_RobotInfo_format = "lfffc";
+static const char * Msg_RobotInfo_format = "lffffl";
 
 typedef struct{
    	char send_data;			//'T' or 'F'

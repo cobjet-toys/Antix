@@ -23,38 +23,6 @@ RobotGame::~RobotGame()
 {
 }
 
-// Compile grid to team mapping
-/*
-int RobotGame::intitializeTeam(int grid_id, std::vector<int> team_mapping)
-{
-    // we know which teams are on which grid
-    // so, create a mapping of grid ids to a vector of team ids
-
-    return 0;
-}
-*/
-
-/*
-int RobotGame::receiveInitialRobots(int grid_id, std::vector<robot_info> robot_info_vector)
-{
-    
-
-    std::vector<Robot*> l_Robots;
-    std::vector<robot_info>::const_iterator end = robot_info_vector.end();
-    for(std::vector<robot_info>::const_iterator it = robot_info_vector.begin(); it != end; it++)
-    {
-        Math::Position* l_RobotPosition = new Math::Position(it->x_pos, it->y_pos, it->angle);
-        Game::Robot* l_Robot = new Robot(l_RobotPosition, it->id, robot_FOV, robot_Radius, robot_SensorRange, robot_PickupRange);
-        l_Robots.push_back(l_Robot);
-
-        l_Robot->printInfo();
-    }
-    m_Robots[grid_id] = l_Robots;
-
-    return 0;
-}
-*/
-
 int RobotGame::initTeam(int id, float x, float y)
 // Creates a home with id at x,y
 {
@@ -73,41 +41,8 @@ int RobotGame::setTeamRobot(int gridId, int teamId, int robotId, float x, float 
     return 0;
 }
 
-// Register and UnRegister robots from a particular grid
-int RobotGame::registerRobot(int grid_id, robot_info robot)
-{
-    // this will be called when a grid wants to register a robot
-    // add the robot to the right grid in the map
-
-    Speed* l_Speed = new Speed();
-    l_Speed->setForwSpeed(robot.speed);
-
-    Math::Position* l_RobotPosition = new Math::Position(robot.x_pos, robot.y_pos, robot.angle);
-    Game::Robot* l_Robot = new Robot(l_RobotPosition, robot.id);
-
-    l_Robot->setSpeed(l_Speed);
-
-    std::vector<Robot*> robots = m_robotsByGrid[grid_id];
-    robots.push_back(l_Robot);
-
-    return 0;
-}
-
-int RobotGame::unregisterRobot(int grid_id, int robot_id)
-{
-    // this is the opposite of the above
-    // delete the robot from the vector it's currently in
-    // question: where do we store it? why can't this be combined
-    // with the register robot function?
-    // cause we don't want to lose the robot, so we must store it somewhere
-    // maybe we can have a map of robots with no grid
-    // that register robot can look into when registering a robot to a new grid
-
-    return 0;
-}
-
 // Handle sensor data
-int RobotGame::requestSensorData(int grid_id, std::vector<int>* robot_ids)
+int RobotGame::requestSensorData(int grid_id, IDList* robot_ids)
 {
     // compiles a vector of robot ids for grid with id grid_id
     // problem: what to do when a robot is looking into more than 1 grid?
@@ -116,7 +51,7 @@ int RobotGame::requestSensorData(int grid_id, std::vector<int>* robot_ids)
     // together when deciding on an action
 
     std::vector<Robot*> robots = m_robotsByGrid[grid_id];
-    std::vector<int> l_robot_ids;
+    IDList l_robot_ids;
     
     std::vector<Robot*>::iterator end = robots.end();
 
@@ -130,7 +65,7 @@ int RobotGame::requestSensorData(int grid_id, std::vector<int>* robot_ids)
     return 0;
 }
 
-int RobotGame::receiveSensorData(map<int, std::vector<sensed_item> >* sensor_data)
+int RobotGame::receiveSensorData(vector< std::pair<uid, std::vector<Msg_SensedObjectGroupItem> > >* sensor_data)
 {
 	if(sensor_data == NULL)
 	{
@@ -140,7 +75,7 @@ int RobotGame::receiveSensorData(map<int, std::vector<sensed_item> >* sensor_dat
     // will be used to decide on an action, when the robot sees the complete sensor
     // there may be some trouble with pieceing more sensor data together for edge robots
     
-    SensedItems::iterator iter;
+    vector< std::pair<uid, SensedItemsList> >::iterator iter;
     for(iter = sensor_data->begin(); iter != sensor_data->end(); iter++)
     {
         //cout << (*iter).first << " " << (*iter).second.at(0).id << endl;
@@ -153,7 +88,7 @@ int RobotGame::receiveSensorData(map<int, std::vector<sensed_item> >* sensor_dat
 }
 
 // Send and recieve actions
-int RobotGame::sendAction(int grid_id, map<uid, action>* robot_actions)
+int RobotGame::sendAction(int grid_id, vector<Msg_Action>* robot_actions)
 {
     // after a decision has been made, send it to the client
     // Shawn mentioned how the client and the grid would do this calculation twice,
@@ -164,29 +99,29 @@ int RobotGame::sendAction(int grid_id, map<uid, action>* robot_actions)
     // it's new position so i don't think we need to change this.
 
     // Get list of robots for this grid
-    map<uid, action> &l_robotActions = *robot_actions;
+    vector<Msg_Action>& l_robotActions = *robot_actions;
     RobotList robots = m_robotsByGrid[grid_id];
     RobotList::iterator iter;
     
     // Loop through the robots, and get an action to do for each robot
     for(iter = robots.begin(); iter != robots.end(); iter++)
     {
-        action l_action = (*iter)->getAction();
-        l_robotActions[(*iter)->m_id] = l_action;
+        Msg_Action l_action = (*iter)->getAction();
+        l_robotActions[(*iter)->getId()] = l_action;
     }
 
     return 0;
 }
 
-int RobotGame::actionResult(map<uid, action_results>* results)
+int RobotGame::actionResult(vector<Msg_RobotInfo>* results)
 {
     // for a grid, it updates the new positions (and status) of all robots
     // question: shouldn't the action_results type have a robot
-    map<uid, action_results>::iterator iter;
+    vector<Msg_RobotInfo>::iterator iter;
     for(iter = results->begin(); iter != results->end(); iter++)
     {
-        uid robotId = (*iter).first;
-        action_results result = (*iter).second;
+        uid robotId = (*iter).robotid;
+        Msg_RobotInfo result = (*iter);
         Robot* l_robotp = m_robots[robotId];
         // TODO Currently our action_result message does not send a rotational velocity
         l_robotp->setSpeed( new Math::Speed( result.speed, 0.0) );

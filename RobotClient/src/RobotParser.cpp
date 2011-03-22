@@ -15,6 +15,7 @@ RobotParser::~RobotParser()
 
 int RobotParser::handler(std::vector<std::string> commands, void *args)
 {
+	int grid_id = 1; //TODO: This needs to be a uniquily assigned id from Controller for RobotClient to initgrid
 	Network::RobotClient * l_robot = (Network::RobotClient *)args;
 	
 	if (l_robot == NULL) return -2;

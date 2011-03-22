@@ -73,16 +73,16 @@ void Robot::updatePosition(const float x_pos, const float y_pos)
     */
 }
 
-void Robot::updateSensors( std::vector<sensed_item> sensed_items )
+void Robot::updateSensors( SensedItemsList sensedItems )
 {
     // TODO Might be a more optimal way to do this, diffs?
     m_VisiblePucks.clear();
     m_VisibleRobots.clear();
 
-    std::vector<sensed_item>::iterator iter;
-    for( iter = sensed_items.begin(); iter != sensed_items.end(); iter++)
+    SensedItemsList::iterator iter;
+    for( iter = sensedItems.begin(); iter != sensedItems.end(); iter++)
     {
-        if( getType((*iter).id) == ROBOT )
+        if( getType((*iter).robotid) == ROBOT )
         {
             m_VisibleRobots.push_back( Location( (*iter).x, (*iter).y ) );
         }
@@ -91,94 +91,12 @@ void Robot::updateSensors( std::vector<sensed_item> sensed_items )
             m_VisiblePucks.push_back( Location( (*iter).x, (*iter).y ) );
         }
     }
-
-/*
-    //Clear our collection of visible objets.
-    m_VisiblePucks.clear();
-    m_VisibleRobots.clear();
-
-
-    Position* l_CurrentPos = getPosition();
-    float l_WorldSize = Robotix::getInstance()->getWorldSize();
-
-    //Note: The following two large sensing operations could safely be done in parallel since
-    //they do not modify any common data.
-    
-    //Check every robot in the world, and determine if it is in range.
-    //If it is, push it into our visible robots collection. 
-    for (RobotIter it = Robotix::getInstance()->getFirstRobot();
-            it != Robotix::getInstance()->getLastRobot(); it++)
-    {
-        Robot *l_Other = *it;
-        
-        //Discard if it's the same robot.
-        if (l_Other == this)
-            continue;
-
-        Position* l_OtherPos = l_Other->getPosition();
-        
-        //Discard if it's out of range. Hypot computation we leave for last, as it's the most
-        //expensive.
-        float l_Dx = Math::WrapDistance(l_OtherPos->getX() - l_CurrentPos->getX(), l_WorldSize );
-        if (fabs(l_Dx) > m_SensorRange)
-            continue;
-
-        float l_Dy = Math::WrapDistance(l_OtherPos->getY() - l_CurrentPos->getY(), l_WorldSize );
-        if (fabs(l_Dy) > m_SensorRange)
-            continue;
-
-        float l_Range = hypot (l_Dx, l_Dy);
-
-        if ( l_Range > m_SensorRange )
-            continue;
-
-        //Discard if it's out of our FOV.
-        float l_AbsHeading = atan2 (l_Dy, l_Dx);
-        float l_RelHeading = Math::AngleNormalize(l_AbsHeading - l_CurrentPos->getOrient());
-        if (fabs(l_RelHeading) > m_FOV/2.0)
-            continue;
-
-        //The robot is in our range and FOV, add it to visible robots.
-        m_VisibleRobots.push_back(VisibleRobotPtr(l_Other, l_Range, l_RelHeading));
-    }
-
-    //Check every puck in the world, and determine if it's in range.
-    //If it is, push it into our visible puck collection.
-    for (PuckIter it = Robotix::getInstance()->getFirstPuck();
-            it != Robotix::getInstance()->getLastPuck(); it++)
-    {
-        Puck* l_Puck = (*it);
-        Position* l_PuckPosition = l_Puck->getPosition();
-
-        //Discard if it's out of range. Hypot computation we leave for last, as it's the most
-        //expensive.
-        float l_Dx = Math::WrapDistance(l_PuckPosition->getX() - l_CurrentPos->getX(), l_WorldSize );
-        if (fabs(l_Dx) > m_SensorRange)
-            continue;
-
-        float l_Dy = Math::WrapDistance(l_PuckPosition->getY() - l_CurrentPos->getY(), l_WorldSize );
-        if (fabs(l_Dy) > m_SensorRange)
-            continue;
-
-        float l_Range = hypot (l_Dx, l_Dy);
-        if (l_Range > m_SensorRange)
-            continue;
-
-        //Discard if it's out of our FOV.
-        float l_AbsHeading = atan2 (l_Dy, l_Dx);
-        float l_RelHeading = Math::AngleNormalize(l_AbsHeading - l_CurrentPos->getOrient());
-        if (fabs(l_RelHeading) > m_FOV/2.0)
-            continue;
-
-        //The puck is in our range and FOV, add it to visible pucks.
-        m_VisiblePucks.push_back(VisiblePuckPtr(l_Puck, l_Range, l_RelHeading));
-    }
-     */
 }
 
-action Robot::getAction()
+Msg_Action Robot::getAction()
 {
-    action l_action;
+    Msg_Action l_action;
+    l_action.robotid = this->getId();
     l_action.action = 1;
     l_action.speed = 1.0;
     l_action.angle = 0.0f;
@@ -275,7 +193,7 @@ action Robot::getAction()
 
 bool Robot::Holding() const
 {
-    if (m_PuckHeld == -1)
+    if (m_PuckHeld == 0)
     {
         return true;
     }

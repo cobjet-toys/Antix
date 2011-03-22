@@ -23,10 +23,6 @@ GridServer::GridServer():Server()
 	
 	m_drawerConn = 0;
 	updateDrawerFlag = 0;
-
-
-
-
 }
 
 int GridServer::initGridGame()
@@ -702,17 +698,17 @@ int GridServer::updateDrawer(uint32_t framestep)
         float orientation = 1.0;
 
         // for each object being pushed
-        l_ObjInfo.id = Antix::writeId(i, ROBOT);
+        l_ObjInfo.robotid = Antix::writeId(i, ROBOT);
         l_ObjInfo.x_pos = posX;
         l_ObjInfo.y_pos = posY;
         l_ObjInfo.angle = orientation;
-        l_ObjInfo.puck = 0;
+        l_ObjInfo.puckid = 0;
 
         //DEBUGPRINT("Expected: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
                    //l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
                        
         if (pack(msgBuffer+l_position, Msg_RobotInfo_format,
-                 l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.puck ) != l_ObjInfo.size)
+                 l_ObjInfo.robotid, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.puckid ) != l_ObjInfo.size)
         {
             DEBUGPRINT("Could not pack robot header\n");
             return -1;
@@ -729,17 +725,17 @@ int GridServer::updateDrawer(uint32_t framestep)
         float posY = randPuckVals[(2*i) + 1];
 
         // for each object being pushed
-        l_ObjInfo.id = Antix::writeId(i, PUCK);
+        l_ObjInfo.robotid = Antix::writeId(i, PUCK);
         l_ObjInfo.x_pos = posX;
         l_ObjInfo.y_pos = posY;
         l_ObjInfo.angle = 1.0;
-        l_ObjInfo.puck = '0';
+        l_ObjInfo.puckid = '0';
 
         //DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
         //           l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck);
                          
         if(pack(msgBuffer+l_position, Msg_RobotInfo_format,
-           &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.puck) != l_ObjInfo.size)
+           &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.puckid) != l_ObjInfo.size)
         {
             DEBUGPRINT("Could not pack robot header\n");
             return -1;

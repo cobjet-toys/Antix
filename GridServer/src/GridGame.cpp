@@ -215,11 +215,11 @@ int GridGame::getRobots(int& teamid, float& team_x, float& team_y, std::vector<M
     {
         GameObject* l_Robot = m_Population[i];
         Msg_RobotInfo temp;
-        temp.id = l_Robot->getId();
+        temp.robotid = l_Robot->getId();
         temp.x_pos = l_Robot->getX();
         temp.y_pos = l_Robot->getY();
         temp.angle = 0;
-        temp.puck = 0;  // set to 0 for no puck
+        temp.puckid = 0;  // set to 0 for no puck
 
         robots->push_back(temp);
     }
@@ -257,8 +257,8 @@ int GridGame::registerRobot(Msg_RobotInfo robot)
     Math::Position* l_RobotPosition = new Position(robot.x_pos, robot.y_pos, robot.angle);
 
     // create new robot based on info from robot_info struct
-    Game::Robot* l_Robot = new Robot(l_RobotPosition, robot.id);
-    (*l_Robot).m_PuckHeld = robot.puck;
+    Game::Robot* l_Robot = new Robot(l_RobotPosition, robot.robotid);
+    (*l_Robot).m_PuckHeld = robot.puckid;
 			
     // add robot to the population
     addObjectToPop(l_Robot);
