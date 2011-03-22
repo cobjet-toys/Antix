@@ -167,10 +167,10 @@ static const char * Msg_RobotInfo_format = "lfffc";
 typedef struct{
    	char send_data;			//'T' or 'F'
     char data_type;			//'F' or 'C'
-    float left_x;			// 0 for full grid
-    float left_y;			// 0 for full grid
-    float right_x;			// 0 for full grid
-    float right_y;			// 0 for full grid
+    float tl_x;				// top-left corner x; 0 for full grid
+    float tl_y;				// top-left corner y; 0 for full grid
+    float br_x;				// bottom-right corner x; 0 for full grid
+    float br_y;				// bottom-right corner y; 0 for full grid
 	static const size_t size = 18;
 } Msg_DrawerConfig;
 static const char * Msg_DrawerConfig_format = "ccffff";

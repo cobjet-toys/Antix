@@ -449,10 +449,10 @@ int GridServer::handler(int fd)
 						DEBUGPRINT("Could not receive a config data.");
 						return -1;
 					}
-					unpack(configDataBuf, Msg_DrawerConfig_format, &configData.send_data, &configData.data_type, &configData.left_x, &configData.left_y, &configData.right_x, &configData.right_y);
+					unpack(configDataBuf, Msg_DrawerConfig_format, &configData.send_data, &configData.data_type, &configData.tl_x, &configData.tl_y, &configData.br_x, &configData.br_y);
 
-                    printf("Config: send_data=%c, data_type=%c, left_x=%f, bottom_y=%f, right_x=%f, top_y=%f\n",
-                           configData.send_data, configData.data_type, configData.left_x, configData.left_y, configData.right_x, configData.right_y);
+                    printf("Config: send_data=%c, data_type=%c, tl_x=%f, tl_y=%f, br_x=%f, br_y=%f\n",
+                           configData.send_data, configData.data_type, configData.tl_x, configData.tl_y, configData.br_x, configData.br_y);
 
                     // TODO - Make it only initialize a single pThread
                     pthread_t thread1;
@@ -487,8 +487,8 @@ int GridServer::updateDrawer(uint32_t framestep)
 {
     printf("----updateDrawer---------\n");
 
-    int m_totalRobots = 25000;
-    int m_totalPucks = 25000;
+    int m_totalRobots = 10000;
+    int m_totalPucks = 10000;
     int l_totalObjects = m_totalRobots + m_totalPucks;
 
 
@@ -545,7 +545,7 @@ int GridServer::updateDrawer(uint32_t framestep)
         float orientation = 1.0;
 
         // for each object being pushed
-        l_ObjInfo.id = i + 1024;
+        l_ObjInfo.id = Antix::writeId(i, ROBOT);
         l_ObjInfo.x_pos = posX;
         l_ObjInfo.y_pos = posY;
         l_ObjInfo.angle = orientation;
@@ -572,7 +572,7 @@ int GridServer::updateDrawer(uint32_t framestep)
         float posY = randPuckVals[(2*i) + 1];
 
         // for each object being pushed
-        l_ObjInfo.id = i;
+        l_ObjInfo.id = Antix::writeId(i, PUCK);
         l_ObjInfo.x_pos = posX;
         l_ObjInfo.y_pos = posY;
         l_ObjInfo.angle = 1.0;

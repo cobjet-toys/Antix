@@ -33,6 +33,14 @@ unsigned int writeId(unsigned int id, unsigned short int type)
         //to know whether its flipping a 1 or 0 for it to be correct.
     }
 }
+
+void getTypeAndId(uint32_t global_id, uint32_t* object_type, uint32_t* object_id)
+{
+	*object_type = (global_id > 2147483647U) ? 1 : 0;
+	*object_id = *object_type == PUCK ? (global_id ^ 2147483648U) :  global_id;
+	
+	return;
+}
     
 
 }
