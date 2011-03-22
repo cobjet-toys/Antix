@@ -485,9 +485,9 @@ int GridServer::handler(int fd)
 				
 				case (MSG_REQUESTINITTEAM):
 				{
-					DEBUGPRINT("ts\n");
+					DEBUGPRINT("MSG_REQUESTINITTEAM\n");
 					Msg_TeamInit l_Team;
-					std::vector<Msg_InitRobot> * l_robots;
+					std::vector<Msg_InitRobot> * l_robots = new std::vector<Msg_InitRobot>;
 					gridGameInstance->getRobots(l_Team, l_robots);
 					DEBUGPRINT("a\n");
 					Msg_header l_header;
