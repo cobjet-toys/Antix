@@ -59,6 +59,15 @@ static const char* Msg_InitRobot_format = "lff";
 
 typedef struct
 {
+    uint32_t id;
+    float x;
+    float y;
+    static const size_t size = 12;
+} Msg_TeamInit;
+static const char* Msg_TeamInit_format = "lff";
+
+typedef struct
+{
     uint16_t position;
     char ip[INET6_ADDRSTRLEN];
     char port[MAX_PORTCHARACTERS];
