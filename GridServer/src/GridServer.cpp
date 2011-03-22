@@ -238,7 +238,7 @@ int GridServer::handler(int fd)
 					{
 						sensed_items_map[i] = a1;
 					}
-					DEBUGPRINT("got all robot <= sensory data total of %ui robots with %ui sensory objects\n", a1.size(),sensed_items_map.size());
+					DEBUGPRINT("got all robot <= sensory data total of %zui robots with %zui sensory objects\n", a1.size(),sensed_items_map.size());
 					
 					Msg_header l_header = {SENDER_GRIDSERVER, MSG_RESPONDSENSORDATA}; // header for response
 					memset(&l_msgSize, 0 , l_msgSize.size);
@@ -545,17 +545,19 @@ int GridServer::updateDrawer(uint32_t framestep)
         float orientation = 1.0;
 
         // for each object being pushed
-        l_ObjInfo.id = i + 1024;
+        l_ObjInfo.robotid = i + 1024;
         l_ObjInfo.x_pos = posX;
         l_ObjInfo.y_pos = posY;
         l_ObjInfo.angle = orientation;
-        l_ObjInfo.has_puck = i%2 == 0 ? 'T' : 'F';
+        //TODO FIX THIS, broken now that this is puckid not has_puck
+        //l_ObjInfo.puckid = i%2 == 0 ? 'T' : 'F';
+        l_ObjInfo.puckid = 0;
 
         //DEBUGPRINT("Expected: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
                    //l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
                        
         if (pack(msgBuffer+l_position, Msg_RobotInfo_format,
-                 l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck ) != l_ObjInfo.size)
+                 l_ObjInfo.robotid, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.puckid ) != l_ObjInfo.size)
         {
             DEBUGPRINT("Could not pack robot header\n");
             return -1;
@@ -572,17 +574,18 @@ int GridServer::updateDrawer(uint32_t framestep)
         float posY = randPuckVals[(2*i) + 1];
 
         // for each object being pushed
-        l_ObjInfo.id = i;
+        l_ObjInfo.robotid = i;
         l_ObjInfo.x_pos = posX;
         l_ObjInfo.y_pos = posY;
         l_ObjInfo.angle = 1.0;
-        l_ObjInfo.has_puck = 'F';
+        //TODO
+        l_ObjInfo.puckid = 0;
 
         //DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
         //           l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck);
                          
         if(pack(msgBuffer+l_position, Msg_RobotInfo_format,
-           &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck) != l_ObjInfo.size)
+           &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.puckid) != l_ObjInfo.size)
         {
             DEBUGPRINT("Could not pack robot header\n");
             return -1;

@@ -310,7 +310,7 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<
         counter = position;
         position_obj = m_Population[position];
 
-        printf("Counter: %d - Size client list: %u\n", counter, robot_ids_from_client.size() );
+        printf("Counter: %d - Size client list: %zu\n", counter, robot_ids_from_client.size() );
 
         while ( counter <= m_Population.size() )
         {
@@ -377,7 +377,7 @@ int GridGame::addObjectToPop(GameObject* object)
 
     this->m_YObjects[object] = m_Population.size();
 
-    DEBUGPRINT("Total Population of Game Objects: %d\n", m_Population.size());
+    DEBUGPRINT("Total Population of Game Objects: %zu\n", m_Population.size());
     
     //TODO: Sort robots at this point?
     

@@ -22,23 +22,8 @@ RobotClient::RobotClient():Client(), m_ReadyGrids(0)
     robotGameInstance = new RobotGame();
 
     // make a robot_info vector for testing
-    std::vector<robot_info> robot_info_vector;
-    std::vector<int>* robot_ids;
-    for(uint i=0; i<10; i++)
-    {
-        robot_info r;
-        r.id = 123 + i;
-        r.x_pos = 1.0;
-        r.y_pos = 1.0;
-        r.speed = 5;
-        r.angle = 1.0;
-        r.puck_id = 1;
-        robot_info_vector.push_back(r);
-    }
-    //robotGameInstance->receiveInitialRobots(1, robot_info_vector);
+    std::vector<uid>* robot_ids;
     robotGameInstance->requestSensorData(1, robot_ids);
-    
-
 }
 
 int RobotClient::sendWrapper(TcpConnection * conn, unsigned char* buffer, int msgSize)
@@ -89,7 +74,7 @@ int RobotClient::sendRobotRequests()
     std::vector<int>::const_iterator l_GridEnd = m_Grids.end();
     for (std::vector<int>::const_iterator it = m_Grids.begin(); it != l_GridEnd; it++)
     {
-        vector<int> l_RobotIds;
+        vector<uid> l_RobotIds;
         robotGameInstance->requestSensorData((*it), &l_RobotIds);
         
         l_Size.msgSize = 4000;//REPLACE WITH ACTUAL REQUEST FOR ROBOTS(l_RobotIds.size())
@@ -265,7 +250,7 @@ int RobotClient::handler(int fd)
                 case(MSG_RESPONDSENSORDATA) :
                 {
                     
-                    std::map<int, std::vector<Msg_SensedObjectGroupItem> > l_SensedInfo;
+                    std::map<uid, std::vector<Msg_SensedObjectGroupItem> > l_SensedInfo;
 
                     //Receive the total number of robots we are getting sens info for.
                     Msg_MsgSize l_NumRobots;
@@ -310,7 +295,7 @@ int RobotClient::handler(int fd)
                         }
                     }
                     //TODO
-                    //robotGameInstance->recieveSensorData(&l_SensedInfo);
+                    //robotGameInstance->receiveSensorData(&l_SensedInfo);
 
                     m_ReadyGrids++; 
                     DEBUGPRINT("Recevied sensory data from a grid. %d Ready, %zu total\n", m_ReadyGrids, m_Grids.size());
