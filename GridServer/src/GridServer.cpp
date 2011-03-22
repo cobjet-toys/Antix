@@ -485,6 +485,47 @@ int GridServer::handler(int fd)
 				
 				case (MSG_REQUESTINITTEAM):
 				{
+					DEBUGPRINT("ts\n");
+					Msg_TeamInit l_Team;
+					std::vector<Msg_InitRobot> * l_robots;
+					gridGameInstance->getRobots(l_Team, l_robots);
+					DEBUGPRINT("a\n");
+					Msg_header l_header;
+					Msg_MsgSize l_size;
+					Msg_InitRobot l_robot;
+					size_t l_length = l_header.size + l_Team.size + l_size.size + (l_robots->size() * l_robot.size);
+					unsigned char * l_message = new unsigned char[l_length];
+					DEBUGPRINT("a1\n");
+					int l_offset = 0;
+					NetworkCommon::packHeader(l_message, SENDER_GRIDSERVER, MSG_RESPONDINITTEAM);
+					
+					l_offset += l_header.size;
+					DEBUGPRINT("a2\n");
+					l_size.msgSize = l_robots->size();
+					
+					if (pack(l_message+l_offset, Msg_MsgSize_format, l_size.msgSize) != l_size.size)
+					{
+						return -1;
+					}
+					l_offset += l_size.size;
+					DEBUGPRINT("a3\n");
+					for( int i = 0; i < m_robotsPerTeam;i ++ )
+					{
+						l_robot.id = l_robots->at(i).id;
+						l_robot.x = l_robots->at(i).x;
+						l_robot.y = l_robots->at(i).y;
+						
+						if (pack(l_message+l_offset, Msg_InitRobot_format, l_robot.id, l_robot.x, l_robot.y) != l_robot.size)
+						{
+							return -1;
+						}
+						l_offset += l_robot.size;
+					}
+					
+					if (NetworkCommon::sendMsg(l_message, l_length, l_curConnection) < 0)
+					{
+						return -1;
+					}
 					
 					return 0;
 				}

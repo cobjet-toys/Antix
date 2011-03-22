@@ -36,7 +36,7 @@ public:
     * Must keep some kind of track of which robots its getting so each time this is called
     * there is not one of the same team or robot sent.
     */
-    int getRobots(int& teamid, float& team_x, float& team_y, std::vector<Msg_RobotInfo>* robots);
+    int getRobots(Msg_TeamInit& teamid, std::vector<Msg_InitRobot>* robots);
 
     /**
     * Receives a team id and team size and creates all robot with the ids
