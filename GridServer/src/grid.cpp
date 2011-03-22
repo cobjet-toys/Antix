@@ -6,7 +6,7 @@
 int main(int argc, char ** argv)
 {
 	Network::GridServer *l_grid = new Network::GridServer();
-    l_grid->initGridGame();
+//    l_grid->initGridGame();
 	if (argc < 3) 
 	{
 		printf("Usage: ./grid.bin <port> <init_file>\n");
