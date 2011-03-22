@@ -38,7 +38,7 @@ public:
     /**
      * Update the objects visible to the robot.
      */
-    void updateSensors( std::vector<sensed_item> sensed_items );
+    void updateSensors( SensedItemsList sensedItems );
 
     /**
      * Update the position of the robot.
@@ -48,7 +48,7 @@ public:
     /**
      * Update the AI - this is what tells the robot what to do.
      */
-    action getAction();
+    Msg_Action getAction();
     
 
     /**

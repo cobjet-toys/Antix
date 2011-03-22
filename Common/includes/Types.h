@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "Messages.h"
 
 using std::string;
 
@@ -44,6 +45,7 @@ typedef struct{
     unsigned int puck_id;
 } robot_info;
 
+
 typedef unsigned int uid;
 typedef std::pair<string, string> ConnectionPair;
 typedef std::pair<int, int> TeamGridPair;
@@ -52,7 +54,9 @@ typedef std::vector<ConnectionPair> ConnectionList;
 typedef std::vector<string> StringList;
 typedef ConnectionList::iterator ConListIterator;
 typedef std::map<uid, std::vector<TeamGridPair> > ClientList;
-typedef std::map<int, std::vector<sensed_item> > SensedItems;
+typedef std::vector<Msg_SensedObjectGroupItem> SensedItemsList;
+typedef std::vector<uid> IDList;
+//typedef std::map<int, std::vector<sensed_item> > SensedItems;
 
 // For checking output of Antix::getTypes()
 const int ROBOT = 0;
