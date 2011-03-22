@@ -64,15 +64,15 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     {
 
         #ifdef DEBUG
-        std::cout << "Robot id being created:" <<i << std::endl;
+        //std::cout << "Robot id being created:" <<i << std::endl;
        // if you can divide the id by the robots per team, that means that this is a team, create a new team
        // object for the rest of the robots to point to
 
-        std::cout << "WTF id:" <<i << "robots per team: "<< robots_per_team << std::endl;
+        //std::cout << "WTF id:" <<i << "robots per team: "<< robots_per_team << std::endl;
         #endif
         if (i%robots_per_team == 0)
         {
-            std::cout << "WTF2 id:" <<i << "robots per team: "<< robots_per_team << std::endl;
+            //std::cout << "WTF2 id:" <<i << "robots per team: "<< robots_per_team << std::endl;
             Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
             l_team = new Team(l_RobotPosition, i/robots_per_team);
             m_Teams.push_back(l_team);
@@ -114,7 +114,8 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
 
 
     // Sort generated pucks
-    //sortPopulation();
+    //sortPopulation(); // commented out as we should not sort the population until the getRobot function is
+    //                     run enough times that all of the clients have all of the robots
 
     // set team and robot counters used by getRobots function
     teamcounter = 0;
@@ -153,6 +154,8 @@ void GridGame::sortPopulation()
         m_Population[i+1] = l_Key;
         m_YObjects[l_Key] = i+1;
     }
+
+    DEBUGPRINT("***Sort Population executing**\n");
 }
 
 
@@ -195,17 +198,14 @@ int GridGame::initializeTeam(std::vector<int> teams, std::vector<robot_info>* ro
  */
 
 
-int GridGame::getRobots(int& teamid, float& team_x, float& team_y, std::vector<robot_info>* robots)
+int GridGame::getRobots(int& teamid, float& team_x, float& team_y, std::vector<Msg_RobotInfo>* robots)
 {
 
-    // WARNING!!!!!! THIS FUNCTION HAS NOT BEEN TESTED! COMMITTED AS I WILL NOT BE HERE TOMORROW
-    // SO IF YOU USE THIS FUNCTION TOMORROW, BE CAREFUL!!
 
     Team* l_Team = m_Teams[teamcounter];
     teamid = l_Team->getId();
     team_x = l_Team->getX();
     team_y = l_Team->getY();
-    teamcounter++;
 
     //std::vector<robot_info> l_robot_info_vector = new std::vector<robot_info>();
 
@@ -214,32 +214,57 @@ int GridGame::getRobots(int& teamid, float& team_x, float& team_y, std::vector<r
     for (i = robotcounter; i <= robotcounter+m_Robots_Per_Team; i++)
     {
         GameObject* l_Robot = m_Population[i];
-        robot_info temp;
+        Msg_RobotInfo temp;
         temp.id = l_Robot->getId();
         temp.x_pos = l_Robot->getX();
         temp.y_pos = l_Robot->getY();
+        temp.angle = 0;
+        temp.puck = 0;  // set to 0 for no puck
 
         robots->push_back(temp);
     }
 
-    robotcounter = i;
-    //robots = &l_robot_info_vector;
+
+    // increment our countes
+    teamcounter++;
+    robotcounter += m_Robots_Per_Team;
+
+
+    // If we are finished distributing all of the robots to the clients, sort the population
+    int total_robots = m_Robots_Per_Team*m_Num_Of_Teams;
+    DEBUGPRINT("Total robots: %d\n", total_robots);
+    DEBUGPRINT("Robot counter: %d\n", robotcounter);
+    if (robotcounter == total_robots)
+    {
+        sortPopulation();
+
+    }
 
 
 }
 
-int GridGame::registerRobot(robot_info robot)
+bool GridGame::robotsDepleted()
+{
+
+    
+    return (m_Robots_Per_Team*m_Num_Of_Teams == robotcounter)?true:false;
+
+}
+
+int GridGame::registerRobot(Msg_RobotInfo robot)
 {
     // create a new position object for the new robot
     Math::Position* l_RobotPosition = new Position(robot.x_pos, robot.y_pos, robot.angle);
 
     // create new robot based on info from robot_info struct
     Game::Robot* l_Robot = new Robot(l_RobotPosition, robot.id);
+    (*l_Robot).m_PuckHeld = robot.puck;
 			
     // add robot to the population
     addObjectToPop(l_Robot);
 
-    //TODO: Sort robots at this point?
+    //Sort robots at this point
+    sortPopulation();
 
     return 1;
     
@@ -310,7 +335,7 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<
         counter = position;
         position_obj = m_Population[position];
 
-        printf("Counter: %d - Size client list: %u\n", counter, robot_ids_from_client.size() );
+        DEBUGPRINT("Counter: %d - Size client list: %zu\n", counter, robot_ids_from_client.size() );
 
         while ( counter <= m_Population.size() )
         {
@@ -366,6 +391,13 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<
 
 }
 
+int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector< Msg_RobotInfo >* results)
+{
+
+    return 0;
+
+
+}
 
 
 int GridGame::addObjectToPop(GameObject* object)
@@ -377,11 +409,10 @@ int GridGame::addObjectToPop(GameObject* object)
 
     this->m_YObjects[object] = m_Population.size();
 
-    DEBUGPRINT("Total Population of Game Objects: %d\n", m_Population.size());
+    DEBUGPRINT("Total Population of Game Objects: %zu\n", m_Population.size());
     
     //TODO: Sort robots at this point?
     
-    sortPopulation();
 
     return 0;
 }

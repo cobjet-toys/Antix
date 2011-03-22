@@ -6,6 +6,7 @@
 #include "Robot.h"
 #include "MathAux.h"
 #include "Types.h"
+#include "Messages.h"
 #include <list>
 #include <vector>
 #include <map>
@@ -35,7 +36,7 @@ public:
     * Must keep some kind of track of which robots its getting so each time this is called
     * there is not one of the same team or robot sent.
     */
-    int getRobots(int& teamid, float& team_x, float& team_y, std::vector<robot_info>* robots);
+    int getRobots(int& teamid, float& team_x, float& team_y, std::vector<Msg_RobotInfo>* robots);
 
     /**
     * Receives a team id and team size and creates all robot with the ids
@@ -46,7 +47,7 @@ public:
     /**
      * Interface function to Network layer for registering a robot.
      */
-    int registerRobot(robot_info robot);
+    int registerRobot(Msg_RobotInfo robot);
 
     /**
      * Interface function to Network layer for unregistering a robot.
@@ -62,7 +63,7 @@ public:
     /**
      * Interface function to Network layer for processing actions for each robot.
      */
-    int processAction(std::map<int, action>* robot_actions, std::map<int, action>* results);
+    int processAction(std::vector<Msg_Action>& robot_actions, std::vector< Msg_RobotInfo >* results);
 
     /**
      * Return the max world size.
@@ -80,6 +81,8 @@ public:
     int removeObjectFromPop(int objectid);
 
     void printPopulation();
+
+    bool robotsDepleted();
 
 private:
 

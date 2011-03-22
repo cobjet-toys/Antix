@@ -159,8 +159,8 @@ typedef struct{
     float x_pos;
     float y_pos;
     float angle;
-    char has_puck;
-	static const size_t size = 17;
+    uint32_t puck;
+	static const size_t size = 21;
 } Msg_RobotInfo;
 static const char * Msg_RobotInfo_format = "lfffc";
 

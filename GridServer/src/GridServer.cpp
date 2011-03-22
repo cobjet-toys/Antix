@@ -21,7 +21,7 @@ GridServer::GridServer():Server()
 	m_drawerConn = 0;
 	updateDrawerFlag = 0;
 
-    robot_info newrobot;
+    Msg_RobotInfo newrobot;
     newrobot.id = 400;
     newrobot.x_pos = 5;
     newrobot.y_pos = 5;
@@ -41,6 +41,35 @@ GridServer::GridServer():Server()
     //DEBUGPRINT("=====Initialize teams\n");
     //std::vector<robot_info>* robot_info_vector;
     //gridGameInstance->initializeTeam(teams, robot_info_vector);
+    DEBUGPRINT("=====Printing initial population after initializing gridGameInstance\n");
+    gridGameInstance->printPopulation();
+    DEBUGPRINT("=====Getting a team\n");
+
+    // TEST for getRobots
+    int teamid;
+    float team_x;
+    float team_y;
+    std::vector<Msg_RobotInfo>* les_robots = new std::vector<Msg_RobotInfo>();
+
+    gridGameInstance->getRobots(teamid, team_x, team_y, les_robots);
+    DEBUGPRINT("=====getRobots====\n");
+    DEBUGPRINT("Should be depleted false: %d\n", (int)gridGameInstance->robotsDepleted());
+    DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
+    for(std::vector<Msg_RobotInfo>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
+    {
+        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x_pos, it->y_pos);
+    }
+
+    gridGameInstance->getRobots(teamid, team_x, team_y, les_robots);
+    DEBUGPRINT("=====getRobots====\n");
+    DEBUGPRINT("Should be depleted true: %d\n", (int)gridGameInstance->robotsDepleted());
+    DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
+    for(std::vector<Msg_RobotInfo>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
+    {
+        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x_pos, it->y_pos);
+    }
+
+    DEBUGPRINT("=====Printing population after getting all of the robots for robotclient\n");
     gridGameInstance->printPopulation();
     DEBUGPRINT("=====Unregister Robot\n");
     gridGameInstance->unregisterRobot(1);
@@ -51,27 +80,6 @@ GridServer::GridServer():Server()
     DEBUGPRINT("=====Get Sensor Data\n");
     gridGameInstance->returnSensorData(teams, sensed_items_map);
 
-    // TEST for getRobots
-    int teamid;
-    float team_x;
-    float team_y;
-    std::vector<robot_info>* les_robots = new std::vector<robot_info>();
-
-    gridGameInstance->getRobots(teamid, team_x, team_y, les_robots);
-    DEBUGPRINT("=====getRobots====\n");
-    DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
-    for(std::vector<robot_info>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
-    {
-        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x_pos, it->y_pos);
-    }
-
-    gridGameInstance->getRobots(teamid, team_x, team_y, les_robots);
-    DEBUGPRINT("=====getRobots====\n");
-    DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
-    for(std::vector<robot_info>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
-    {
-        DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x_pos, it->y_pos);
-    }
 
 
 }
@@ -238,7 +246,7 @@ int GridServer::handler(int fd)
 					{
 						sensed_items_map[i] = a1;
 					}
-					DEBUGPRINT("got all robot <= sensory data total of %ui robots with %ui sensory objects\n", a1.size(),sensed_items_map.size());
+					DEBUGPRINT("got all robot <= sensory data total of %zui robots with %zui sensory objects\n", a1.size(),sensed_items_map.size());
 					
 					Msg_header l_header = {SENDER_GRIDSERVER, MSG_RESPONDSENSORDATA}; // header for response
 					memset(&l_msgSize, 0 , l_msgSize.size);
@@ -549,13 +557,13 @@ int GridServer::updateDrawer(uint32_t framestep)
         l_ObjInfo.x_pos = posX;
         l_ObjInfo.y_pos = posY;
         l_ObjInfo.angle = orientation;
-        l_ObjInfo.has_puck = i%2 == 0 ? 'T' : 'F';
+        l_ObjInfo.puck = 0;
 
         //DEBUGPRINT("Expected: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
                    //l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
                        
         if (pack(msgBuffer+l_position, Msg_RobotInfo_format,
-                 l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck ) != l_ObjInfo.size)
+                 l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.puck ) != l_ObjInfo.size)
         {
             DEBUGPRINT("Could not pack robot header\n");
             return -1;
@@ -576,13 +584,13 @@ int GridServer::updateDrawer(uint32_t framestep)
         l_ObjInfo.x_pos = posX;
         l_ObjInfo.y_pos = posY;
         l_ObjInfo.angle = 1.0;
-        l_ObjInfo.has_puck = 'F';
+        l_ObjInfo.puck = '0';
 
         //DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
         //           l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck);
                          
         if(pack(msgBuffer+l_position, Msg_RobotInfo_format,
-           &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.has_puck) != l_ObjInfo.size)
+           &l_ObjInfo.id, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.puck) != l_ObjInfo.size)
         {
             DEBUGPRINT("Could not pack robot header\n");
             return -1;
