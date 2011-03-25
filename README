@@ -1,24 +1,85 @@
-How to run: ./robot.bin -f {{FILE_NAME}}  -p {{PORT_NUMBER}}
+STARTING THE SIMULATION
+======================================================================
 
-#### Format for ROBOT Client Init
 
-GRID {{HOSTNAME}} {{PORT}} // one line for each grid
-GRID {{HOSTNAME}} {{PORT}}
-GRID {{HOSTNAME}} {{PORT}}
-GRID {{HOSTNAME}} {{PORT}}
-GRID {{HOSTNAME}} {{PORT}}
-CLOCK {{HOSTNAME}} {{PORT}} // the clock information
+SCRIPT RUN SEQUENCE
+======================================================================
 
-============================================================
 
-How to run: ./grid.bin -f {{FILE_NAME}} -p {{PORT_NUM}}
+    # Hora's script instructions will go here.
 
-#### Format
 
-NUM_TEAMS {{NUMBER OF TEAMS}}
-ROBOTS_PER_TEAM {{ROBOTS_PER_TEAM}}
-ID_RANGE {{FROM}} {{TO}}
 
-============================================================
+MANUAL RUN SEQUENCE
+======================================================================
 
-How to run: ./clock.bin -p {{PORT_NUM}}
+  1.) Grid Servers
+  2.) Clock
+  3.) ControllerClient
+  4.) RobotClients
+  5.) Drawer
+
+
+    RUN: Grid Servers
+    ======================================================================
+
+      Description: 
+
+	  The grid servers are the robot's playing field.
+
+      How to: 
+
+	  ./grid.bin -f {{config file}} -p {{port}}
+
+      Configuration file:
+
+	  NUMBER_OF_TEAMS {{integer}} # Required: specifies the number of teams on the grid
+	  ROBOTS_PER_TEAM {{integer}} # Required: specified the number of robots per team
+
+
+    RUN: Clock
+    ======================================================================
+
+      Description: 
+
+	  The clock helps keep the simulation in sync.
+
+      How to: 
+
+	  ./clock.bin -p {{port}}
+
+      Configuration file:
+
+	  None.
+
+    RUN: ControllerClient
+    ======================================================================
+
+      Description: RobotClients
+
+	  The RobotClients are the clients who will take part in the simulation.
+
+      How to: 
+
+	  ./robot.bin -f {{config file}}
+
+      Configuration file:
+
+	  GRID {{ID}} {{IP ADDRESS}} {{port}}
+	  CLOCK {{IP ADDRESS}} {{port}}
+	  GRID_INIT {{ID}} # will request a team from this grid
+
+    RUN: Drawer
+    ======================================================================
+
+      Description: Drawer
+
+	  -- STUB
+
+      How to: 
+
+	  ./drawer.bin -- STUB
+
+      Configuration file:
+
+	  -- STUB
