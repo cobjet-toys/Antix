@@ -74,12 +74,18 @@ MANUAL RUN SEQUENCE
 
       Description: Drawer
 
-	  -- STUB
+	  The Drawer is responsible for taking the information passed by the GridServers and drawing them.
 
       How to: 
 
-	  ./drawer.bin -- STUB
+	  ./drawer.bin -f {{config file}} -p {{port}}
 
       Configuration file:
 
-	  -- STUB
+	  WINDOW_SIZE {{integer}} 
+	  WORLD_SIZE {{float}}
+	  HOME_RADIUS {{float}}           
+	  ENABLE_FOV {{ 'T' or 'F' }}
+	  [ FOV_ANGLE {{float}} ]
+	  [ FOV_RANGE {{float}} ]
+	  GRID {{ID}} {{IP ADDRESS}} {{port}}
