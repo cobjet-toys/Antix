@@ -11,17 +11,6 @@
 
 static int threaded = 1;
 
-
-void printRobots()
-{
-	DEBUGPRINT("printRobots()\n");
-	for (Network::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
-             it != Network::DrawServer::getInstance()->getLastRobot();it++)
-        {
-        	printf("%d: %d\n", (*it).first, (*it).second != 0);
-        }
-}
-
 void * listener_function(void* args)
 {
 	Network::DrawServer::getInstance()->start();
@@ -38,7 +27,6 @@ void timerFunc(int dummy)
 void displayFunc()
 {    
     //printf("displayFunc()::");
-    //printRobots();
     
     glClear( GL_COLOR_BUFFER_BIT );
     glMatrixMode (GL_MODELVIEW);
@@ -68,7 +56,7 @@ void drawTeams()
     {
         glColor3f(255, 255, 255);
 
-        Math::Position * homePos = (*it).second->getPosition();
+        Math::Position * homePos = (*it)->getPosition();
         GlDrawCircle(homePos->getX()/winsize, homePos->getY()/winsize, radius/winsize, 16);
     }
 }
@@ -95,7 +83,7 @@ void drawPucks()
     for (Network::PuckIter it = Network::DrawServer::getInstance()->getFirstPuck();
          it != Network::DrawServer::getInstance()->getLastPuck(); it++)
     {    
-        Math::Position * puckPos = (*it).second->getPosition();
+        Math::Position * puckPos = (*it)->getPosition();
         
         pts[i]   = puckPos->getX()/winsize;
         pts[i+1] = puckPos->getY()/winsize;
@@ -145,13 +133,12 @@ void drawRobots()
         for (Network::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
              it != Network::DrawServer::getInstance()->getLastRobot();it++)
         {
-           	if(!(*it).second)
+           	if(!(*it))
           	{
-        		printf("No robot @ %d", (*it).first);
         		continue;
           	}
         	
-            Math::Position * robotPos = (*it).second->getPosition();
+            Math::Position * robotPos = (*it)->getPosition();
             if (!robotPos) continue;
 
             pts[2*i + 0] = robotPos->getX()/winsize;
@@ -180,9 +167,8 @@ void drawRobots()
         for (Network::RobotIter it = Network::DrawServer::getInstance()->getFirstRobot();
                 it != Network::DrawServer::getInstance()->getLastRobot();it++)
         {
-        	if (!(*it).second)
+        	if (!(*it))
         	{
-        		printf("No robot @ %d", (*it).first);
         		continue;
         	}
         	

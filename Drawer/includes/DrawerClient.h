@@ -25,12 +25,12 @@ class DrawParser;
 namespace Network
 {
 
-    typedef std::map<int, Game::Puck*>::iterator PuckIter;
-    typedef std::map<int, Game::Robot*>::iterator RobotIter;
-    typedef std::map<int, Game::Team*>::iterator TeamIter;
-    typedef std::map<int, Game::Puck*> PuckMap;
-    typedef std::map<int, Game::Robot*> RobotMap;
-    typedef std::map<int, Game::Team*> TeamMap;
+    typedef std::vector<Game::Puck*>::iterator PuckIter;
+    typedef std::vector<Game::Robot*>::iterator RobotIter;
+    typedef std::vector<Game::Team*>::iterator TeamIter;
+    typedef std::vector<Game::Puck*> PuckMap;
+    typedef std::vector<Game::Robot*> RobotMap;
+    typedef std::vector<Game::Team*> TeamMap;
 
 
 	class DrawServer: public Client
@@ -65,12 +65,12 @@ namespace Network
         float getHomeRadius() { return this->m_homeRadius; }
         bool getFOVEnabled() { return this->m_FOVEnabled; }
 
-        std::map<int, Game::Team*>::iterator getFirstTeam() { return this->m_teams.begin(); }
-        std::map<int, Game::Puck*>::iterator getFirstPuck() { return this->m_pucks.begin(); }
-        std::map<int, Game::Robot*>::iterator getFirstRobot() { return this->m_robots.begin(); }
-        std::map<int, Game::Team*>::iterator getLastTeam() { return this->m_teams.end(); }
-        std::map<int, Game::Puck*>::iterator getLastPuck() { return this->m_pucks.end(); }
-        std::map<int, Game::Robot*>::iterator getLastRobot() { return this->m_robots.end(); }
+        std::vector<Game::Team*>::iterator getFirstTeam() { return this->m_teams.begin(); }
+        std::vector<Game::Puck*>::iterator getFirstPuck() { return this->m_pucks.begin(); }
+        std::vector<Game::Robot*>::iterator getFirstRobot() { return this->m_robots.begin(); }
+        std::vector<Game::Team*>::iterator getLastTeam() { return this->m_teams.end(); }
+        std::vector<Game::Puck*>::iterator getLastPuck() { return this->m_pucks.end(); }
+        std::vector<Game::Robot*>::iterator getLastRobot() { return this->m_robots.end(); }
         size_t getTeamsCount() { return this->m_teams.size(); }
         size_t getPucksCount() { return this->m_pucks.size(); }
         size_t getRobotsCount() { return this->m_robots.size(); }
@@ -82,9 +82,9 @@ namespace Network
         
         static DrawServer* m_instance;
 
-        std::map<int, Game::Puck*> m_pucks;
-        std::map<int, Game::Robot*> m_robots;
-        std::map<int, Game::Team*> m_teams;
+        std::vector<Game::Puck*> m_pucks;
+        std::vector<Game::Robot*> m_robots;
+        std::vector<Game::Team*> m_teams;
         
 
         uint32_t m_framestep;

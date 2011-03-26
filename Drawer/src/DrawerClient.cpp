@@ -168,26 +168,25 @@ int DrawServer::handler(int fd)
             {
                 case(MSG_GRIDDATAFULL) :
                 {
-                    //Receive the total number of robots we are getting sens info for.
                     Msg_MsgSize l_NumObjects;
+	                Msg_RobotInfo l_ObjInfo;
+	                unsigned char l_ObjInfoBuf[l_ObjInfo.size];
+	                
+                    //Receive the total number of robots we are getting sens info for.
 					NetworkCommon::recvMessageSize(l_NumObjects, l_Conn);
                     DEBUGPRINT("%d:\tExpecting %d objects.\n", this->m_framestep, l_NumObjects.msgSize );
-
                     
                     //Go through all of the objects we expect position data for.
                     for (int i = 0; i < l_NumObjects.msgSize;i++)
                     {
-                        DEBUGPRINT("1\n");
-		                Msg_RobotInfo l_ObjInfo;
-		                unsigned char l_ObjInfoBuf[l_ObjInfo.size];
                         bzero(&l_ObjInfo, l_ObjInfo.size);
+                        
+                        DEBUGPRINT("1\n");
+                        recvWrapper(l_Conn, l_ObjInfoBuf, l_ObjInfo.size);
                         DEBUGPRINT("2\n");
 
-                        recvWrapper(l_Conn, l_ObjInfoBuf, l_ObjInfo.size);
-                        DEBUGPRINT("3\n");
-
                         unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
-                                &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.speed, &l_ObjInfo.puckid );
+                                &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.speed, &l_ObjInfo.angle, &l_ObjInfo.puckid );
 
                         DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\n",
                         	        l_ObjInfo.robotid, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.puckid );
@@ -207,16 +206,17 @@ int DrawServer::handler(int fd)
                 
                 case (MSG_GRIDTEAMS) :
                 {
-                	//Receive the total number of teams we are getting info for.
                     Msg_MsgSize l_NumObjects;
+	                Msg_TeamInit l_TeamInfo;
+	                unsigned char l_TeamInfoBuf[l_TeamInfo.size];
+	                
+                	//Receive the total number of teams we are getting info for.
 					NetworkCommon::recvMessageSize(l_NumObjects, l_Conn);
                     DEBUGPRINT("MSG_GRIDTEAMS: Expecting %d teams.\n", l_NumObjects.msgSize );
 
                     //Go through all of the objects we expect data for.
                     for (int i = 0; i < l_NumObjects.msgSize;i++)
                     {
-		                Msg_TeamInit l_TeamInfo;
-		                unsigned char l_TeamInfoBuf[l_TeamInfo.size];
                         bzero(&l_TeamInfo, l_TeamInfo.size);
                         
                         recvWrapper(l_Conn, l_TeamInfoBuf, l_TeamInfo.size);
