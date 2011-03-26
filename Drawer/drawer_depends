@@ -500,7 +500,9 @@ drawer.o: /home/leif/Desktop/Antix/Drawer/src/drawer.cpp \
  /usr/include/math.h /usr/include/bits/huge_val.h \
  /usr/include/bits/huge_valf.h /usr/include/bits/huge_vall.h \
  /usr/include/bits/inf.h /usr/include/bits/nan.h \
- /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
+ /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h \
+ /usr/include/GL/glut.h /usr/include/GL/freeglut_std.h \
+ /usr/include/GL/gl.h /usr/include/GL/glext.h /usr/include/GL/glu.h
 DrawServer.o: /home/leif/Desktop/Antix/Drawer/src/DrawServer.cpp \
  /home/leif/Desktop/Antix/Drawer/includes/DrawServer.h \
  /home/leif/Desktop/Antix/Drawer/../Common/includes/Client.h \
