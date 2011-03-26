@@ -1,6 +1,7 @@
 import sys
+import os
 
-from configuration import CLIENT_RUN_COMMAND, GRID_RUN_COMMAND, CLOCK_RUN_COMMAND, DRAWER_RUN_COMMAND
+from configuration import ROBOT_CLIENT_RUN_COMMAND, GRID_RUN_COMMAND, CLOCK_RUN_COMMAND, DRAWER_RUN_COMMAND, CTRL_CLIENT_RUN_COMMAND
 
 def run_bash_script(script, stdin=None):
     """
@@ -38,9 +39,10 @@ if len(sys.argv) != 2:
 USER = sys.argv[1]
 
 # Parse server.info file, kill processes one by one
-server_file = open("server.info", "r")
+proc_file = open("proc.tmp", "r")
 def strip_newlines(s): return s.rstrip()
-processes = map(strip_newlines, server_file.readlines())
+processes = map(strip_newlines, proc_file.readlines())
+proc_file.close()
 
 guillotine = """
 .___________________.
@@ -85,13 +87,13 @@ print "I'm ready to kill them all, march 'em up all up the guillotine."
 print guillotine
 
 for process in processes:
-    info = process.split(',')
+    info = process.split(' ')
     p_type = info[0]
     p_ip = info[1]
 
     script = "ssh -p 24 " + USER + "@" + p_ip + " 'killall "
     if p_type == "client":
-        thing = CLIENT_RUN_COMMAND.split('/')
+        thing = ROBOT_CLIENT_RUN_COMMAND.split('/')
         script += thing[-1]
     elif p_type == "grid":
         script += GRID_RUN_COMMAND.split('/')[-1]
@@ -99,6 +101,8 @@ for process in processes:
         script += CLOCK_RUN_COMMAND.split('/')[-1]
     elif p_type == "drawer":
         script += DRAWER_RUN_COMMAND.split('/')[-1]
+    elif p_type == "controller":
+        script += CTRL_CLIENT_RUN_COMMAND.split('/')[-1]
     script += "'"
 
     print "Running: " + script
@@ -112,5 +116,10 @@ for process in processes:
         print "* ERROR! I just can't kill them all, I don't have it in me anymore :( *"
         print e
 
+# Remove all tmp files
+os.remove("drawer_config.tmp")
+os.remove("grids_ids.tmp")
+os.remove("grids.tmp")
+os.remove("proc.tmp")
 print
 print "Heads have rolled."

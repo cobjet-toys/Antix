@@ -37,22 +37,38 @@ def start_process(name, **kwargs):
     print "Running: " + script
 
     try:
-        out, error = run_bash_script(script)
-        print "Output: " + out.rstrip()
-        print
+        #out, error = run_bash_script(script)
+        #print "Output: " + out.rstrip()
+        #print
 
         # Save the IP/port info to server.info file
         if name is "clock":
             to_append = "CLOCK {0} " + str(current_clock_port-1) + "\n"
             GRIDS_TMP_FILE.write(to_append.format(machine_ip.rstrip()))
             GRIDS_IDS_TMP_FILE.write(to_append.format(machine_ip.rstrip()))
-        if name is "grid":
+            proc = "clock {0}\n"
+            PROC_FILE.write(proc.format(machine_ip.rstrip()))
+        elif name is "grid":
             to_append = "GRID {0} " + str(current_grid_port-1) + "\n"
             to_append_id = "GRID {0} {1} " + str(current_grid_port-1) + "\n"
             GRIDS_TMP_FILE.write(to_append.format(machine_ip.rstrip()))
             DRAWER_FULL_CONFIG_FILE.write(to_append.format(machine_ip.rstrip()))
             grid_num = kwargs['grid_num']
             GRIDS_IDS_TMP_FILE.write(to_append_id.format(grid_num, machine_ip.rstrip()))
+            proc = "grid {0}\n"
+            PROC_FILE.write(proc.format(machine_ip.rstrip()))
+        elif name is "client":
+            proc = "client {0}\n"
+            PROC_FILE.write(proc.format(machine_ip.rstrip()))
+        elif name is "controller":
+            proc = "controller {0}\n"
+            PROC_FILE.write(proc.format(machine_ip.rstrip()))
+        elif name is "drawer":
+            proc = "drawer {0}\n"
+            PROC_FILE.write(proc.format(machine_ip.rstrip()))
+
+        print
+        return
             
     except BashScriptException as e:
         print "* ERROR STARTING " + name.upper() + " *"
@@ -74,6 +90,8 @@ def build_binary(name):
         script += CTRL_CLIENT_BUILD_DIR + "; " + CTRL_CLIENT_BUILD_COMMAND
         
     print "Running: " + script
+    print
+    return
 
     try:
         out, error = run_bash_script(script)
@@ -185,6 +203,8 @@ FIRST_FREE_MACHINE = 0
 current_clock_port = int(CLOCK_PORT)
 current_grid_port = int(GRID_PORT)
 current_drawer_port = int(DRAWER_PORT)
+
+PROC_FILE = open("proc.tmp", 'w', 0) # 0 means no buffer
 
 # Build all the code
 print "*** BUILDING BINARIES ***"
