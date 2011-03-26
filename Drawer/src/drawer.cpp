@@ -7,39 +7,52 @@
 
 #include <stdlib.h>
 #include "DrawServer.h"
+#include "DrawerParser.h"
 #include "Gui.h"
 
-/*
- * Usage: ./DrawServer <window_size> <init_file> <world_size> <home_radius> <enable_FOV> [ <FOV_angle> <FOV_range> ]
- */
 int main(int argc, char** argv)
 {
-	if (argc < 3) 
+	if (argc < 2) 
 	{
-		perror("Please specify a port and a config file for the Drawer");
+		perror("Please specify a config file for the Drawer");
 		return (EXIT_FAILURE);
 	}
     
     Network::DrawServer * drawer = Network::DrawServer::getInstance();
-    drawer->init();
-    drawer->initGrid("127.0.0.1", "10001", 0);
+	drawer->init();
 	
-	/*
-	DrawerParser l_parser;	
-	int l_res = 0;
-	DEBUGPRINT("About to readfile\n");
-	if ((l_res = l_parser.readFile(argv[1], (void *)drawer )) == ENOENT) 
+	//parse options
+    int c;    
+	while( ( c = getopt( argc, argv, "f:")) != -1 )
 	{
-		printf("Error with parsing file: %s\n", argv[2]);
-		return -1;
-	}
-	if (l_res < 0)
-	{
-		printf("Failed to parse file\n");
-		return -1;
-	}
-	DEBUGPRINT("Done reading files\n");
-	*/
+		switch( c )
+		{				
+			case 'f':
+			{
+				DrawerParser l_parser;	
+				int l_res = 0;
+				if ((l_res = l_parser.readFile(optarg, (void *)drawer )) == ENOENT) 
+				{
+					printf("Error with parsing file: %s\n", argv[2]);
+					return -1;
+				}
+				if (l_res < 0)
+				{
+					printf("Failed to parse file\n");
+					return -1;
+				}
+				break;
+			}
+				
+			default:
+			{
+				//DEBUGPRINT("Option parse error. Usage: ./drawer.bin -f <config_file>\n" );
+				//return (EXIT_FAILURE);
+				break;
+			}
+		}
+	}	
+	
 
     initGraphics(argc, argv);
     
