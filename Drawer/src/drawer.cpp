@@ -6,7 +6,7 @@
  */
 
 #include <stdlib.h>
-#include "DrawServer.h"
+#include "DrawerClient.h"
 #include "DrawerParser.h"
 #include "Gui.h"
 

@@ -2,7 +2,7 @@
 #define __DRAWER_PARSER_H__
 
 #include "FileParser.h"
-#include "DrawServer.h"
+#include "DrawerClient.h"
 #include "Config.h"
 
 #include <strings.h>

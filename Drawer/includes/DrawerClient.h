@@ -1,5 +1,5 @@
-#ifndef _DRAWSERVER_H
-#define	_DRAWSERVER_H
+#ifndef _DRAWERCLIENT_H
+#define	_DRAWERCLIENT_H
 
 #include "Client.h"
 #include "Robot.h"
@@ -91,5 +91,5 @@ namespace Network
     };
 }
 
-#endif	/* _DRAWSERVER_H */
+#endif	/* _DRAWERCLIENT_H */
 

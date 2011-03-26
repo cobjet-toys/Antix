@@ -1,6 +1,6 @@
 drawer_COMPILER = g++
 
-drawer_SRC = drawer.cpp DrawServer.cpp Gui.cpp DrawerParser.cpp
+drawer_SRC = drawer.cpp DrawerClient.cpp Gui.cpp DrawerParser.cpp
 drawer_EXECUTABLE = drawer.bin
 
 
