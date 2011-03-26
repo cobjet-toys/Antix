@@ -5,10 +5,22 @@ STARTING THE SIMULATION
 SCRIPT RUN SEQUENCE
 ======================================================================
 
+     1. Change directory to Controller/
+     2. Make sure you have the following files:
+        - grid.config
+        - drawer.config
+     3. See below for how to format these files.
+     4. Command for running everything:
 
-    # Hora's script instructions will go here.
+     python controller.py SFU_USERNAME PATH_TO_ANTIX grid.config drawer.config
 
+     5. When you want to kill all the processes on every machine, run:
 
+     python killthemall.py SFU_USERNAME
+
+     Note: To see output from individual processes in your home directory (in files called antix.machine.out), you must disable stdout buffering. Add the following line to your code, somewhere near the top:
+
+     setbuf(stdout, NULL);
 
 MANUAL RUN SEQUENCE
 ======================================================================

@@ -2,7 +2,17 @@
 #define __DRAWER_PARSER_H__
 
 #include "FileParser.h"
+#include "DrawerClient.h"
+#include "Config.h"
+
+#include <strings.h>
+#include <stdlib.h>
 #include <string>
+
+namespace Network
+{
+	class DrawServer;
+}
 
 class DrawerParser: public FileParser
 {

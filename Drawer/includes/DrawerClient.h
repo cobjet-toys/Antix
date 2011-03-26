@@ -1,5 +1,5 @@
-#ifndef _DRAWSERVER_H
-#define	_DRAWSERVER_H
+#ifndef _DRAWERCLIENT_H
+#define	_DRAWERCLIENT_H
 
 #include "Client.h"
 #include "Robot.h"
@@ -20,6 +20,7 @@
 
 class Team;
 class Puck;
+class DrawParser;
 
 namespace Network
 {
@@ -34,6 +35,8 @@ namespace Network
 
 	class DrawServer: public Client
 	{
+	friend class DrawParser;
+	
 	public:                      
 
 	    DrawServer();
@@ -46,7 +49,15 @@ namespace Network
 		int setGridConfig(int grid_fd, char send_data, float topleft_x = 0.0, float topleft_y = 0.0, float bottomright_x = 0.0, float bottomright_y = 0.0);
         void initTeams();
         void updateObject(Msg_RobotInfo newInfo);
-
+        
+        int m_windowSize;
+        float m_worldSize;
+        float m_FOVAngle;
+        float m_FOVRange;
+        float m_homeRadius;
+        bool m_FOVEnabled;
+        char m_drawerDataType;
+        
         int getWindowSize() { return this->m_windowSize; }
         float getWorldSize() { return this->m_worldSize; }
         float getFOVAngle() { return this->m_FOVAngle; }
@@ -74,17 +85,11 @@ namespace Network
         std::map<int, Game::Puck*> m_pucks;
         std::map<int, Game::Robot*> m_robots;
         std::map<int, Game::Team*> m_teams;
-        int m_windowSize;
-        float m_worldSize;
-        float m_FOVAngle;
-        float m_FOVRange;
-        float m_homeRadius;
-        bool m_FOVEnabled;
-        char m_drawerDataType;
+        
 
         uint32_t m_framestep;
     };
 }
 
-#endif	/* _DRAWSERVER_H */
+#endif	/* _DRAWERCLIENT_H */
 

@@ -11,6 +11,7 @@
 
 static int threaded = 1;
 
+
 void printRobots()
 {
 	DEBUGPRINT("printRobots()\n");
@@ -27,10 +28,7 @@ void * listener_function(void* args)
 	return NULL;
 }
 
-void idleFunc()
-{
-
-}
+void idleFunc(){}
 
 void timerFunc(int dummy)
 {
@@ -49,7 +47,7 @@ void displayFunc()
     drawTeams();
     drawPucks();
     drawRobots();
-    //drawTest();
+    drawTest(1000, 20);
 
     char buf[20];
     sprintf(buf, "Frame Count: %d", drawCount++);
@@ -111,7 +109,7 @@ void drawPucks()
     glDisableClientState(GL_VERTEX_ARRAY);
 
     char tmpBuf[16];
-    sprintf(tmpBuf, "Pucks  #: %lu", len);
+    sprintf(tmpBuf, "Pucks  #: %u", len);
     drawText(tmpBuf, 5, 570);
 }
 
@@ -174,7 +172,7 @@ void drawRobots()
         glDisableClientState(GL_VERTEX_ARRAY);
 
         char tmpBuf[16];
-        sprintf(tmpBuf, "Robots #: %lu", len);
+        sprintf(tmpBuf, "Robots #: %u", len);
         drawText(tmpBuf, 5, 555);
     }
     else 
@@ -198,7 +196,7 @@ void drawText(char* text, float x, float y)
 {
     unsigned int winsize = Network::DrawServer::getInstance()->getWindowSize();
     void* font = GLUT_BITMAP_9_BY_15;
-    glRasterPos2f(x/winsize, y/winsize);
+    glRasterPos2f(x, y);
     while(*text) 
     {
         glutBitmapCharacter(font, *text);
@@ -207,17 +205,17 @@ void drawText(char* text, float x, float y)
 }
 
 // Draws 1000000 vertices using 2 methods, and compares the drawtimes
-void drawTest()
+void drawTest(int robotCount, int edgePoints)
 {
-    unsigned int numValues = 1000000;
+    /*unsigned int numValues = 1000000;
   
     // Initialize value arrays
     GLfloat value1[numValues/2];
     GLfloat value2[numValues/2];
     for(size_t i = 0; i < numValues/2; i++)
     {    
-       value1[i] = 0.0 + 1/double(numValues)*i;
-       value2[i] = 0.5 + 1/double(numValues)*i;
+       value1[i] = 0.0 + 600/double(numValues)*i;
+       value2[i] = 300 + 600/double(numValues)*i;
     }
   
     // Set point size to 5.0
@@ -239,7 +237,7 @@ void drawTest()
 
     // Print time in (ms) that it took to fetch data 
     double elapsed = (clock() - start);
-    printf("Draw func #1: %fms\n", elapsed);
+    //printf("Draw func #1: %fms\n", elapsed);
 
     // Set colour to RED
     glColor3f(255, 0, 0);
@@ -267,7 +265,45 @@ void drawTest()
 
     // Print time in (ms) that it took to fetch data 
     double elapsed2 = (clock() - start);
-    printf("Draw func #2: %fms\n", elapsed2);
+    //printf("Draw func #2: %fms\n", elapsed2);*/
+
+    // Set colour to RED
+    glColor3f(255, 0, 0);
+
+    int numValues = robotCount; // Number of robots
+
+    // Initialize value arrays
+    GLfloat values[numValues];
+    for(size_t i = 0; i < numValues; i++)
+    {    
+       values[i] = 600/double(numValues)*i;
+    }
+ 
+    // Specify vertex coords
+    GLfloat vertices[numValues*edgePoints*2];
+    for(size_t i = 0; i < numValues; i++)
+    {    
+        for(size_t a = 0; a < edgePoints; a++)
+        {
+            vertices[(edgePoints*2*i) + (2*a)]     = values[i] + xVals[(int)(a*360/edgePoints)];
+            vertices[(edgePoints*2*i) + (2*a) + 1] = values[i] + yVals[(int)(a*360/edgePoints)];
+            //printf("vertices[%d]: (%f, %f) \n", (20*i) + (2*a), vertices[(20*i) + (2*a)], vertices[(20*i) + (2*a) + 1]);
+        }        
+        //printf("values[%d]: %f \n", i, values[i]);
+    }
+
+    // Activate and specify pointer to vertex array
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(2, GL_FLOAT, 0, vertices);
+
+    // Draw a line strip (robot circle)
+    for(int x = 0; x < numValues; x++)
+    {
+        glDrawArrays(GL_LINE_LOOP, edgePoints*x, edgePoints);
+    }
+
+    // deactivate vertex arrays after drawing
+    glDisableClientState(GL_VERTEX_ARRAY);    
 }
 
 /*
@@ -341,35 +377,162 @@ void drawRobot(Game::Robot* robot, const GUI::Color* color )
 // utility
 void GlDrawCircle(double x, double y, double r, double count)
 {
-	glBegin(GL_LINE_LOOP);
-	for(float a=0; a < (M_PI*2.0); a += M_PI/count)
+    glBegin(GL_LINE_LOOP);
+    for(float a = 0; a < (M_PI*2.0); a += M_PI/count)
     {
         glVertex2f(x + sin(a) * r, y + cos(a) * r);
     }
-	glEnd();
+    glEnd();
+}
+
+void initializePositionLookupArrays(double radius)
+{
+    int index = 0;
+    for(float a = 0; a < (M_PI*2.0); a += (M_PI*2.0)/360.0)
+    {
+        if(index < 360)
+        {
+            xVals[index] = sin(a) * radius;
+            yVals[index] = cos(a) * radius;
+            //printf("Pos vals for (deg %f): [%f, %f] \n", (a/(M_PI*2.0))*360.0, xVals[index], yVals[index]);
+            index++;
+        }
+    }
+    printf("Index: %d \n", index); 
+}
+
+void mouseClickHandler(int button, int state, int x, int y)
+{
+    if(button == GLUT_LEFT_BUTTON)
+    {
+        actionType = 0; // Drag -- Translation action
+        switch(state)
+        {
+            case GLUT_DOWN:
+                //printf("Mouse Down @ [%d, %d]\n", x, y);
+                inDrag = true;
+                xInit = x;
+                yInit = y;
+                xCur = x;
+                yCur = y;
+                break;
+            case GLUT_UP:
+                //printf("Mouse Up   @ [%d, %d]\n", x, y);
+                inDrag = false;     
+                xEnd = x;
+                yEnd = y;
+                break;
+            default:
+                break;
+        }
+    }
+    else if(button == GLUT_RIGHT_BUTTON)
+    {
+        actionType = 1; // Zoom -- Scaling action
+        switch(state)
+        {
+            case GLUT_DOWN:
+                //printf("Mouse Down @ [%d, %d]\n", x, y);
+                inDrag = true;
+                xInit = x;
+                yInit = y;
+                xCur = x;
+                yCur = y;
+                break;
+            case GLUT_UP:
+                //printf("Mouse Up   @ [%d, %d]\n", x, y);
+                inDrag = false;     
+                xEnd = x;
+                yEnd = y;
+                break;
+            default:
+                break;
+        }
+    }   
+}
+
+void mouseMotionHandler(int x, int y)
+{
+    if(inDrag)
+    {
+        
+        int xD = xCur - x;
+        int yD = y - yCur;
+
+        xCur = x;
+        yCur = y;
+
+        float ratio = 1.0;
+
+        switch(actionType)
+        {
+            case 0:
+                ratio = abs(left - right)/600.0;
+                left += xD*ratio;
+                right += xD*ratio;            
+                bottom += yD*ratio;
+                top += yD*ratio;
+                break;
+            case 1:
+                if(yD < 0)
+                {                    
+                    left += yD;
+                    right -= yD;
+                    bottom += yD;
+                    top -= yD;
+                }
+                else if(yD > 0)
+                {
+                    if((right - yD) - (left + yD) > 10)
+                    {
+                        left += yD;
+                        right -= yD;
+                        bottom += yD;
+                        top -= yD;
+                    }
+                }                
+                //printf("Zoom Level: %f \n", zoomLevel);
+                break;
+        }
+        
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluOrtho2D(left, right, bottom, top);
+        //glScalef(zoomLevel, zoomLevel, 1.0);
+    }
 }
 
 void initGraphics(int argc, char **argv)
-{
-    glutInit(&argc, argv);
+{    
     unsigned int lWindowSize = Network::DrawServer::getInstance()->getWindowSize();
-    glutInitWindowSize( lWindowSize, lWindowSize );
-    glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA );
-    glutCreateWindow( argv[0] );
-    glClearColor( 0.1, 0.1, 0.1, 1 );
+    float lWorldSize = Network::DrawServer::getInstance()->getWorldSize();
+
+    glutInit(&argc, argv);
+    glutInitWindowSize(lWindowSize, lWindowSize);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+    glutCreateWindow(argv[0]);
+    glClearColor(0.1, 0.1, 0.1, 1);
     glutDisplayFunc(displayFunc);
     glutIdleFunc(idleFunc);
+    glutMouseFunc(mouseClickHandler);
+    glutMotionFunc(mouseMotionHandler);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     
-    glMatrixMode( GL_PROJECTION );
-    glLoadIdentity();
-    gluOrtho2D( 0,1,0,1 );
+    // Set viewport values
+    left = 0;
+    right = lWindowSize;
+    bottom = 0;
+    top = lWindowSize;
 
-    float lWorldSize = Network::DrawServer::getInstance()->getWorldSize();
-    glScalef( 1.0/lWorldSize, 1.0/lWorldSize, 1 ); 
-    glPointSize( 4.0 );   
-    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(left, right, bottom, top);    
+    glScalef(1.0/lWorldSize, 1.0/lWorldSize, 1);
+
+    // Initialize look up arrays
+    initializePositionLookupArrays(5.0);
+
     pthread_t thread1;  
 	int ret = pthread_create(&thread1, NULL, listener_function, NULL);
 	if(ret != 0)

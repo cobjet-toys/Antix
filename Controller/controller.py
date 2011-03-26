@@ -1,9 +1,13 @@
 import sys
+import shutil
 import itertools
 
 from configuration import *
 
-FIRST_FREE_MACHINE = 0
+global FIRST_FREE_MACHINE
+global current_clock_port
+global current_grid_port
+global current_drawer_port
 
 def start_process(name, **kwargs):
     machine, machine_ip = get_free_computer()
@@ -13,22 +17,29 @@ def start_process(name, **kwargs):
     
     script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH
     if name is "clock":
-        script += CLOCK_RUN_COMMAND + " " + str(current_clock_port) + " " + NUM_CLIENTS
         global current_clock_port
+        script += CLOCK_RUN_COMMAND + " -p " + str(current_clock_port)
         current_clock_port += 1
     elif name is "client":
+        # setup full config file for robot client
+        shutil.copy(GRIDS_IDS_TMP, "client_config.tmp")
+        CLIENT_FULL_CONFIG_FILE = open("client_config.tmp", 'a', 0) # 0 means no buffer
+        grid_id_append = "GRID_INIT {0}\n"
         client_num = kwargs['client_num']
-        script += CLIENT_RUN_COMMAND + " " + PATH + "Controller/" + SERVER_INFO + " " + PATH + "Controller/" + SYSTEM_CONFIG + " " + str(client_num)
+        CLIENT_FULL_CONFIG_FILE.write(grid_id_append.format(GRID_BUCKETS[client_num]))
+        CLIENT_FULL_CONFIG_FILE.close()
+        script += ROBOT_CLIENT_RUN_COMMAND + " -f " + PATH + "Controller/client_config.tmp"
     elif name is "grid":
-        script += GRID_RUN_COMMAND + " " + SERVER_INFO + " " + str(current_grid_port)
-        #script += GRID_RUN_COMMAND + " " + str(current_grid_port)
         global current_grid_port
+        script += GRID_RUN_COMMAND + " -f " +PATH + "Controller/" + GRID_CONFIG + " -p " + str(current_grid_port)
         current_grid_port += 1
     elif name is "drawer":
-        if FOV == "1":
-            script += DRAWER_RUN_COMMAND + " " + WI_SIZE + " " + WO_SIZE + " " + H_RADIUS + " 1 " + FOV_ANGLE + " " + FOV_RANGE
-        else:
-            script += DRAWER_RUN_COMMAND + " " + WI_SIZE + " " + WO_SIZE + " " + H_RADIUS + " 0"
+        global current_drawer_port
+        script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG + " -p " + str(current_drawer_port)
+        current_drawer_port += 1
+    elif name is "controller":
+        script += CTRL_CLIENT_RUN_COMMAND + " -f " +PATH + "Controller/" + GRIDS_TMP
+
     script += " > antix." + machine + ".out &'"
     print "Running: " + script
 
@@ -39,16 +50,29 @@ def start_process(name, **kwargs):
 
         # Save the IP/port info to server.info file
         if name is "clock":
-            to_append = "clock,{0}," + str(current_clock_port-1)
-        if name is "drawer":
-            to_append = "drawer,{0}"
-        if name is "grid":
-            to_append = "grid,{0}," + str(current_grid_port-1)
-        if name is "client":
-            to_append = "client,{0}"
-
-        to_append += "\n"
-        SERVER_INFO_FILE.write(to_append.format(machine_ip.rstrip()))
+            to_append = "CLOCK {0} " + str(current_clock_port-1) + "\n"
+            GRIDS_TMP_FILE.write(to_append.format(machine_ip.rstrip()))
+            GRIDS_IDS_TMP_FILE.write(to_append.format(machine_ip.rstrip()))
+            proc = "clock {0}\n"
+            PROC_FILE.write(proc.format(machine_ip.rstrip()))
+        elif name is "grid":
+            to_append = "GRID {0} " + str(current_grid_port-1) + "\n"
+            to_append_id = "GRID {0} {1} " + str(current_grid_port-1) + "\n"
+            GRIDS_TMP_FILE.write(to_append.format(machine_ip.rstrip()))
+            DRAWER_FULL_CONFIG_FILE.write(to_append.format(machine_ip.rstrip()))
+            grid_num = kwargs['grid_num']
+            GRIDS_IDS_TMP_FILE.write(to_append_id.format(grid_num, machine_ip.rstrip()))
+            proc = "grid {0}\n"
+            PROC_FILE.write(proc.format(machine_ip.rstrip()))
+        elif name is "client":
+            proc = "client {0}\n"
+            PROC_FILE.write(proc.format(machine_ip.rstrip()))
+        elif name is "controller":
+            proc = "controller {0}\n"
+            PROC_FILE.write(proc.format(machine_ip.rstrip()))
+        elif name is "drawer":
+            proc = "drawer {0}\n"
+            PROC_FILE.write(proc.format(machine_ip.rstrip()))
             
     except BashScriptException as e:
         print "* ERROR STARTING " + name.upper() + " *"
@@ -61,11 +85,14 @@ def build_binary(name):
     if name is "clock":
         script += CLOCK_BUILD_DIR + "; " + CLOCK_BUILD_COMMAND
     elif name is "client":
-        script += CLIENT_BUILD_DIR + "; " + CLIENT_BUILD_COMMAND
+        script += ROBOT_CLIENT_BUILD_DIR + "; " + ROBOT_CLIENT_BUILD_COMMAND
     elif name is "grid":
         script += GRID_BUILD_DIR + "; " + GRID_BUILD_COMMAND
     elif name is "drawer":
         script += DRAWER_BUILD_DIR + "; " + DRAWER_BUILD_COMMAND
+    elif name is "controller":
+        script += CTRL_CLIENT_BUILD_DIR + "; " + CTRL_CLIENT_BUILD_COMMAND
+        
     print "Running: " + script
 
     try:
@@ -147,52 +174,67 @@ class BashScriptException(Exception):
 # Main:
 
 # Get the user argument
-if len(sys.argv) != 4:
-    print "Usage: python controller.py <sfu_username> <path/to/antix/directory/in/your/home/directory/> <system.config>"
-    print "For example: python contoller.py hha13 ~/Documents/Antix/ system.config"
+if len(sys.argv) != 5:
+    print "Usage: python controller.py <sfu_username> <path/to/antix/directory/in/your/home/directory/> <grid config file> <drawer config file>"
+    print "For example: python contoller.py hha13 ~/Documents/Antix/ grids.config drawer.config"
     print "Also, make sure you've set up SSH keys for your account."
     sys.exit()
 
 USER = sys.argv[1]
 PATH = sys.argv[2]
-SYSTEM_CONFIG = sys.argv[3]
+GRID_CONFIG = sys.argv[3]
+DRAWER_CONFIG = sys.argv[4]
 
-# Parse system config file
-config_file = open(SYSTEM_CONFIG, 'r')
-def strip_newlines(s): return s.rstrip()
-configs = map(strip_newlines, config_file.readlines())
+GRID_CONFIG_FILE = open(GRID_CONFIG, 'r')
 
-NUM_TEAMS = configs[0]
-NUM_ROBOTS_PER_TEAM = configs[1]
-NUM_CLIENTS = configs[2]
-NUM_GRIDS = configs[3]
-WI_SIZE = configs[4]
-WO_SIZE = configs[5]
-H_RADIUS = configs[6]
-FOV = configs[7]
-FOV_ANGLE = configs[8]
-FOV_RANGE = configs[9]
+# Set up full config file for drawer
+DRAWER_FULL_CONFIG = "drawer_config.tmp"
+shutil.copy(DRAWER_CONFIG, DRAWER_FULL_CONFIG)
+DRAWER_FULL_CONFIG_FILE = open(DRAWER_FULL_CONFIG, 'a', 0) # 0 means no buffer
 
-SERVER_INFO = "server.info"
-SERVER_INFO_FILE = open(SERVER_INFO, 'w', 0) # 0 means no buffer
+# Temporary config files
+GRIDS_TMP = "grids.tmp"
+GRIDS_IDS_TMP = "grids_ids.tmp"
+
+GRIDS_TMP_FILE = open(GRIDS_TMP, 'w', 0) # 0 means no buffer
+GRIDS_IDS_TMP_FILE = open(GRIDS_IDS_TMP, 'w', 0) # 0 means no buffer
+
+FIRST_FREE_MACHINE = 0
 
 # copy the clock/port setting
 current_clock_port = int(CLOCK_PORT)
 current_grid_port = int(GRID_PORT)
+current_drawer_port = int(DRAWER_PORT)
+
+PROC_FILE = open("proc.tmp", 'w', 0) # 0 means no buffer
+
+# Calculate which grids each robot client will go on
+bucket = 1
+GRID_BUCKETS = list()
+div = NUM_ROBOT_CLIENTS/NUM_GRIDS
+for i in range (1, NUM_ROBOT_CLIENTS+1):
+    GRID_BUCKETS.append(bucket)
+    if i%div == 0:
+        if bucket < NUM_GRIDS:
+            bucket += 1
 
 # Build all the code
 print "*** BUILDING BINARIES ***"
 print
 
-print "** BUILDING CLOCK **"
-print
-build_binary("clock")
-
 print "** BUILDING GRID **"
 print
 build_binary("grid")
 
-print "** BUILDING CLIENT **"
+print "** BUILDING CLOCK **"
+print
+build_binary("clock")
+
+print "** BUILDING CONTROLLER CLIENT **"
+print
+build_binary("controller")
+
+print "** BUILDING ROBOT CLIENT **"
 print
 build_binary("client")
 
@@ -203,25 +245,34 @@ build_binary("drawer")
 # Start processes
 print "*** STARTING PROCESSES ***"
 
+print "** STARTING GRIDS **"
+print
+for i in range(1, int(NUM_GRIDS)+1):
+    start_process("grid", grid_num=i)
+
 print "** STARTING CLOCK **"
 print
 start_process("clock")
+
+GRIDS_TMP_FILE.close()
+GRIDS_IDS_TMP_FILE.close()
+
+print "** STARTING CONTROLLER CLIENT **"
+print
+start_process("controller")
+
+print "** STARTING ROBOT CLIENTS **"
+print
+for i in range(int(NUM_ROBOT_CLIENTS)):
+    start_process("client", client_num=i)
 
 print "** STARTING DRAWER **"
 print
 start_process("drawer")
 
-print "** STARTING GRIDS **"
-print
-for _ in itertools.repeat(None, int(NUM_GRIDS)):
-    start_process("grid")
-
-print "** STARTING CLIENTS **"
-print
-for i in range(1, int(NUM_CLIENTS)+1):
-    start_process("client", client_num=i)
-
-SERVER_INFO_FILE.close()
+GRID_CONFIG_FILE.close()
+DRAWER_FULL_CONFIG_FILE.close()
+PROC_FILE.close()
 
 print
 print "EVERYTHING IS DONE!"
