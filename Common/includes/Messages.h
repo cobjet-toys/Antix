@@ -178,9 +178,10 @@ typedef struct{
     float speed;            //4
     float angle;            //4
     uint32_t puckid;        //4
-	static const size_t size = 24;
+    uint16_t gridid;        //2
+	static const size_t size = 26;
 } Msg_RobotInfo;
-static const char * Msg_RobotInfo_format = "lffffl";
+static const char * Msg_RobotInfo_format = "lfffflh";
 
 typedef struct{
    	char send_data;			//'T' or 'F'
