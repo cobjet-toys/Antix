@@ -110,13 +110,16 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
 
     //exit(1);
     
-    //TODO: Wrap this in ifdef debug
+   #ifdef DEBUG 
+    
     for(std::vector<Team*>::iterator it = m_Teams.begin(); it != m_Teams.end(); it++)
     {
     
         std::cout << "Id:" << (*it)->getId() << "Team X: " << (*it)->getX() << "Team Y:" << (*it)->getY() << std::endl;
 
     }
+
+    #endif
 
 
     // Sort generated pucks
@@ -322,7 +325,6 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::vect
         while ( counter >= 0 )
         {
             if ( (tempobj->getY() - position_obj->getY()) < robot_SensorRange ){
-                //TODO: Check Y bound as well
 
                 if ( abs(tempobj->getX() - position_obj->getX()) < robot_SensorRange ){
                     Msg_SensedObjectGroupItem temp_sensed;
@@ -348,7 +350,6 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::vect
         while ( counter <= m_Population.size() )
         {
             if ( (position_obj->getY() - tempobj->getY()) < robot_SensorRange ){
-                //TODO: Check Y bound as well
 
                 if ( abs(position_obj->getX() - tempobj->getX()) < robot_SensorRange ){
                     Msg_SensedObjectGroupItem temp_sensed;
