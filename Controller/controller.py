@@ -15,13 +15,20 @@ def start_process(name, **kwargs):
         print "No more free machines, exiting."
         sys.exit()
     
-    script = "ssh -f -p 22 " + USER + "@" + machine + " 'nohup " + PATH
+    script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH
     if name is "clock":
         global current_clock_port
         script += CLOCK_RUN_COMMAND + " -p " + str(current_clock_port)
         current_clock_port += 1
     elif name is "client":
-        script += ROBOT_CLIENT_RUN_COMMAND + " -f " + PATH + "Controller/" + GRIDS_IDS_TMP
+        # setup full config file for robot client
+        shutil.copy(GRIDS_IDS_TMP, "client_config.tmp")
+        CLIENT_FULL_CONFIG_FILE = open("client_config.tmp", 'a', 0) # 0 means no buffer
+        grid_id_append = "GRID_INIT {0}\n"
+        client_num = kwargs['client_num']
+        CLIENT_FULL_CONFIG_FILE.write(grid_id_append.format(GRID_BUCKETS[client_num]))
+        CLIENT_FULL_CONFIG_FILE.close()
+        script += ROBOT_CLIENT_RUN_COMMAND + " -f " + PATH + "Controller/client_config.tmp"
     elif name is "grid":
         global current_grid_port
         script += GRID_RUN_COMMAND + " -f " +PATH + "Controller/" + GRID_CONFIG + " -p " + str(current_grid_port)
@@ -37,9 +44,9 @@ def start_process(name, **kwargs):
     print "Running: " + script
 
     try:
-        #out, error = run_bash_script(script)
-        #print "Output: " + out.rstrip()
-        #print
+        out, error = run_bash_script(script)
+        print "Output: " + out.rstrip()
+        print
 
         # Save the IP/port info to server.info file
         if name is "clock":
@@ -66,9 +73,6 @@ def start_process(name, **kwargs):
         elif name is "drawer":
             proc = "drawer {0}\n"
             PROC_FILE.write(proc.format(machine_ip.rstrip()))
-
-        print
-        return
             
     except BashScriptException as e:
         print "* ERROR STARTING " + name.upper() + " *"
@@ -90,8 +94,6 @@ def build_binary(name):
         script += CTRL_CLIENT_BUILD_DIR + "; " + CTRL_CLIENT_BUILD_COMMAND
         
     print "Running: " + script
-    print
-    return
 
     try:
         out, error = run_bash_script(script)
@@ -119,7 +121,7 @@ def get_free_computer():
             # if we can't get it, the machine's not connectable
             # in the future, we could also get the load average
             # and make a decision based on that
-            get_machine_info = "ssh -p 22 " + USER + "@" + machine_to_test + \
+            get_machine_info = "ssh -p 24 " + USER + "@" + machine_to_test + \
                 " '" + PATH + "Controller/machine_info.sh'"
             try:
                 out, error = run_bash_script(get_machine_info)
@@ -206,6 +208,16 @@ current_drawer_port = int(DRAWER_PORT)
 
 PROC_FILE = open("proc.tmp", 'w', 0) # 0 means no buffer
 
+# Calculate which grids each robot client will go on
+bucket = 1
+GRID_BUCKETS = list()
+div = NUM_ROBOT_CLIENTS/NUM_GRIDS
+for i in range (1, NUM_ROBOT_CLIENTS+1):
+    GRID_BUCKETS.append(bucket)
+    if i%div == 0:
+        if bucket < NUM_GRIDS:
+            bucket += 1
+
 # Build all the code
 print "*** BUILDING BINARIES ***"
 print
@@ -251,12 +263,16 @@ start_process("controller")
 
 print "** STARTING ROBOT CLIENTS **"
 print
-for _ in itertools.repeat(None, int(NUM_ROBOT_CLIENTS)):
-    start_process("client")
+for i in range(int(NUM_ROBOT_CLIENTS)):
+    start_process("client", client_num=i)
 
 print "** STARTING DRAWER **"
 print
 start_process("drawer")
+
+GRID_CONFIG_FILE.close()
+DRAWER_FULL_CONFIG_FILE.close()
+PROC_FILE.close()
 
 print
 print "EVERYTHING IS DONE!"
