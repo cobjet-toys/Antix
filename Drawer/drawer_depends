@@ -13,7 +13,7 @@ drawer.o: /home/leif/Desktop/Antix/Drawer/src/drawer.cpp \
  /usr/include/bits/sigset.h /usr/include/bits/time.h \
  /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h \
  /usr/include/alloca.h \
- /home/leif/Desktop/Antix/Drawer/includes/DrawServer.h \
+ /home/leif/Desktop/Antix/Drawer/includes/DrawerClient.h \
  /home/leif/Desktop/Antix/Drawer/../Common/includes/Client.h \
  /usr/include/netdb.h /usr/include/netinet/in.h /usr/include/stdint.h \
  /usr/include/bits/wchar.h /usr/include/sys/socket.h \
@@ -495,16 +495,18 @@ drawer.o: /home/leif/Desktop/Antix/Drawer/src/drawer.cpp \
  /home/leif/Desktop/Antix/Drawer/../Common/includes/Config.h \
  /home/leif/Desktop/Antix/Drawer/../Common/includes/AntixUtil.h \
  /home/leif/Desktop/Antix/Drawer/../Common/includes/Types.h \
- /home/leif/Desktop/Antix/Drawer/includes/Gui.h \
- /home/leif/Desktop/Antix/Drawer/includes/DrawServer.h \
+ /home/leif/Desktop/Antix/Drawer/includes/DrawerParser.h \
+ /home/leif/Desktop/Antix/Drawer/../Common/includes/FileParser.h \
+ /home/leif/Desktop/Antix/Drawer/includes/DrawerClient.h \
+ /usr/include/strings.h /home/leif/Desktop/Antix/Drawer/includes/Gui.h \
  /usr/include/math.h /usr/include/bits/huge_val.h \
  /usr/include/bits/huge_valf.h /usr/include/bits/huge_vall.h \
  /usr/include/bits/inf.h /usr/include/bits/nan.h \
  /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h \
  /usr/include/GL/glut.h /usr/include/GL/freeglut_std.h \
  /usr/include/GL/gl.h /usr/include/GL/glext.h /usr/include/GL/glu.h
-DrawServer.o: /home/leif/Desktop/Antix/Drawer/src/DrawServer.cpp \
- /home/leif/Desktop/Antix/Drawer/includes/DrawServer.h \
+DrawerClient.o: /home/leif/Desktop/Antix/Drawer/src/DrawerClient.cpp \
+ /home/leif/Desktop/Antix/Drawer/includes/DrawerClient.h \
  /home/leif/Desktop/Antix/Drawer/../Common/includes/Client.h \
  /usr/include/netdb.h /usr/include/features.h /usr/include/bits/predefs.h \
  /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
@@ -1004,7 +1006,7 @@ DrawServer.o: /home/leif/Desktop/Antix/Drawer/src/DrawServer.cpp \
  /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
 Gui.o: /home/leif/Desktop/Antix/Drawer/src/Gui.cpp \
  /home/leif/Desktop/Antix/Drawer/includes/Gui.h \
- /home/leif/Desktop/Antix/Drawer/includes/DrawServer.h \
+ /home/leif/Desktop/Antix/Drawer/includes/DrawerClient.h \
  /home/leif/Desktop/Antix/Drawer/../Common/includes/Client.h \
  /usr/include/netdb.h /usr/include/features.h /usr/include/bits/predefs.h \
  /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
@@ -1585,9 +1587,7 @@ DrawerParser.o: /home/leif/Desktop/Antix/Drawer/src/DrawerParser.cpp \
  /usr/include/c++/4.4/i686-linux-gnu/bits/basic_file.h \
  /usr/include/c++/4.4/i686-linux-gnu/bits/c++io.h \
  /usr/include/c++/4.4/bits/fstream.tcc /usr/include/string.h \
- /usr/include/c++/4.4/iostream \
- /home/leif/Desktop/Antix/Drawer/../Common/includes/Config.h \
- /home/leif/Desktop/Antix/Drawer/includes/DrawServer.h \
+ /home/leif/Desktop/Antix/Drawer/includes/DrawerClient.h \
  /home/leif/Desktop/Antix/Drawer/../Common/includes/Client.h \
  /usr/include/netdb.h /usr/include/netinet/in.h /usr/include/stdint.h \
  /usr/include/sys/socket.h /usr/include/sys/uio.h \
@@ -1994,6 +1994,7 @@ DrawerParser.o: /home/leif/Desktop/Antix/Drawer/src/DrawerParser.cpp \
  /usr/include/boost/algorithm/string/formatter.hpp \
  /usr/include/boost/algorithm/string/detail/formatter.hpp \
  /usr/include/boost/algorithm/string/erase.hpp \
+ /usr/include/c++/4.4/iostream \
  /home/leif/Desktop/Antix/Drawer/../Common/includes/Messages.h \
  /home/leif/Desktop/Antix/Drawer/../Common/includes/Puck.h \
  /home/leif/Desktop/Antix/Drawer/../Common/includes/Team.h \
@@ -2002,5 +2003,7 @@ DrawerParser.o: /home/leif/Desktop/Antix/Drawer/src/DrawerParser.cpp \
  /home/leif/Desktop/Antix/Drawer/../Common/includes/Packer.h \
  /usr/include/inttypes.h \
  /home/leif/Desktop/Antix/Drawer/../Common/includes/networkCommon.h \
+ /home/leif/Desktop/Antix/Drawer/../Common/includes/Config.h \
  /home/leif/Desktop/Antix/Drawer/../Common/includes/AntixUtil.h \
- /home/leif/Desktop/Antix/Drawer/../Common/includes/Types.h
+ /home/leif/Desktop/Antix/Drawer/../Common/includes/Types.h \
+ /usr/include/strings.h
