@@ -84,7 +84,7 @@ int RobotClient::sendRobotRequests()
         robotGameInstance->requestSensorData(m_GridFdToId[(*it)], &l_RobotIds);
         
         l_Size.msgSize = l_RobotIds.size();//REPLACE WITH ACTUAL REQUEST FOR ROBOTS(l_RobotIds.size())
-        DEBUGPRINT("Requesting sensory info for %uz robots\n", l_RobotIds.size());
+        DEBUGPRINT("Requesting sensory info for %zu robots\n", l_RobotIds.size());
 
         unsigned int l_MessageSize = (l_Size.msgSize*l_Req.size)+l_Header.size+l_Size.size;
         unsigned char l_Buffer[l_MessageSize];
@@ -428,7 +428,7 @@ int RobotClient::handler(int fd)
                             for(std::map<int, int>::const_iterator it = m_GridIdToFd.begin(); it != end; it++)
                             {
                                 robotGameInstance->sendAction((*it).first, &l_RoboActions);
-                                DEBUGPRINT("Received %d actions for grid %d \n", l_RoboActions.size(), (*it).first);
+                                DEBUGPRINT("Received %zu actions for grid %d \n", l_RoboActions.size(), (*it).first);
                                 //TODO SEND ACTIONS.
                                 Msg_header l_Header;
                                 Msg_MsgSize l_Size = {l_RoboActions.size()};
