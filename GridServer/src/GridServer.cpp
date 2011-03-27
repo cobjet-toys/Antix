@@ -27,42 +27,41 @@ m_teamsConfirmed =0;
 
 int GridServer::initGridGame()
 {
+    /*
 	gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam, m_idRangeFrom, m_idRangeTo); // needs to not do this in grid game constructor!
 	printf("id=%lu, teams=%lu, robots=%lu, idfrom=%lu, idto=%lu\n", (unsigned long)m_uId, (unsigned long)m_teamsAvailable,(unsigned long) m_robotsPerTeam, (unsigned long)m_idRangeFrom, (unsigned long)m_idRangeTo);
+    */
     // parameters: gridid, num_of_teams, robots_per_team, id_from, id_to
-    /*gridGameInstance = new GridGame(1, 2, 10, 10, 30);
->>>>>>> 041a2290d55225e08154605315d80d6b23f04714
-    Msg_RobotInfo newrobot;
-	
-	
-    newrobot.robotid = 400;
-    newrobot.x_pos = 5;
-    newrobot.y_pos = 5;
+    gridGameInstance = new GridGame(1, 2, 5, 10, 19);
+    GridGame* gridGameInstance2 = new GridGame(2, 2, 5, 20, 29);
 
-    std::vector<int> teams;
-    teams.push_back(10);
+    Msg_RobotInfo newrobot;
+    newrobot.robotid = 400;
+    newrobot.x_pos = 2.5;
+    newrobot.y_pos = 2.5;
 
     std::vector<int> robots;
     robots.push_back(10);
+    robots.push_back(14);
 
-    //std::vector<RobotSensedObjectsPair>* sensed_items = new std::vector<RobotSensedObjectsPair>;
+    std::vector<RobotSensedObjectsPair>* sensed_items = new std::vector<RobotSensedObjectsPair>;
 
     //DEBUGPRINT("=====Create Game\n");
 
     //DEBUGPRINT("=====Initialize teams\n");
     //std::vector<robot_info>* robot_info_vector;
     //gridGameInstance->initializeTeam(teams, robot_info_vector);
-    DEBUGPRINT("=====Printing initial population after initializing gridGameInstance\n");
+    DEBUGPRINT("=====Printing initial population of grid1 after initializing gridGameInstance\n");
     gridGameInstance->printPopulation();
-    DEBUGPRINT("=====Getting a team\n");
+    DEBUGPRINT("=====Printing initial population of grid2 after initializing gridGameInstance\n");
+    gridGameInstance2->printPopulation();
+
     DEBUGPRINT("=====Unregister Robot\n");
     gridGameInstance->unregisterRobot(1);
     gridGameInstance->printPopulation();
-    DEBUGPRINT("=====Register Robot\n");
-    gridGameInstance->registerRobot(newrobot);
-    gridGameInstance->printPopulation();
+
     DEBUGPRINT("=====Get Sensor Data\n");
-    gridGameInstance->returnSensorData(teams, sensed_items);
+    gridGameInstance->returnSensorData(robots, sensed_items);
 
     // TEST for getRobots
     int teamid;
@@ -92,17 +91,39 @@ int GridServer::initGridGame()
 
     DEBUGPRINT("=====Printing population after getting all of the robots for robotclient\n");
     gridGameInstance->printPopulation();
-    DEBUGPRINT("=====Unregister Robot\n");
-    gridGameInstance->unregisterRobot(1);
-    gridGameInstance->printPopulation();
+
     DEBUGPRINT("=====Register Robot\n");
     gridGameInstance->registerRobot(newrobot);
     gridGameInstance->printPopulation();
+
     DEBUGPRINT("=====Get Sensor Data\n");
-    gridGameInstance->returnSensorData(teams, sensed_items);
+    gridGameInstance->returnSensorData(robots, sensed_items);
 	gridGameInstance->printPopulation();
 
-    */
+    DEBUGPRINT("=====Process action and update robots\n");
+    Msg_Action process_robot;
+    process_robot.robotid = 14;
+    std::vector<Msg_Action> robotss;
+    robotss.push_back(process_robot);
+    std::vector<Msg_RobotInfo>* results = new std::vector<Msg_RobotInfo>;
+    std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >* robots_to_pass = new std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >;
+    int i = 0;
+    while(i < 200)
+    {
+	    gridGameInstance->processAction(robotss, results, robots_to_pass);
+        for(std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >::iterator it = robots_to_pass->begin(); it != robots_to_pass->end(); it++)
+        {
+            std::pair<int, std::vector<Msg_RobotInfo> > some_pair = (*it);
+            gridGameInstance2->updateRobots(some_pair.second);
+        }
+        DEBUGPRINT("=====Printing population for grid 1\n");
+	    gridGameInstance->printPopulation();
+        DEBUGPRINT("=====Printing population for grid 2\n");
+	    gridGameInstance2->printPopulation();
+
+        i++;
+    }
+    
 
 	return 0;
 }
@@ -464,9 +485,12 @@ int GridServer::handler(int fd)
 
                     std::vector<Msg_RobotInfo> l_Results;
 
-                    gridGameInstance->processAction(l_Actions, &l_Results);
+                    
+                    std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >* robots_to_pass = new std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >;
 
-                    DEBUGPRINT("Received %d results\n", l_Results.size());
+                    gridGameInstance->processAction(l_Actions, &l_Results, robots_to_pass);
+
+                    DEBUGPRINT("Received %zu results\n", l_Results.size());
 
                     Msg_RobotInfo l_Result;
                     l_MessageSize = l_Header.size+l_Size.size+(l_Result.size*l_Size.msgSize);
@@ -546,7 +570,7 @@ int GridServer::handler(int fd)
 					std::vector<Msg_InitRobot> * l_robots = new std::vector<Msg_InitRobot>;
 					gridGameInstance->getRobots(l_Team, l_robots);
 
-					DEBUGPRINT("%u\n", l_robots->size());
+					DEBUGPRINT("%zu\n", l_robots->size());
 					Msg_header l_header;
 					Msg_MsgSize l_size;
 					Msg_InitRobot l_robot;

@@ -64,7 +64,12 @@ public:
     /**
      * Interface function to Network layer for processing actions for each robot.
      */
-    int processAction(std::vector<Msg_Action>& robot_actions, std::vector< Msg_RobotInfo >* results);
+    int processAction(std::vector<Msg_Action>& robot_actions, std::vector< Msg_RobotInfo >* results, std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >* robots_to_pass);
+
+    /**
+     * Interface function to updateRobots based on new/update robots on edge cases
+     */
+    int updateRobots(std::vector<Msg_RobotInfo> robots_to_update);
 
     /**
      * Interface function to Network layer for processing actions for each robot.
@@ -130,8 +135,14 @@ private:
 
     // Total world size
     float m_WorldSize;
+    float m_leftBoundary;
+    float m_rightBoundary;
+    float m_leftInnerBoundary;
+    float m_rightInnerBoundary;
     int m_NumGrids;
     int m_GridId;
+    int m_RightGrid;
+    int m_LeftGrid;
 
     int m_PuckTotal;
 

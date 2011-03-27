@@ -31,7 +31,7 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
 
     #ifdef DEBUG
 
-    printf("Gridid: %d, Num of teams: %d, robots per team: %d, idfrom: %d, idto: %d", gridid, num_of_teams, robots_per_team, id_from, id_to);
+    printf("=====initial values\nGridid: %d, Num of teams: %d, robots per team: %d, idfrom: %d, idto: %d\n", gridid, num_of_teams, robots_per_team, id_from, id_to);
 
     #endif
 
@@ -42,21 +42,48 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     //Robot configurations.
     robot_FOV = Math::dtor(90.0);
     robot_Radius = 0.01;
-    robot_SensorRange = 4;
+    robot_SensorRange = 0.2;
     robot_PickupRange = robot_SensorRange/5.0;
 
-    printf("Robot FOV: \n%f\n", robot_FOV);
+    DEBUGPRINT("Robot FOV: \n%f\n", robot_FOV);
 
 
+    //TODO: These values either will be read from config, or passed into constructor
     home_Radius = 0.1;
     m_WorldSize = 10;
 	m_NumGrids = 2;
-    m_PuckTotal = 20;
+    m_PuckTotal = 6;
+
+    // calculate boundary zones
+    float max_grid_size = m_WorldSize/m_NumGrids;
+    m_leftBoundary = gridid - 1;
+    m_rightBoundary = m_leftBoundary + max_grid_size;
+    m_leftInnerBoundary = m_leftBoundary + robot_SensorRange; 
+    m_rightInnerBoundary = m_rightBoundary - robot_SensorRange; 
+
+    // determine the left and right grid ids
+    if (m_GridId == 1)
+    {
+        m_LeftGrid = m_NumGrids;
+        m_RightGrid = m_GridId + 1;
+    }
+    else if(m_GridId == m_NumGrids)
+    {
+        m_LeftGrid = m_GridId - 1;
+        m_RightGrid = 1;
+    }
+
+    #ifdef DEBUG
+    DEBUGPRINT("Left grid: %d Right grid: %d\n", m_LeftGrid, m_RightGrid);
+    DEBUGPRINT("Left boundary: %f Left inner boundary: %f\n", m_leftBoundary, m_leftInnerBoundary);
+    DEBUGPRINT("Right boundary: %f Right inner boundary: %f\n", m_rightBoundary, m_rightInnerBoundary);
+    #endif
 
     // Safety
     m_Population.clear();
     m_Teams.clear();
 
+    // setting puck id ranges
     int l_pucks_per_grid = m_PuckTotal/m_NumGrids;
     int high_puck_range = l_pucks_per_grid * m_GridId;
     int low_puck_range = high_puck_range - l_pucks_per_grid + 1;
@@ -210,14 +237,13 @@ int GridGame::initializeTeam(std::vector<int> teams, std::vector<robot_info>* ro
 int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
 {
 
-    DEBUGPRINT("===Executing getRobots");
-
+    DEBUGPRINT("===Executing getRobots\nTeam Counter: %d\n", teamcounter);
     Team* l_Team = m_Teams[teamcounter];
     team.id = l_Team->getId();
     team.x = l_Team->getX();
     team.y = l_Team->getY();
 
-    DEBUGPRINT("Team id: %d - Team x: %d - Team y: %d", team.id, team.x, team.y);
+    DEBUGPRINT("Team id: %d - Team x: %f - Team y: %f\n", team.id, team.x, team.y);
 
     //std::vector<robot_info> l_robot_info_vector = new std::vector<robot_info>();
 
@@ -296,12 +322,17 @@ int GridGame::unregisterRobot(unsigned int robotid)
 ///int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<int, std::vector<sensed_item> >* sensed_items_map)
 int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::vector< RobotSensedObjectsPair >* sensor_data)
 {
+    DEBUGPRINT("====Entering returnSensorData method");
+
+    #ifdef DEBUG
 
     for( std::map<GameObject*, int>::iterator it = m_YObjects.begin(); it != m_YObjects.end(); it++){
 
         std::cout << it->first << " => " << it->second << std::endl;
 
     }
+
+    #endif
 
     //std::map<int, std::vector<sensed_item> > l_sensed_items_map; 
 
@@ -330,7 +361,7 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::vect
                     Msg_SensedObjectGroupItem temp_sensed;
                     temp_sensed.id = (*position_obj).m_id;
                     temp_sensed.x = position_obj->getX();
-                    temp_sensed.y = position_obj->getX();
+                    temp_sensed.y = position_obj->getY();
                     
                     temp_vector.push_back( temp_sensed );
                 }
@@ -347,15 +378,18 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::vect
 
         DEBUGPRINT("Counter: %d - Size client list: %zu\n", counter, robot_ids_from_client.size() );
 
-        while ( counter <= m_Population.size() )
+        while ( counter < m_Population.size() )
         {
+            printf("here1\n");
             if ( (position_obj->getY() - tempobj->getY()) < robot_SensorRange ){
+                printf("here2\n");
 
                 if ( abs(position_obj->getX() - tempobj->getX()) < robot_SensorRange ){
+                    printf("here3\n");
                     Msg_SensedObjectGroupItem temp_sensed;
                     temp_sensed.id = (*position_obj).m_id;
                     temp_sensed.x = position_obj->getX();
-                    temp_sensed.y = position_obj->getX();
+                    temp_sensed.y = position_obj->getY();
                     
                     temp_vector.push_back( temp_sensed );
                 }
@@ -407,38 +441,147 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::vect
 
 }
 
-int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector< Msg_RobotInfo >* results)
+int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector< Msg_RobotInfo >* results, std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >* robots_to_pass)
 {
 
-    // basic movement, moving up and down, not checking collisons
+    // basic movement, not checking collisons
     // not even checking the angle sent by the client.
 
-    // NOT TESTED!
+    // check to see if the robot is in the boundary zone, if they are add them to robots_to_pass
+    // TODO: Should I be using the "new" keyword? I imagine I want to allocate to the heap, not the stack
+    // I think this could have been less complicated in terms of datastructures if we just used a map,
+    // but I didn't want to waste time communicating that change. This could be a bitch to change if we have squares
+    // instead of strips. ## on further thought, maybe not. both are fine
+    std::vector<Msg_RobotInfo> left_robots;
+    std::vector<Msg_RobotInfo> right_robots;
+    //std::vector<Msg_RobotInfo> right_robots = new std::vector<Msg_RobotInfo>;
+    std::pair<int, std::vector<Msg_RobotInfo> >* left_robots_pair = new std::pair<int, std::vector<Msg_RobotInfo> >(m_LeftGrid, left_robots);
+    std::pair<int, std::vector<Msg_RobotInfo> >* right_robots_pair = new std::pair<int, std::vector<Msg_RobotInfo> >(m_RightGrid, right_robots);
 
+    // set the grid ids to the left and right
+    //left_robots_pair->first = m_LeftGrid;
+    //right_robots_pair->first = m_RightGrid;
+
+    // set the pairs to the correct vector of robots
+    //left_robots_pair->second = left_robots;
+    //left_robots_pair->second = right_robots;
+
+
+    // iterate through each robot recieved by grabbing that robot from our population array
     for(std::vector<Msg_Action>::iterator it = robot_actions.begin(); it != robot_actions.end(); it++)
     {
-        Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
-        Msg_RobotInfo temp;
-        temp.robotid = l_Robot->getId();
-        temp.x_pos = l_Robot->getX();
-        float new_ypos = l_Robot->getY() + 0.1;
-        if (new_ypos > m_WorldSize)
+        // grab the robots and update their positions
+        std::map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
+        if (robot_find != m_MapPopulation.end())
         {
-            new_ypos = 0;
+            Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
+            Msg_RobotInfo temp;
+            temp.robotid = l_Robot->getId();
+            temp.x_pos = l_Robot->getX();
+            DEBUGPRINT("Previous x: %f y: %f\n", l_Robot->getX(), l_Robot->getY());
+            float new_ypos = l_Robot->getY() + 0.1;
+            if (new_ypos > m_WorldSize)
+            {
+                new_ypos = 0;
+            }
+            float new_xpos = l_Robot->getX() + 0.1;
+            if (new_xpos > m_WorldSize)
+            {
+                new_xpos = 0;
+            }
+            temp.x_pos = new_xpos;
+            temp.y_pos = new_ypos;
+            temp.speed = (*it).speed;
+            temp.angle = (*it).angle;
+            temp.puckid = 0;
+            DEBUGPRINT("New position x: %f y: %f\n", temp.x_pos, temp.y_pos);
+
+            // set the new position of the robot
+            l_Robot->setPosition(temp.x_pos, temp.y_pos, temp.angle);
+
+            // check if the robots new position is in a new grid. If it is, we must remove the robot
+            // from the grids population, and set the gridid in the Msg_RobotInfo, so the robotclient
+            // can fix the mapping
+            if ( temp.x_pos > m_rightBoundary)
+            {
+                // set the robot to the appropriate grid
+                temp.gridid = m_RightGrid;
+                // remove robot from population
+                removeObjectFromPop(temp.robotid);
+
+                DEBUGPRINT("Robot has left this grid on the right side! Removing it from population\n");
+
+            }
+            else if( temp.x_pos < m_leftBoundary)
+            {
+                // set the robot to the appropriate grid
+                temp.gridid = m_LeftGrid;
+                //remove robot from population
+                removeObjectFromPop(temp.robotid);
+
+                DEBUGPRINT("Robot has left this grid on the left side! Removing it from population\n");
+            }
+
+            // add the robot to the results (which will be processed by the client who requested
+            results->push_back(temp);
+
+            // check if robots are in the boundary zone
+            if( (temp.x_pos > m_rightInnerBoundary) && (temp.x_pos <= m_rightBoundary) )
+            {
+                right_robots.push_back(temp);
+                DEBUGPRINT("Adding this robotid %d to the \"right_robots\" vector because it is in the boundary\n", temp.robotid);
+            }
+            else if( (temp.x_pos < m_leftInnerBoundary) && (temp.x_pos >= m_leftBoundary ) )
+            {
+                left_robots.push_back(temp);
+                DEBUGPRINT("Adding this robotid %d to the \"left_robots\" vector because it is in the boundary\n", temp.robotid);
+            }
+        }else
+        {
+            DEBUGPRINT("****Robot is not in the population");
         }
-        temp.y_pos = new_ypos;
-        temp.speed = (*it).speed;
-        temp.angle = (*it).angle;
-        temp.puckid = 0;
-
-        l_Robot->setPosition(temp.x_pos, temp.y_pos, temp.angle);
-
-        results->push_back(temp);
     }
+
+    // set the values to be processed by the state machine
+    robots_to_pass->push_back(*left_robots_pair);
+    robots_to_pass->push_back(*right_robots_pair);
+
+    // sort population after we update the positions
+    sortPopulation();
 
     return 0;
 }
 
+int GridGame::updateRobots(std::vector<Msg_RobotInfo> robots)
+{
+
+    DEBUGPRINT("Entering updateRobot function");
+
+    // iterate through each robot recieved by grabbing that robot from our population array
+    for(std::vector<Msg_RobotInfo>::iterator it = robots.begin(); it != robots.end(); it++)
+    {
+        DEBUGPRINT("Entering updateRobot function for loop");
+        // grab the robots and update their positions
+        std::map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
+        if (robot_find != m_MapPopulation.end())
+        {
+            DEBUGPRINT("***NEW ROBOT");
+            registerRobot(*it);
+        }
+        else
+        {
+            DEBUGPRINT("***UPDATE ROBOT");
+            Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
+            l_Robot->updatePosition((*it).x_pos, (*it).y_pos);
+            l_Robot->m_PuckHeld = (*it).puckid;
+            l_Robot->getPosition()->setOrient((*it).angle);
+        }
+
+    }
+
+    sortPopulation();
+
+}
 
 int GridGame::addObjectToPop(GameObject* object)
 {
