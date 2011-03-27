@@ -452,11 +452,11 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
     // I think this could have been less complicated in terms of datastructures if we just used a map,
     // but I didn't want to waste time communicating that change. This could be a bitch to change if we have squares
     // instead of strips. ## on further thought, maybe not. both are fine
-    std::vector<Msg_RobotInfo> left_robots;
-    std::vector<Msg_RobotInfo> right_robots;
+    std::vector<Msg_RobotInfo>* left_robots = new std::vector<Msg_RobotInfo>;
+    std::vector<Msg_RobotInfo>* right_robots = new std::vector<Msg_RobotInfo>;
     //std::vector<Msg_RobotInfo> right_robots = new std::vector<Msg_RobotInfo>;
-    std::pair<int, std::vector<Msg_RobotInfo> >* left_robots_pair = new std::pair<int, std::vector<Msg_RobotInfo> >(m_LeftGrid, left_robots);
-    std::pair<int, std::vector<Msg_RobotInfo> >* right_robots_pair = new std::pair<int, std::vector<Msg_RobotInfo> >(m_RightGrid, right_robots);
+    std::pair<int, std::vector<Msg_RobotInfo> >* left_robots_pair = new std::pair<int, std::vector<Msg_RobotInfo> >(m_LeftGrid, *left_robots);
+    std::pair<int, std::vector<Msg_RobotInfo> >* right_robots_pair = new std::pair<int, std::vector<Msg_RobotInfo> >(m_RightGrid, *right_robots);
 
     // set the grid ids to the left and right
     //left_robots_pair->first = m_LeftGrid;
@@ -528,12 +528,12 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             // check if robots are in the boundary zone
             if( (temp.x_pos > m_rightInnerBoundary) && (temp.x_pos <= m_rightBoundary) )
             {
-                right_robots.push_back(temp);
+                right_robots->push_back(temp);
                 DEBUGPRINT("Adding this robotid %d to the \"right_robots\" vector because it is in the boundary\n", temp.robotid);
             }
             else if( (temp.x_pos < m_leftInnerBoundary) && (temp.x_pos >= m_leftBoundary ) )
             {
-                left_robots.push_back(temp);
+                left_robots->push_back(temp);
                 DEBUGPRINT("Adding this robotid %d to the \"left_robots\" vector because it is in the boundary\n", temp.robotid);
             }
         }else
