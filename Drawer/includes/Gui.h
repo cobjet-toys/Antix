@@ -15,7 +15,7 @@ void timerFunc(int dummy);
 void displayFunc();
 void drawPucks();
 void drawTeams();
-void drawRobots();
+void drawRobots(int edgePoints);
 void drawText(char* text, float x, float y);
 void drawTest(int robotCount, int edgePoints);
 //void drawRobot(Game::Robot* robot, const GUI::Color* color);

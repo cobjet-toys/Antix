@@ -28,14 +28,14 @@ void displayFunc()
 {    
     //printf("displayFunc()::");
     
-    glClear( GL_COLOR_BUFFER_BIT );
+    glClear(GL_COLOR_BUFFER_BIT);
     glMatrixMode (GL_MODELVIEW);
     glLoadIdentity();
 
     drawTeams();
     drawPucks();
-    drawRobots();
-    drawTest(1000, 20);
+    drawRobots(20);
+    //drawTest(100, 20);
 
     char buf[20];
     sprintf(buf, "Frame Count: %d", drawCount++);
@@ -47,9 +47,9 @@ void displayFunc()
 
 void drawTeams()
 {
-    unsigned int winsize = 10;//Network::DrawServer::getInstance()->getWindowSize();
-    float worldsize = 1.0;//Network::DrawServer::getInstance()->getWorldSize();
-    float radius = 20;//Network::DrawServer::getInstance()->getHomeRadius();
+    unsigned int winsize = Network::DrawServer::getInstance()->getWindowSize();
+    float worldsize      = Network::DrawServer::getInstance()->getWorldSize();
+    float radius         = Network::DrawServer::getInstance()->getHomeRadius();
 
     for (Network::TeamIter it = Network::DrawServer::getInstance()->getFirstTeam();
          it != Network::DrawServer::getInstance()->getLastTeam(); it++)
@@ -57,7 +57,7 @@ void drawTeams()
         glColor3f(255, 255, 255);
 
         Math::Position * homePos = (*it)->getPosition();
-        GlDrawCircle(homePos->getX()/winsize, homePos->getY()/winsize, radius/winsize, 16);
+        GlDrawCircle(homePos->getX(), homePos->getY(), radius, 16);
     }
 }
 
@@ -67,7 +67,7 @@ void drawPucks()
 
     glPointSize(4.0);
 
-    unsigned int winsize = 10;//Network::DrawServer::getInstance()->getWindowSize();
+    unsigned int winsize = Network::DrawServer::getInstance()->getWindowSize();
 
     // pack the puck points into a vertex array for fast rendering
     const size_t len(Network::DrawServer::getInstance()->getPucksCount());
@@ -85,8 +85,8 @@ void drawPucks()
     {    
         Math::Position * puckPos = (*it)->getPosition();
         
-        pts[i]   = puckPos->getX()/winsize;
-        pts[i+1] = puckPos->getY()/winsize;
+        pts[i]   = puckPos->getX();
+        pts[i+1] = puckPos->getY();
         i += 2;
     }
 
@@ -101,9 +101,9 @@ void drawPucks()
     drawText(tmpBuf, 5, 570);
 }
 
-void drawRobots()
+void drawRobots(int edgePoints)
 {
-    unsigned int winsize   = 10;
+    unsigned int winsize   = Network::DrawServer::getInstance()->getWindowSize();
     float worldsize        = Network::DrawServer::getInstance()->getWorldSize();
     float radius           = Network::DrawServer::getInstance()->getHomeRadius();
 
@@ -117,14 +117,12 @@ void drawRobots()
         const size_t len( Network::DrawServer::getInstance()->getRobotsCount()); 
     	
         // keep this buffer around between calls for speed
-        static std::vector<GLfloat> pts;
+        static std::vector<GLfloat> pts, sPts, lPts;
         static std::vector<GLfloat> colors;
         pts.resize(len * 2);
+        sPts.resize(len * edgePoints * 2);
+        lPts.resize(len * 4);
         colors.resize(len * 3);
-
-        // Activate and specify pointer to vertex array
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glVertexPointer(2, GL_FLOAT, 0, &pts[0]);
 
         glEnableClientState(GL_COLOR_ARRAY);
         glColorPointer(3, GL_FLOAT, 0, &colors[0]);
@@ -141,8 +139,22 @@ void drawRobots()
             Math::Position * robotPos = (*it)->getPosition();
             if (!robotPos) continue;
 
-            pts[2*i + 0] = robotPos->getX()/winsize;
-            pts[2*i + 1] = robotPos->getY()/winsize;
+            //pts[2*i + 0] = robotPos->getX();
+            //pts[2*i + 1] = robotPos->getY();
+
+            // Sets the circle points for each robot
+            for(size_t a = 0; a < edgePoints; a++)
+            {
+                sPts[(edgePoints*2*i) + (2*a)]     = robotPos->getX() + xVals[(int)(a*360/edgePoints)];
+                sPts[(edgePoints*2*i) + (2*a) + 1] = robotPos->getX() + yVals[(int)(a*360/edgePoints)];
+            }
+    
+            // --- NEEDS A HEADING VALUE FOR PASSED IN ROBOTS -- //
+            // Sets the heading line points for each robot
+            //lPts[(4*i) + 0] = values[i];
+            //lPts[(4*i) + 1] = values[i];
+            //lPts[(4*i) + 2] = values[i] + xVals[(int)(*it).second->getHeading()];
+            //lPts[(4*i) + 3] = values[i] + yVals[(int)(*it).second->getHeading()];
 
             colors[3*i + 0] = 255;
             colors[3*i + 1] = 255;
@@ -151,8 +163,24 @@ void drawRobots()
             i++;
         }
         glEnd();
-        
-        glDrawArrays(GL_POINTS, 0, len);
+
+        // Activate and specify pointer to vertex array
+        glEnableClientState(GL_VERTEX_ARRAY);
+
+        // Draw robot circles
+        glVertexPointer(2, GL_FLOAT, 0, &sPts[0]);        
+        //glDrawArrays(GL_POINTS, 0, len);
+        for (int x = 0; x < i; x++)
+        {
+            glDrawArrays(GL_LINE_LOOP, x*edgePoints, edgePoints);
+        }
+
+        // Draw robot orientation lines
+        //glVertexPointer(2, GL_FLOAT, 0, &lPts[0]);
+        //for (int x = 0; x < i; x++)
+        //{
+        //    glDrawArrays(GL_LINE_LOOP, x*2, 2);
+        //}
 
         // Deactivate vertex arrays after drawing
         glDisableClientState(GL_COLOR_ARRAY);
@@ -266,21 +294,26 @@ void drawTest(int robotCount, int edgePoints)
     }
  
     // Specify vertex coords
-    GLfloat vertices[numValues*edgePoints*2];
+    GLfloat sVertices[numValues*edgePoints*2];
+    GLfloat lVertices[numValues*4];
     for(size_t i = 0; i < numValues; i++)
     {    
         for(size_t a = 0; a < edgePoints; a++)
         {
-            vertices[(edgePoints*2*i) + (2*a)]     = values[i] + xVals[(int)(a*360/edgePoints)];
-            vertices[(edgePoints*2*i) + (2*a) + 1] = values[i] + yVals[(int)(a*360/edgePoints)];
+            sVertices[(edgePoints*2*i) + (2*a)]     = values[i] + xVals[(int)(a*360/edgePoints)];
+            sVertices[(edgePoints*2*i) + (2*a) + 1] = values[i] + yVals[(int)(a*360/edgePoints)];
             //printf("vertices[%d]: (%f, %f) \n", (20*i) + (2*a), vertices[(20*i) + (2*a)], vertices[(20*i) + (2*a) + 1]);
-        }        
-        //printf("values[%d]: %f \n", i, values[i]);
+        }
+
+        lVertices[(4*i) + 0] = values[i];
+        lVertices[(4*i) + 1] = values[i];
+        lVertices[(4*i) + 2] = values[i] + xVals[(int)(i*(360.0/numValues))];
+        lVertices[(4*i) + 3] = values[i] + yVals[(int)(i*(360.0/numValues))];        
     }
 
     // Activate and specify pointer to vertex array
     glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(2, GL_FLOAT, 0, vertices);
+    glVertexPointer(2, GL_FLOAT, 0, sVertices);
 
     // Draw a line strip (robot circle)
     for(int x = 0; x < numValues; x++)
@@ -288,8 +321,16 @@ void drawTest(int robotCount, int edgePoints)
         glDrawArrays(GL_LINE_LOOP, edgePoints*x, edgePoints);
     }
 
+    glVertexPointer(2, GL_FLOAT, 0, lVertices);
+
+    // Draw a line strip (robot circle)
+    for(int x = 0; x < numValues; x++)
+    {
+        glDrawArrays(GL_LINES, 2*x, 2);
+    }
+
     // deactivate vertex arrays after drawing
-    glDisableClientState(GL_VERTEX_ARRAY);    
+    glDisableClientState(GL_VERTEX_ARRAY);  
 }
 
 /*
@@ -454,10 +495,10 @@ void mouseMotionHandler(int x, int y)
         {
             case 0:
                 ratio = abs(left - right)/600.0;
-                left += xD*ratio;
-                right += xD*ratio;            
-                bottom += yD*ratio;
-                top += yD*ratio;
+                left += xD;//*ratio;
+                right += xD;//*ratio;            
+                bottom += yD;//*ratio;
+                top += yD;//*ratio;
                 break;
             case 1:
                 if(yD < 0)
