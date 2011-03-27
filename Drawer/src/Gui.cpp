@@ -35,7 +35,7 @@ void displayFunc()
     drawTeams();
     drawPucks();
     drawRobots(20);
-    //drawTest(100, 20);
+    drawTest(100, 20);
 
     char buf[20];
     sprintf(buf, "Frame Count: %d", drawCount++);
@@ -167,9 +167,11 @@ void drawRobots(int edgePoints)
         // Activate and specify pointer to vertex array
         glEnableClientState(GL_VERTEX_ARRAY);
 
+        //glVertexPointer(2, GL_FLOAT, 0, &pts[0]);        
+        //glDrawArrays(GL_POINTS, 0, len);
+
         // Draw robot circles
         glVertexPointer(2, GL_FLOAT, 0, &sPts[0]);        
-        //glDrawArrays(GL_POINTS, 0, len);
         for (int x = 0; x < i; x++)
         {
             glDrawArrays(GL_LINE_LOOP, x*edgePoints, edgePoints);
@@ -221,116 +223,103 @@ void drawText(char* text, float x, float y)
 // Draws 1000000 vertices using 2 methods, and compares the drawtimes
 void drawTest(int robotCount, int edgePoints)
 {
-    /*unsigned int numValues = 1000000;
-  
-    // Initialize value arrays
-    GLfloat value1[numValues/2];
-    GLfloat value2[numValues/2];
-    for(size_t i = 0; i < numValues/2; i++)
-    {    
-       value1[i] = 0.0 + 600/double(numValues)*i;
-       value2[i] = 300 + 600/double(numValues)*i;
-    }
-  
-    // Set point size to 5.0
-    glPointSize(5.0);
-
-    // Set colour to BLUE
-    glColor3f(0, 0, 255);
-
     // Start clock timer (testing purposes)
     clock_t start = clock();
-
-    // Draw vertex points incrementally
-    glBegin(GL_POINTS);
-	  for (size_t i = 0; i < numValues/2; i++)
-    {    
-       glVertex2f(value1[i], value1[i]);
-    }
-    glEnd();
 
     // Print time in (ms) that it took to fetch data 
     double elapsed = (clock() - start);
     //printf("Draw func #1: %fms\n", elapsed);
 
-    // Set colour to RED
-    glColor3f(255, 0, 0);
+    if(abs(left - right) < 8500)
+    {
+        // Set colour to RED
+        glColor3f(255, 0, 0);
 
-    // Start clock timer (testing purposes)
-    start = clock();
+        int numValues = robotCount; // Number of robots
 
-    // Specify vertex coords
-    GLfloat vertices[numValues/2];
-    for (size_t i = 0; i < numValues/2; i++)
-    {    
-       vertices[2*i]     = value2[i];
-       vertices[2*i + 1] = value2[i];
-    }
+        // Initialize value arrays
+        GLfloat values[numValues];
+        for(size_t i = 0; i < numValues; i++)
+        {    
+           values[i] = 600/double(numValues)*i;
+        }
+     
+        // Specify vertex coords
+        GLfloat sVertices[numValues*edgePoints*2];
+        GLfloat lVertices[numValues*4];
+        for(size_t i = 0; i < numValues; i++)
+        {    
+            for(size_t a = 0; a < edgePoints; a++)
+            {
+                sVertices[(edgePoints*2*i) + (2*a)]     = values[i] + xVals[(int)(a*360/edgePoints)];
+                sVertices[(edgePoints*2*i) + (2*a) + 1] = values[i] + yVals[(int)(a*360/edgePoints)];
+                //printf("vertices[%d]: (%f, %f) \n", (20*i) + (2*a), vertices[(20*i) + (2*a)], vertices[(20*i) + (2*a) + 1]);
+            }
 
-    // Activate and specify pointer to vertex array
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(2, GL_FLOAT, 0, vertices);
+            lVertices[(4*i) + 0] = values[i];
+            lVertices[(4*i) + 1] = values[i];
+            lVertices[(4*i) + 2] = values[i] + xVals[(int)(i*(360.0/numValues))];
+            lVertices[(4*i) + 3] = values[i] + yVals[(int)(i*(360.0/numValues))];        
+        }
 
-    // draw a cube
-    glDrawArrays(GL_POINTS, 0, numValues/2);
+        // Activate and specify pointer to vertex array
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glVertexPointer(2, GL_FLOAT, 0, sVertices);
 
-    // deactivate vertex arrays after drawing
-    glDisableClientState(GL_VERTEX_ARRAY);
-
-    // Print time in (ms) that it took to fetch data 
-    double elapsed2 = (clock() - start);
-    //printf("Draw func #2: %fms\n", elapsed2);*/
-
-    // Set colour to RED
-    glColor3f(255, 0, 0);
-
-    int numValues = robotCount; // Number of robots
-
-    // Initialize value arrays
-    GLfloat values[numValues];
-    for(size_t i = 0; i < numValues; i++)
-    {    
-       values[i] = 600/double(numValues)*i;
-    }
- 
-    // Specify vertex coords
-    GLfloat sVertices[numValues*edgePoints*2];
-    GLfloat lVertices[numValues*4];
-    for(size_t i = 0; i < numValues; i++)
-    {    
-        for(size_t a = 0; a < edgePoints; a++)
+        // Draw a line strip (robot circle)
+        for(int x = 0; x < numValues; x++)
         {
-            sVertices[(edgePoints*2*i) + (2*a)]     = values[i] + xVals[(int)(a*360/edgePoints)];
-            sVertices[(edgePoints*2*i) + (2*a) + 1] = values[i] + yVals[(int)(a*360/edgePoints)];
+            glDrawArrays(GL_LINE_LOOP, edgePoints*x, edgePoints);
+        }
+
+        glVertexPointer(2, GL_FLOAT, 0, lVertices);
+
+        // Draw a line strip (robot circle)
+        for(int x = 0; x < numValues; x++)
+        {
+            glDrawArrays(GL_LINES, 2*x, 2);
+        }
+
+        // deactivate vertex arrays after drawing
+        glDisableClientState(GL_VERTEX_ARRAY);
+    }
+    else
+    {
+        // Set colour to RED
+        glColor3f(255, 0, 0);
+
+        glPointSize(1.0);
+
+        // Initialize value arrays
+        GLfloat values[robotCount];
+        for(size_t i = 0; i < robotCount; i++)
+        {    
+           values[i] = 600/double(robotCount)*i;
+        }
+     
+        // Specify vertex coords
+        GLfloat pts[robotCount*2];
+        for(size_t i = 0; i < robotCount; i++)
+        {    
+            pts[2*i]     = values[i];
+            pts[2*i + 1] = values[i];
             //printf("vertices[%d]: (%f, %f) \n", (20*i) + (2*a), vertices[(20*i) + (2*a)], vertices[(20*i) + (2*a) + 1]);
         }
 
-        lVertices[(4*i) + 0] = values[i];
-        lVertices[(4*i) + 1] = values[i];
-        lVertices[(4*i) + 2] = values[i] + xVals[(int)(i*(360.0/numValues))];
-        lVertices[(4*i) + 3] = values[i] + yVals[(int)(i*(360.0/numValues))];        
+        // Activate and specify pointer to vertex array
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glVertexPointer(2, GL_FLOAT, 0, pts);
+
+        // Draw a line strip (robot circle)
+        glDrawArrays(GL_POINTS, 0, robotCount);
+
+        // deactivate vertex arrays after drawing
+        glDisableClientState(GL_VERTEX_ARRAY);
     }
 
-    // Activate and specify pointer to vertex array
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(2, GL_FLOAT, 0, sVertices);
-
-    // Draw a line strip (robot circle)
-    for(int x = 0; x < numValues; x++)
-    {
-        glDrawArrays(GL_LINE_LOOP, edgePoints*x, edgePoints);
-    }
-
-    glVertexPointer(2, GL_FLOAT, 0, lVertices);
-
-    // Draw a line strip (robot circle)
-    for(int x = 0; x < numValues; x++)
-    {
-        glDrawArrays(GL_LINES, 2*x, 2);
-    }
-
-    // deactivate vertex arrays after drawing
-    glDisableClientState(GL_VERTEX_ARRAY);  
+    char tmpBuf[16];
+    sprintf(tmpBuf, "Width: %d", abs(left - right));
+    drawText(tmpBuf, 600, 0);
 }
 
 /*
