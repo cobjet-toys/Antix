@@ -4,17 +4,19 @@ STARTING THE SIMULATION
 
 SCRIPT RUN SEQUENCE
 ======================================================================
-
      1. Change directory to Controller/
-     2. Make sure you have the following files:
+     2. Fix the settings in configuration.py to the proper values.
+     3. Make sure you have the following files:
         - grid.config
         - drawer.config
-     3. See below for how to format these files.
-     4. Command for running everything:
+     4. See below for how to format these files.
+     5. Command for running everything:
 
      python controller.py SFU_USERNAME PATH_TO_ANTIX grid.config drawer.config
 
-     5. When you want to kill all the processes on every machine, run:
+     The output for remote processes is piped to ~/antix.machine_name.out, and to ~/antix.nameX.out for local processes.
+
+     6. When you want to kill all the processes on every machine, run:
 
      python killthemall.py SFU_USERNAME
 
