@@ -33,7 +33,7 @@ int GridServer::initGridGame()
     */
     // parameters: gridid, num_of_teams, robots_per_team, id_from, id_to
     gridGameInstance = new GridGame(1, 2, 5, 10, 19);
-    GridGame* gridGameInstance2 = new GridGame(2, 2, 5, 20, 29);
+    /*GridGame* gridGameInstance2 = new GridGame(2, 2, 5, 20, 29);
 
     Msg_RobotInfo newrobot;
     newrobot.robotid = 400;
@@ -130,7 +130,7 @@ int GridServer::initGridGame()
         DEBUGPRINT("=====Printing population for grid 2\n");
 	    gridGameInstance2->printPopulation();
         i++;
-    }
+    }*/
 	return 0;
 }
 
