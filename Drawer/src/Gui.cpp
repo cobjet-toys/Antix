@@ -26,40 +26,18 @@ void timerFunc(int dummy)
 
 void displayFunc()
 {    
-    //clock_t start = clock();
-    // Start clock timer (testing purposes)
-    /*prevT = currT;
-    currT = clock();
-    timeIncr += (currT - prevT)/CLOCKS_PER_SEC;
-    currentFCount++;
-    if(timeIncr > 1.0)
-    {
-        framerate = currentFCount;
-        currentFCount = 0;
-        timeIncr--;
-    }*/
-    //printf("timeIncr: %f \n", timeIncr);
-    
     glClear(GL_COLOR_BUFFER_BIT);
     glMatrixMode (GL_MODELVIEW);
     glLoadIdentity();
 
+    // ----- Draw Functions ----- //
+
     drawTeams();
     drawPucks();
     drawRobots(20);
-    drawTest(50, 10, 45.0, 4);
-
+    drawTest(50, 16, 45.0, 6);
     
-    char buf[20];
-    sprintf(buf, "Framerate: %d", framerate);
-    drawText(buf, 5, 585, false);
-
-    glutSwapBuffers();
-    glutTimerFunc(0, timerFunc, 0);
-
-    drawCount++;
-
-    // Draw framerate
+    // ----- Draws framerate ----- //
     prevT = currT;
     currT = glutGet(GLUT_ELAPSED_TIME);
     timeIncr += (currT - prevT)/1000.0;
@@ -71,7 +49,16 @@ void displayFunc()
         timeIncr--;
     }
 
-    //printf("glutGet(GLUT_ELAPSED_TIME): %d", glutGet(GLUT_ELAPSED_TIME)); 
+    char buf[20];
+    sprintf(buf, "Framerate: %d", framerate);
+    drawText(buf, 5, 585, false);
+
+    // ------------------------ //
+    glutSwapBuffers();
+    glutTimerFunc(0, timerFunc, 0);
+
+    // Keeps track of draw counts
+    drawCount++;
 }
 
 void drawTeams()
