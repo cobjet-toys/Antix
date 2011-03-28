@@ -185,6 +185,46 @@ int GridServer::handler(int fd)
 	
 	switch (l_sender)
 	{
+        case SENDER_GRIDSERVER:
+        {
+            switch(l_senderMsg)
+            {
+                case(MSG_BOUNDARYUPDATE):
+                {
+                    Msg_header l_Header;
+                    Msg_MsgSize l_Size;
+              
+                    unsigned char l_SizeBuffer[l_Size.size];
+
+                    if (l_curConnection->recv(l_SizeBuffer, l_Size.size) == -1)
+				    {
+							DEBUGPRINT("Couldn't receive the number of boundary robo updates.\n");
+							return -1;
+					}
+                    unpack(l_SizeBuffer, Msg_MsgSize_format, &l_Size.msgSize);
+
+                    DEBUGPRINT("Received grid boundary robo information for %hd robos\n", l_Size.msgSize);
+
+                    Msg_RobotInfo l_RoboInfo;
+                    std::vector<Msg_RobotInfo> l_RoboUpdates;
+                
+                    unsigned char l_Buffer[l_RoboInfo.size*l_Size.msgSize];
+                    int l_Offset = 0;
+
+                    for (int i = 0; i < l_Size.msgSize; i++)
+                    {
+                        unpack(l_Buffer+l_Offset, Msg_RobotInfo_format, &l_RoboInfo.robotid, &l_RoboInfo.x_pos, &l_RoboInfo.y_pos, &l_RoboInfo.speed, &l_RoboInfo.angle, &l_RoboInfo.puckid, &l_RoboInfo.gridid);
+                        l_RoboUpdates.push_back(l_RoboInfo);
+                        l_Offset += l_RoboInfo.size;
+                    }
+
+                    gridGameInstance->updateRobots(l_RoboUpdates);
+
+                }
+                break;
+            }
+        }
+        break;
         case SENDER_CONTROLLER:
         {
             switch(l_senderMsg)
@@ -222,11 +262,9 @@ int GridServer::handler(int fd)
                         l_Offset += l_Neighbour.size;
                         printf("Received a new neighbour at position %hd, with IP %s and Port %s\n",
                                 l_Neighbour.position, l_Neighbour.ip, l_Neighbour.port);
+                        m_GridPosToFd[l_Neighbour.position] = initConnection(l_Neighbour.ip, l_Neighbour.port); 
                         //TODO Handle new neighbour.
-						
                     }
-                    
-                    
 				}
                 break;
 				case (MSG_REQUESTGRIDWAITING):
@@ -457,7 +495,7 @@ int GridServer::handler(int fd)
 						
 					return 0;
 					
-				} // end of message sensor date
+				} // end of message sensor datel_Results[i].robotid, l_Results[i].x_pos, l_Results[i].y_pos, l_Results[i].speed, l_Results[i].angle, l_Results[i].puckid
                 break;
 				
 				case (MSG_PROCESSACTION):
@@ -490,9 +528,8 @@ int GridServer::handler(int fd)
                     std::vector<Msg_RobotInfo> l_Results;
 
                     
-                    std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >* robots_to_pass = new std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >;
-
-                    gridGameInstance->processAction(l_Actions, &l_Results, robots_to_pass);
+                    std::vector<std::pair<int, std::vector<Msg_RobotInfo> > > robots_to_pass;
+                    gridGameInstance->processAction(l_Actions, &l_Results, &robots_to_pass);
 
                     DEBUGPRINT("Received %zu results\n", l_Results.size());
 
@@ -509,11 +546,43 @@ int GridServer::handler(int fd)
 
                     for (int i = 0; i < l_Size.msgSize; i++)
                     {
-                        pack(l_ResultsBuffer+l_Offset, Msg_RobotInfo_format, l_Results[i].robotid, l_Results[i].x_pos, l_Results[i].y_pos, l_Results[i].speed, l_Results[i].angle, l_Results[i].puckid);
+                        pack(l_ResultsBuffer+l_Offset, Msg_RobotInfo_format, l_Results[i].robotid, l_Results[i].x_pos, l_Results[i].y_pos, l_Results[i].speed, l_Results[i].angle, l_Results[i].puckid, l_Results[i].gridid);
                         l_Offset += l_Result.size;
                     }
 
                     NetworkCommon::sendMsg(l_ResultsBuffer, l_MessageSize, l_curConnection);
+
+                    l_Header.sender = SENDER_GRIDSERVER;
+                    l_Header.message = MSG_BOUNDARYUPDATE;
+
+                    Msg_RobotInfo l_RoboInfo;
+                    int l_BoundarySize = robots_to_pass.size();
+                    for(int i = 0; i < l_BoundarySize; i++)
+                    {
+                        l_Offset = 0;
+
+                        TcpConnection* l_GridCon = m_Clients[m_GridPosToFd[robots_to_pass[i].first]];
+                        
+                        l_Size.msgSize = robots_to_pass[i].second.size();
+                        l_MessageSize = l_Header.size+l_Size.size+(l_Size.msgSize * l_RoboInfo.size);
+
+                        unsigned char l_BoundaryBuffer[l_MessageSize];
+                        
+                        NetworkCommon::packHeader(l_BoundaryBuffer+l_Offset, SENDER_GRIDSERVER, MSG_BOUNDARYUPDATE); 
+                        l_Offset += l_Header.size;
+
+                        pack(l_BoundaryBuffer+l_Offset, Msg_MsgSize_format, l_Size.msgSize);
+                        l_Offset += l_Size.size;
+
+                        for (int a = 0; a < l_Size.msgSize; a++)
+                        {
+                            Msg_RobotInfo& l_RoboToPack = robots_to_pass[i].second[a];
+                            pack(l_BoundaryBuffer+l_Offset, Msg_RobotInfo_format, l_RoboToPack.robotid, l_RoboToPack.x_pos, l_RoboToPack.y_pos, l_RoboToPack.speed, l_RoboToPack.angle, l_RoboToPack.puckid, l_RoboToPack.gridid);
+                            l_Offset += l_RoboToPack.size;
+                        }
+
+                        NetworkCommon::sendMsg(l_BoundaryBuffer, l_MessageSize, l_GridCon);
+                    }
 
 					/*int l_numRobots = -1;
 					
@@ -799,10 +868,10 @@ int GridServer::updateDrawer(uint32_t framestep)
     {
         pack(l_Buffer+l_Offset, Msg_RobotInfo_format, objects[i].robotid, objects[i].x_pos, objects[i].y_pos, 0, 0, 0 ); 
         unpack(l_Buffer+l_Offset, Msg_RobotInfo_format,
-                                &l_RoboInfo.robotid, &l_RoboInfo.x_pos, &l_RoboInfo.y_pos, &l_RoboInfo.angle, &l_RoboInfo.puckid );
+                                &l_RoboInfo.robotid, &l_RoboInfo.x_pos, &l_RoboInfo.y_pos, &l_RoboInfo.angle, &l_RoboInfo.puckid, &l_RoboInfo.gridid );
 
-        DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\n",
-                        	        l_RoboInfo.robotid, l_RoboInfo.x_pos, l_RoboInfo.y_pos, l_RoboInfo.angle, l_RoboInfo.puckid );
+        DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\tgrid=%d\n",
+                        	        l_RoboInfo.robotid, l_RoboInfo.x_pos, l_RoboInfo.y_pos, l_RoboInfo.angle, l_RoboInfo.puckid, l_RoboInfo.gridid );
                          
        // DEBUGPRINT("id: %d xpos: %f ypos: %f\n", objects[i].robotid, objects[i].x_pos, objects[i].y_pos);
         l_Offset += l_RoboInfo.size;

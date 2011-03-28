@@ -139,6 +139,107 @@ int Server::init(const char* port, int maxConnections)
 	return 0;
 }
 
+int Network::Server::initConnection(const char* host, const char* port)
+{
+	if (strlen(host) > INET6_ADDRSTRLEN || strlen(port) > MAX_PORT_LENGTH )
+	{
+		DEBUGPRINT("Invalid port or host length to init\n");
+		return -2;
+	}
+	
+	if (host == NULL || port == NULL)
+	{
+		DEBUGPRINT("Invalid arguments to init");
+	} 
+	
+	DEBUGPRINT("Connection to host:%s:%s\n", host, port);
+	
+	addrinfo l_hints, *l_result, *l_p;
+	int l_resvalue = -1;
+	
+	memset(&l_hints, 0, sizeof(struct addrinfo) );
+	
+	l_hints.ai_family = AF_UNSPEC;
+	l_hints.ai_socktype = SOCK_STREAM;
+	
+	if ((l_resvalue = getaddrinfo(host, port, &l_hints, &l_result)) == -1)
+	{
+		DEBUGPRINT("Could not get addrinfo: %s\n", gai_strerror(l_resvalue));
+		return -1;
+	}
+	
+	TcpConnection * conn = new TcpConnection();
+	
+	if (conn == NULL)
+	{
+		DEBUGPRINT("Could not create new TcpConnection\n");
+		return -1;
+	}
+
+	for (l_p = l_result; l_p != NULL; l_p = l_p->ai_next)
+	{
+		if ((l_resvalue =conn->socket(l_p)) != 0)
+		{
+			if (l_resvalue == -1) 
+			{
+				DEBUGPRINT("Could not connect socket trying next\n");
+			} else if (l_resvalue == -2)
+			{
+				DEBUGPRINT("Argument error to socket\n");
+			} else 
+			{
+				DEBUGPRINT("What did I just return!?!?\n");
+			}
+			continue;
+		}
+		
+		if ((l_resvalue = conn->connect(l_p)) != 0)
+		{
+			if (l_resvalue == -1)
+			{
+				DEBUGPRINT("Could not connect to server/port\n");
+			} else if (l_resvalue == -2)
+			{
+				DEBUGPRINT("Argument error to connect\n");
+			} else {
+				DEBUGPRINT("What did I just return!?!?\n");
+			}
+			conn->close();
+			continue;
+		}
+		
+		break;
+	}
+	
+	if (l_p == NULL)
+	{
+		DEBUGPRINT("No valid addrinfo");
+		return -1;
+	}
+	
+	int fileDesc = conn->getSocketFd();
+	int enable = 1;
+	
+	if (setsockopt(fileDesc, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == -1)
+	{
+		return -1;	
+	}
+	
+	if ( setnonblock(fileDesc) == -1)
+	{
+		DEBUGPRINT("Could not set socket to non-blocking\n");
+	}
+	
+	if( addHandler(fileDesc, EPOLLET|EPOLLIN|EPOLLHUP, conn ) == -1)
+	{
+		DEBUGPRINT("Could not add handler to tcpConnection\n");
+		return -1;
+	}
+	
+	return fileDesc;
+
+}
+
 
 int Server::modifyHandler(int fd, unsigned int events)
 {
