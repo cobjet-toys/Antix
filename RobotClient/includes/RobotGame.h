@@ -37,18 +37,22 @@ public:
 	// Returns -1 if sensor_data is NULL, 0 otherwise.
 	int receiveSensorData(vector< pair<uid, vector<Msg_SensedObjectGroupItem> > >* sensor_data);
 
-
     // Send and recieve actions
     int sendAction(int grid_id, vector<Msg_Action>* robot_actions);
     int actionResult(vector<Msg_RobotInfo>* results);
 
+
+
 private:
 
-    // Map of grid ids to Robot *'s
+    // Map of grid ids to vector of Robot *'s
     map<int, vector<Robot*> > m_robotsByGrid;
 
     // Map of robot_ids to Robot *'s
     map<int, Robot*> m_robots;
+
+    // Map of robot_ids to grid_ids
+    map<uid, int> m_robotGrids;
 
     // Map of team ids to home coordinates
     map<int, std::pair<float, float> > m_homeLocations;
@@ -59,4 +63,4 @@ private:
     float robot_PickupRange;
 };
 
-#endif //
+#endif // __ROBOTGAME_H__

@@ -5,9 +5,11 @@
 #include "Config.h"
 #include "AntixUtil.h"
 #include <iostream>
+#include <algorithm>
 
 using std::cout;
 using std::endl;
+using std::find;
 
 RobotGame::RobotGame()
 {
@@ -159,6 +161,23 @@ int RobotGame::actionResult(vector<Msg_RobotInfo>* results)
         // TODO Currently our action_result message does not send a rotational velocity
         l_robotp->setSpeed( new Math::Speed( result.speed, 0.0) );
         l_robotp->setPosition( result.x_pos, result.y_pos, result.angle );
+        
+        int oldGridId = m_robotGrids.find(robotId)->second;
+        int newGridId = result.gridid;
+        vector<Robot*>::iterator iter = find(m_robotsByGrid[oldGridId].begin(),
+                                             m_robotsByGrid[oldGridId].end(),
+                                             l_robotp);
+        if(iter != m_robotsByGrid[oldGridId].end())
+        {
+            // Remove from the reference to oldGrid
+            m_robotsByGrid[oldGridId].erase(iter);
+            m_robotsByGrid[newGridId].push_back(l_robotp);
+        }
+        else
+        {
+            //not found
+            DEBUGPRINT("Couldn't find robot %d with gridId %d", robotId, oldGridId);
+        }
     }
     
     return 0;
