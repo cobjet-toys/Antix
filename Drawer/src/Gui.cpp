@@ -220,7 +220,7 @@ void drawText(char* text, float x, float y)
     }
 }
 
-// Draws 1000000 vertices using 2 methods, and compares the drawtimes
+// Draws robots and their orientation
 void drawTest(int robotCount, int edgePoints)
 {
     // Start clock timer (testing purposes)
@@ -317,8 +317,8 @@ void drawTest(int robotCount, int edgePoints)
         glDisableClientState(GL_VERTEX_ARRAY);
     }
 
-    char tmpBuf[16];
-    sprintf(tmpBuf, "Width: %d", abs(left - right));
+    char tmpBuf[30];
+    sprintf(tmpBuf, "Width/Height: [%d, %d]", abs(left - right), abs(bottom - top));
     drawText(tmpBuf, 600, 0);
 }
 
@@ -471,35 +471,31 @@ void mouseMotionHandler(int x, int y)
 {
     if(inDrag)
     {
-        
-        int xD = xCur - x;
-        int yD = y - yCur;
+        float xD = (float)(xCur - x)*(abs(left - right)/600.0);
+        float yD = (float)(y - yCur)*(abs(bottom - top)/600.0);
 
         xCur = x;
         yCur = y;
-
-        float ratio = 1.0;
-
+        
         switch(actionType)
         {
-            case 0:
-                ratio = abs(left - right)/600.0;
-                left += xD;//*ratio;
-                right += xD;//*ratio;            
-                bottom += yD;//*ratio;
-                top += yD;//*ratio;
+            case 0: // Translate
+                left += xD;
+                right += xD;            
+                bottom += yD;
+                top += yD;
                 break;
-            case 1:
-                if(yD < 0)
+            case 1: // Zoom
+                if(yD < 0) // Zoom out
                 {                    
                     left += yD;
                     right -= yD;
                     bottom += yD;
                     top -= yD;
                 }
-                else if(yD > 0)
+                else if(yD > 0) // Zoom in
                 {
-                    if((right - yD) - (left + yD) > 10)
+                    if((right - yD) - (left + yD) > 10) // Zoom limit
                     {
                         left += yD;
                         right -= yD;
@@ -518,6 +514,11 @@ void mouseMotionHandler(int x, int y)
     }
 }
 
+void keyEventHandler(unsigned char key, int x, int y)
+{
+    printf("Key Pressed: %c \n", key);
+}
+
 void initGraphics(int argc, char **argv)
 {    
     unsigned int lWindowSize = Network::DrawServer::getInstance()->getWindowSize();
@@ -532,6 +533,7 @@ void initGraphics(int argc, char **argv)
     glutIdleFunc(idleFunc);
     glutMouseFunc(mouseClickHandler);
     glutMotionFunc(mouseMotionHandler);
+    glutKeyboardFunc(keyEventHandler);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     
