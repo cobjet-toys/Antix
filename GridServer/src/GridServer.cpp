@@ -27,10 +27,10 @@ m_teamsConfirmed =0;
 
 int GridServer::initGridGame()
 {
-    
+    /*
 	gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam, m_idRangeFrom, m_idRangeTo); // needs to not do this in grid game constructor!
 	printf("id=%lu, teams=%lu, robots=%lu, idfrom=%lu, idto=%lu\n", (unsigned long)m_uId, (unsigned long)m_teamsAvailable,(unsigned long) m_robotsPerTeam, (unsigned long)m_idRangeFrom, (unsigned long)m_idRangeTo);
-    /*
+    */
     // parameters: gridid, num_of_teams, robots_per_team, id_from, id_to
     gridGameInstance = new GridGame(1, 2, 5, 10, 19);
     GridGame* gridGameInstance2 = new GridGame(2, 2, 5, 20, 29);
@@ -111,10 +111,17 @@ int GridServer::initGridGame()
     while(i < 200)
     {
 	    gridGameInstance->processAction(robotss, results, robots_to_pass);
+        DEBUGPRINT("robots_to_pass.size %zu\n",
+                    robots_to_pass->size());
+        RobotInfoList* lhs = &robots_to_pass->at(0).second;
+        RobotInfoList* rhs = &robots_to_pass->at(1).second;
+        DEBUGPRINT("Number of elements l: %zu, r: %zu\n", lhs->size(), rhs->size());
         for(std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >::iterator it = robots_to_pass->begin(); it != robots_to_pass->end(); it++)
         {
-            std::pair<int, std::vector<Msg_RobotInfo> > some_pair = (*it);
-            std::vector<Msg_RobotInfo> update_robots = some_pair.second;
+            DEBUGPRINT("Some pair1\n");
+            std::pair<int, RobotInfoList > some_pair = (*it);
+            DEBUGPRINT("Some pair2\n");
+            RobotInfoList update_robots = some_pair.second;
             if(update_robots.size() > 0)
             {
                 gridGameInstance2->updateRobots(some_pair.second);
@@ -124,13 +131,11 @@ int GridServer::initGridGame()
 	    gridGameInstance->printPopulation();
         DEBUGPRINT("=====Printing population for grid 2\n");
 	    gridGameInstance2->printPopulation();
-
         i++;
     }
-    */
-
 	return 0;
 }
+
 int GridServer::handleNewConnection(int fd)
 {
     return 0;
