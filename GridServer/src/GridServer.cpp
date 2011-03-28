@@ -118,9 +118,7 @@ int GridServer::initGridGame()
         DEBUGPRINT("Number of elements l: %zu, r: %zu\n", lhs->size(), rhs->size());
         for(std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >::iterator it = robots_to_pass->begin(); it != robots_to_pass->end(); it++)
         {
-            DEBUGPRINT("Some pair1\n");
             std::pair<int, RobotInfoList > some_pair = (*it);
-            DEBUGPRINT("Some pair2\n");
             RobotInfoList update_robots = some_pair.second;
             if(update_robots.size() > 0)
             {
