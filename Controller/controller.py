@@ -8,6 +8,7 @@ global FIRST_FREE_MACHINE
 global current_clock_port
 global current_grid_port
 global current_drawer_port
+global FILE_ITER
 
 def start_process(name, **kwargs):
     machine, machine_ip = get_free_computer()
@@ -15,7 +16,10 @@ def start_process(name, **kwargs):
         print "No more free machines, exiting."
         sys.exit()
     
-    script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH
+    if START_LOCALLY:
+        script = "nohup " + PATH
+    else:
+        script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH
     if name is "clock":
         global current_clock_port
         script += CLOCK_RUN_COMMAND + " -p " + str(current_clock_port)
@@ -35,12 +39,24 @@ def start_process(name, **kwargs):
         current_grid_port += 1
     elif name is "drawer":
         global current_drawer_port
-        script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG + " -p " + str(current_drawer_port)
+        if START_LOCALLY:
+            script = PATH
+            script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG + " -p " + str(current_drawer_port)
+        else:
+            script = "ssh -X -p 24 " + USER + "@" + machine + " '" + PATH
+            script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG + " -p " + str(current_drawer_port)
+            script += "'"
         current_drawer_port += 1
     elif name is "controller":
         script += CTRL_CLIENT_RUN_COMMAND + " -f " +PATH + "Controller/" + GRIDS_TMP
 
-    script += " > antix." + machine + ".out &'"
+    if name is not "drawer":
+        if START_LOCALLY:
+            global FILE_ITER
+            script += " > ~/antix." + name + str(FILE_ITER) + ".out &"
+            FILE_ITER += 1
+        else:
+            script += " > antix." + machine + ".out &'"
     print "Running: " + script
 
     try:
@@ -200,6 +216,8 @@ GRIDS_TMP_FILE = open(GRIDS_TMP, 'w', 0) # 0 means no buffer
 GRIDS_IDS_TMP_FILE = open(GRIDS_IDS_TMP, 'w', 0) # 0 means no buffer
 
 FIRST_FREE_MACHINE = 0
+
+FILE_ITER = 0
 
 # copy the clock/port setting
 current_clock_port = int(CLOCK_PORT)

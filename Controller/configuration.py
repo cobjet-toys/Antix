@@ -1,5 +1,7 @@
 # Configuration settings for controller
 
+START_LOCALLY = False # set to True to start all processes on localhost
+                      # set to False to start all processes across CSIL machines
 TYPE = "release" # can be replaced with debug
 NUM_GRIDS = 3
 NUM_ROBOT_CLIENTS = 3
