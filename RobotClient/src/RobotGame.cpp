@@ -18,75 +18,40 @@ RobotGame::RobotGame()
     robot_Radius = 0.01;
     robot_SensorRange = 0.1;
     robot_PickupRange = robot_SensorRange / 5.0;
-
 }
 
 RobotGame::~RobotGame()
 {
 }
 
-// Compile grid to team mapping
-/*
-int RobotGame::intitializeTeam(int grid_id, std::vector<int> team_mapping)
-{
-    // we know which teams are on which grid
-    // so, create a mapping of grid ids to a vector of team ids
-
-    return 0;
-}
-*/
-
-/*
-int RobotGame::receiveInitialRobots(int grid_id, std::vector<robot_info> robot_info_vector)
-{
-    
-
-    std::vector<Robot*> l_Robots;
-    std::vector<robot_info>::const_iterator end = robot_info_vector.end();
-    for(std::vector<robot_info>::const_iterator it = robot_info_vector.begin(); it != end; it++)
-    {
-        Math::Position* l_RobotPosition = new Math::Position(it->x_pos, it->y_pos, it->angle);
-        Game::Robot* l_Robot = new Robot(l_RobotPosition, it->id, robot_FOV, robot_Radius, robot_SensorRange, robot_PickupRange);
-        l_Robots.push_back(l_Robot);
-
-        l_Robot->printInfo();
-    }
-    m_Robots[grid_id] = l_Robots;
-
-    return 0;
-}
-*/
-
 int RobotGame::initTeam(Msg_TeamInit team)
 {
     m_homeLocations[team.id] = std::make_pair(team.x,team.y);
-    //printf("added mappign for team, id: %d, location: %f,%f\n", id, m_homeLocations[id].first, m_homeLocations[id].second);
+    /* printf("Added mapping for team, id: %d, location: %f,%f\n",
+                 id, m_homeLocations[id].first, m_homeLocations[id].second); */
     return 0;
 }
 
+// Creates a robot and adds it to the grid to robot vector mapping.
+// Creates the robot at position x,y, and team teamId.
 int RobotGame::setTeamRobot(int gridId, int teamId, Msg_InitRobot robot)
-// Creates a robot and adds it to the grid to robot vector mapping. Creates the robot at position x,y, and team teamId.
 {
     Math::Position* l_robotPosition = new Math::Position(robot.x,robot.y, 0.0); // initial angle is 0.0
     Game::Robot* l_Robot = new Robot(l_robotPosition, teamId, robot.id);
     m_robotsByGrid[gridId].push_back(l_Robot);
+    m_robotGrids[robot.id] = gridId;
     DEBUGPRINT("Initializing robo with id %d\n", robot.id);
     m_robots[robot.id] = l_Robot;
 
     return 0;
 }
 
-// Handle sensor data
+/*
+ Compiles a vector of robot ids for grid with id grid_id
+*/
 int RobotGame::requestSensorData(int grid_id, IDList* robot_ids)
 {
-    // compiles a vector of robot ids for grid with id grid_id
-    // problem: what to do when a robot is looking into more than 1 grid?
-    // proposed solution: send that robot id to multiple grids, which will calculate
-    // the chunk of sensor data in their area, then the RobotGame will piece that info
-    // together when deciding on an action
-
     std::vector<Robot*> robots = m_robotsByGrid[grid_id];
-    
     std::vector<Robot*>::iterator end = robots.end();
 
     for(std::vector<Robot*>::iterator it = robots.begin(); it != end; it++){
