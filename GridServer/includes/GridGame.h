@@ -69,7 +69,7 @@ public:
     /**
      * Interface function to updateRobots based on new/update robots on edge cases
      */
-    int updateRobots(std::vector<Msg_RobotInfo> robots_to_update);
+    int updateRobots(std::vector<Msg_RobotInfo>& robots_to_update);
 
     /**
      * Interface function to Network layer for processing actions for each robot.
