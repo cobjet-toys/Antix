@@ -470,8 +470,8 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
         DEBUGPRINT("Size 0");
         RobotInfoList left_robots;
         RobotInfoList right_robots;
-        std::pair<int, RobotInfoList > left_robots_pair = std::make_pair(m_LeftGrid, left_robots);
-        std::pair<int, RobotInfoList > right_robots_pair = std::make_pair(m_RightGrid, right_robots);
+        std::pair<int, RobotInfoList > left_robots_pair = std::make_pair(0, left_robots);
+        std::pair<int, RobotInfoList > right_robots_pair = std::make_pair(1, right_robots);
         robots_to_pass->push_back(left_robots_pair);
         robots_to_pass->push_back(right_robots_pair);
     }
