@@ -130,20 +130,17 @@ int RobotGame::actionResult(vector<Msg_RobotInfo>* results)
         
         int oldGridId = m_robotGrids.find(robotId)->second;
         int newGridId = result.gridid;
-        vector<Robot*>::iterator iter = find(m_robotsByGrid[oldGridId].begin(),
-                                             m_robotsByGrid[oldGridId].end(),
-                                             l_robotp);
-        if(iter != m_robotsByGrid[oldGridId].end())
+        DEBUGPRINT("OldGridId: %d, new gridId, %d", oldGridId, newGridId);
+        //vector<Robot*>::iterator iter = find(m_robotsByGrid[oldGridId].begin(),
+        //                                     m_robotsByGrid[oldGridId].end(),
+        //                                     l_robotp);
+
+        /*if(oldGridId != newGridId)
         {
             // Remove from the reference to oldGrid
             m_robotsByGrid[oldGridId].erase(iter);
             m_robotsByGrid[newGridId].push_back(l_robotp);
-        }
-        else
-        {
-            //not found
-            DEBUGPRINT("Couldn't find robot %d with gridId %d", robotId, oldGridId);
-        }
+        }*/
     }
     
     return 0;
