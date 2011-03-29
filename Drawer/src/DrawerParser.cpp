@@ -44,9 +44,34 @@ int DrawerParser::handler(std::vector<std::string> commands, void *args)
 		else if (command == "HOME_RADIUS")
 		{
 			float radius = strtof(commands.at(1).c_str(), NULL);
-			DEBUGPRINT("PARSED: HOME_RADIUSE %f\n", radius);
+			DEBUGPRINT("PARSED: HOME_RADIUS %f\n", radius);
 			l_grid->m_homeRadius = radius;
 			return l_grid->m_homeRadius == radius;
+		}
+		else if (command == "TOTAL_NUM_TEAMS")
+		{
+			int size = atoi(commands.at(1).c_str());
+			DEBUGPRINT("PARSED: TOTAL_NUM_TEAMS %i\n", size);
+			
+			Math::Position *pos = new Math::Position(0.0, 0.0, 0.0);	
+			l_grid->m_totalNumTeams = size;
+			return l_grid->m_totalNumTeams == size;
+		}
+		else if (command == "TOTAL_NUM_ROBOTS")
+		{
+			int size = atoi(commands.at(1).c_str());
+			DEBUGPRINT("PARSED: TOTAL_NUM_ROBOTS %i\n", size);
+			
+			Math::Position *pos = new Math::Position(0.0, 0.0, 0.0);		
+			return l_grid->initRobots(size) == size;
+		}
+		else if (command == "TOTAL_NUM_PUCKS")
+		{
+			int size = atoi(commands.at(1).c_str());
+			DEBUGPRINT("PARSED: TOTAL_NUM_PUCKS %i\n", size);
+			
+			Math::Position *pos = new Math::Position(0.0, 0.0, 0.0);
+			return l_grid->initPucks(size) == size;
 		}
 		else if (command == "ENABLE_FOV")
 		{

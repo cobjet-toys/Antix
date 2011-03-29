@@ -98,6 +98,9 @@ MANUAL RUN SEQUENCE
 	  WORLD_SIZE {{float}}
 	  HOME_RADIUS {{float}}           
 	  ENABLE_FOV {{ 'T' or 'F' }}
+	  TOTAL_NUM_TEAMS {{integer}}
+	  TOTAL_NUM_ROBOTS {{integer}}
+	  TOTAL_NUM_PUCKS {{integer}}
 	  [ FOV_ANGLE {{float}} ]
 	  [ FOV_RANGE {{float}} ]
 	  GRID {{ID}} {{IP ADDRESS}} {{port}}
