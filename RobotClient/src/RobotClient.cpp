@@ -325,7 +325,7 @@ int RobotClient::handler(int fd)
                     std::vector<Msg_RobotInfo> l_Results;
                     for (int i =0; i < l_Size.msgSize; i++)
                     {
-                        unpack(l_RobotInfoBuff+l_Offset, Msg_RobotInfo_format, &l_Result.robotid, &l_Result.x_pos, &l_Result.y_pos, &l_Result.speed, &l_Result.angle, &l_Result.puckid);
+                        unpack(l_RobotInfoBuff+l_Offset, Msg_RobotInfo_format, &l_Result.robotid, &l_Result.x_pos, &l_Result.y_pos, &l_Result.speed, &l_Result.angle, &l_Result.puckid, &l_Result.gridid);
                         l_Results.push_back(l_Result);
                         l_Offset += l_Result.size;
                         printf("NEW ROBOTINFO: %d, %f, %f \n", l_Result.robotid, l_Result.x_pos, l_Result.y_pos);

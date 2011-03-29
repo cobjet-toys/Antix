@@ -18,6 +18,7 @@ public:
     virtual int handler(int fd) = 0;
 	virtual int handleNewConnection(int fd) = 0;
 	virtual int allConnectionReadyHandler() = 0;
+	virtual int initConnection(const char * host, const char * port);
     virtual int init(const char* port, int maxConnections=-1);
 	int start();
 	

@@ -42,7 +42,9 @@ private:
 	int m_ControllerFd;
 	//GridGame gridGameInstance;
     GridGame* gridGameInstance;	
-	
+
+    std::map<int, int> m_GridPosToFd;
+
 	bool updateDrawerFlag;
     TcpConnection * m_drawerConn;
 };
