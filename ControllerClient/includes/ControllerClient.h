@@ -27,7 +27,7 @@ public:
 
 private:
 
-    std::map<int, std::pair<const char*, const char*> > m_GridConInfo;
+    std::map<int, std::pair<char[INET6_ADDRSTRLEN], char[MAX_PORTCHARACTERS]> > m_GridConInfo;
     std::vector<int> m_RobotClients;
 	std::vector<int> m_Grids;
     int m_ClockFd;

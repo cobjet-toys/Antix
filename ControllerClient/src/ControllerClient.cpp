@@ -40,7 +40,12 @@ int ControllerClient::initGrid(const char* host, const char* port)
 		return -1;
     }
     m_Grids.push_back(l_GridFd);
-    m_GridConInfo[l_GridFd] = std::make_pair (host, port);
+
+    strncpy(m_GridConInfo[l_GridFd].first, host, sizeof(m_GridConInfo[l_GridFd].first));
+    strncpy(m_GridConInfo[l_GridFd].second, port, sizeof(m_GridConInfo[l_GridFd].second));
+
+//    m_GridConInfo[l_GridFd] = std::make_pair (host, port);
+    DEBUGPRINT("Adding grid with ip %s & port %s\n", m_GridConInfo[l_GridFd].first, m_GridConInfo[l_GridFd].second);
 
 	TcpConnection * l_con = m_serverList[l_GridFd];
 	if (l_con == NULL) 
@@ -130,6 +135,7 @@ int ControllerClient::initNeighbourGrids()
 
         //Pack left neighbour
         pack(l_Buffer+l_Offset, Msg_gridNeighbour_format, l_Neighbour.position, l_Neighbour.ip, l_Neighbour.port);
+        DEBUGPRINT("Packed neighbour with ip %s and port %s\n", l_Neighbour.ip, l_Neighbour.port);
         
         l_Offset += l_Neighbour.size;
 
@@ -137,6 +143,8 @@ int ControllerClient::initNeighbourGrids()
         l_Neighbour.position = 1;
         strncpy(l_Neighbour.ip, m_GridConInfo[l_RightGrid].first, sizeof(l_Neighbour.ip));
         strncpy(l_Neighbour.port, m_GridConInfo[l_RightGrid].second, sizeof(l_Neighbour.port));
+
+        DEBUGPRINT("Packed neighbour with ip %s and port %s\n", l_Neighbour.ip, l_Neighbour.port);
 
         pack(l_Buffer+l_Offset, Msg_gridNeighbour_format, l_Neighbour.position, l_Neighbour.ip, l_Neighbour.port);
 
