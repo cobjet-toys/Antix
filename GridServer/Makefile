@@ -49,7 +49,7 @@ grid_release_objects:
 
 grid_debug_objects:
 	@echo "Building grid debug objects ---------------------------------------------------------"
-	$(shell cd $(grid_DEBUG_OBJ_PATH); $(grid_COMPILER) -c -I$(grid_COMMON_INCLUDE_PATH) -I$(grid_INCLUDE_PATH) $(addprefix $(grid_SRC_PATH)/, $(grid_SRC)))
+	$(shell cd $(grid_DEBUG_OBJ_PATH); $(grid_COMPILER) -g -c -I$(grid_COMMON_INCLUDE_PATH) -I$(grid_INCLUDE_PATH) $(addprefix $(grid_SRC_PATH)/, $(grid_SRC)))
 	@echo "Building grid debug objects COMPLETE ------------------------------------------------"
 grid_clean: common_clean
 	@echo "Cleaning grid ALL -------------------------------------------------------------------"

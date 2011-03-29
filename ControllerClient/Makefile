@@ -47,7 +47,7 @@ controller_release_objects:
 
 controller_debug_objects:
 	@echo "Building controller debug objects -------------------------------------------------------------------"
-	$(shell cd $(controller_DEBUG_OBJ_PATH); $(controller_COMPILER) -c -I$(controller_INCLUDE_PATH) -I$(controller_INCLUDE_COMMON_PATH) $(addprefix $(controller_SRC_PATH)/, $(controller_SRC)))
+	$(shell cd $(controller_DEBUG_OBJ_PATH); $(controller_COMPILER) -g -c -I$(controller_INCLUDE_PATH) -I$(controller_INCLUDE_COMMON_PATH) $(addprefix $(controller_SRC_PATH)/, $(controller_SRC)))
 	@echo "Building controller debug objects COMPLETE ----------------------------------------------------------"
 controller_clean: common_clean
 	@echo "Cleaning controller ALL -----------------------------------------------------------------------------"

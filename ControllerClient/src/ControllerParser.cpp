@@ -26,7 +26,7 @@ int ControllerParser::handler(std::vector<std::string> commands, void *args)
 			const char * ipAddr = commands.at(1).c_str();
 			const char * port = commands.at(2).c_str();
 			printf("PARSED: Grid: IP=%s PORT=%s\n", ipAddr, port);
-			l_cntlClient->initGrid(ipAddr, port);
+			if (l_cntlClient->initGrid(ipAddr, port) < 0) return -1;
 			return (ipAddr != NULL && port != NULL)?0:-1;
 		}
 

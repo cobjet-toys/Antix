@@ -11,7 +11,7 @@ int Network::Client::init()
 {
 	if ((m_epfd = epoll_create(1000)) < 0)
 	{
-		DEBUGPRINT("Could not create epoll");
+		DEBUGPRINT("CLIENT ERROR:\t Could not create epoll");
 		return -1;
 	}	
 	return 0;
@@ -21,16 +21,16 @@ int Network::Client::initConnection(const char* host, const char* port)
 {
 	if (strlen(host) > INET6_ADDRSTRLEN || strlen(port) > MAX_PORT_LENGTH )
 	{
-		DEBUGPRINT("Invalid port or host length to init\n");
+		DEBUGPRINT("CLIENT ERROR:\t Invalid port or host length to init\n");
 		return -2;
 	}
 	
 	if (host == NULL || port == NULL)
 	{
-		DEBUGPRINT("Invalid arguments to init");
+		DEBUGPRINT("CLIENT ERROR:\t Invalid arguments to init\n");
 	} 
 	
-	DEBUGPRINT("Connection to host:%s:%s\n", host, port);
+	DEBUGPRINT("CLIENT STATUS:\t Connection to host:%s:%s\n", host, port);
 	
 	addrinfo l_hints, *l_result, *l_p;
 	int l_resvalue = -1;
@@ -42,7 +42,7 @@ int Network::Client::initConnection(const char* host, const char* port)
 	
 	if ((l_resvalue = getaddrinfo(host, port, &l_hints, &l_result)) == -1)
 	{
-		DEBUGPRINT("Could not get addrinfo: %s\n", gai_strerror(l_resvalue));
+		DEBUGPRINT("CLIENT ERROR:\t Could not get addrinfo: %s\n", gai_strerror(l_resvalue));
 		return -1;
 	}
 	
@@ -50,7 +50,7 @@ int Network::Client::initConnection(const char* host, const char* port)
 	
 	if (conn == NULL)
 	{
-		DEBUGPRINT("Could not create new TcpConnection\n");
+		DEBUGPRINT("CLIENT ERROR:\t Could not create new TcpConnection\n");
 		return -1;
 	}
 
@@ -60,13 +60,13 @@ int Network::Client::initConnection(const char* host, const char* port)
 		{
 			if (l_resvalue == -1) 
 			{
-				DEBUGPRINT("Could not connect socket trying next\n");
+				DEBUGPRINT("CLIENT ERROR:\t Could not connect socket trying next\n");
 			} else if (l_resvalue == -2)
 			{
-				DEBUGPRINT("Argument error to socket\n");
+				DEBUGPRINT("CLIENT ERROR:\t Argument error to socket\n");
 			} else 
 			{
-				DEBUGPRINT("What did I just return!?!?\n");
+				DEBUGPRINT("CLIENT ERROR:\t Invalid return\n");
 			}
 			continue;
 		}
@@ -75,12 +75,12 @@ int Network::Client::initConnection(const char* host, const char* port)
 		{
 			if (l_resvalue == -1)
 			{
-				DEBUGPRINT("Could not connect to server/port\n");
+				DEBUGPRINT("CLIENT ERROR:\t Could not connect to %s:%s\n", host, port);
 			} else if (l_resvalue == -2)
 			{
-				DEBUGPRINT("Argument error to connect\n");
+				DEBUGPRINT("CLIENT ERROR:\t Argument error to connect\n");
 			} else {
-				DEBUGPRINT("What did I just return!?!?\n");
+				DEBUGPRINT("CLIENT ERROR:\t Invalid return\n");
 			}
 			conn->close();
 			continue;
@@ -91,7 +91,7 @@ int Network::Client::initConnection(const char* host, const char* port)
 	
 	if (l_p == NULL)
 	{
-		DEBUGPRINT("No valid addrinfo");
+		DEBUGPRINT("CLIENT ERROR:\t Could not connect to %s:%s\n", host, port);
 		return -1;
 	}
 	
@@ -105,12 +105,12 @@ int Network::Client::initConnection(const char* host, const char* port)
 	
 	if ( setnonblock(fileDesc) == -1)
 	{
-		DEBUGPRINT("Could not set socket to non-blocking\n");
+		DEBUGPRINT("CLIENT ERROR:\t Could not set socket to non-blocking\n");
 	}
 	
 	if( addHandler(fileDesc, EPOLLET|EPOLLIN|EPOLLHUP, conn ) == -1)
 	{
-		DEBUGPRINT("Could not add handler to tcpConnection\n");
+		DEBUGPRINT("CLIENT ERROR:\t Could not add handler to tcpConnection\n");
 		return -1;
 	}
 	
@@ -127,7 +127,7 @@ int Network::Client::addHandler(int fd, unsigned int events, TcpConnection * con
 	e.events = events;
 	if (handle_epoll(m_epfd, EPOLL_CTL_ADD, fd, &e) != 0)
 	{
-		DEBUGPRINT("Failed to add epoll handler\n");
+		DEBUGPRINT("CLIENT ERROR:\t Failed to add epoll handler\n");
 		return -1;
 	} 
     else
@@ -144,7 +144,7 @@ int Network::Client::modifyHandler(int fd, unsigned int events)
 	e.events = events;
 	if (handle_epoll(m_epfd, EPOLL_CTL_MOD, fd, &e) != 0)
 	{
-		DEBUGPRINT("Failed to add epoll handler\n");
+		DEBUGPRINT("CLIENT ERROR:\t Failed to add epoll handler\n");
 		return -1;
 	} 
     else
@@ -158,7 +158,7 @@ int Network::Client::handle_epoll(int epfd, int op, int fd, epoll_event* event)
     int ret = epoll_ctl(epfd, op, fd, event);
     if(ret == -1)
     {
-        DEBUGPRINT("error: %s\n", strerror(errno));
+        DEBUGPRINT("CLIENT ERROR:\t %s\n", strerror(errno));
         return -1;
     }
     return 0;
@@ -187,7 +187,6 @@ int Network::Client::start()
 	            //DEBUGPRINT("Handling \n");
 		    	int ret = handler(e[i].data.fd);
 		    	
-		    	printf("Handler returned %i\n", ret);
 		    	if (ret < 0)
 			    {
 			        if (handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL) != 0)
@@ -198,13 +197,13 @@ int Network::Client::start()
 			    
 			    if( modifyHandler(e[i].data.fd, EPOLLET|EPOLLIN|EPOLLHUP ) == -1)
 				{
-					DEBUGPRINT("Could not add handler to tcpConnection\n");
+					DEBUGPRINT("CLIENT ERROR:\t Could not add handler to tcpConnection\n");
 					return -1;
 				}
             } 
            else if (e[i].events & EPOLLRDHUP || e[i].events & EPOLLHUP || e[i].events & EPOLLERR) 
            {
-				DEBUGPRINT("Server Hangup/Error \n");
+				DEBUGPRINT("CLIENT WARNING:\t Server Hangup/Error \n");
 	    		handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL); // @todo add error checking
 
 		   }
@@ -214,160 +213,3 @@ int Network::Client::start()
 
 	return 0;
 }
-
-/*
-int Network::Client::init(const char* host, const char * port)
-{
-	if (strlen(host) > INET6_ADDRSTRLEN || strlen(port) > MAX_PORT_LENGTH )
-	{
-		perror("Invalid port or host length to init");
-		return -2;
-	}
-	
-	if (host == NULL || port == NULL) 
-	{
-		perror("Invalid arguments to init");
-		return -2;
-	}
-	
-	if ((m_epfd = epoll_create(10)) == -1)
-	{
-		perror("EPOLL_CREATE error");
-		return -2;
-	}
-	
-	size_t l_hostlen= strlen(host); 
-	size_t l_portlen= strlen(port); 
-	
-	strncpy(m_host, host, l_hostlen);
-	m_host[l_hostlen] = '\0';
-	
-	strncpy(m_port, port, l_portlen);
-	m_port[l_hostlen] = '\0';
-	
-	struct addrinfo l_hints, *l_result, *l_p;
-	int l_resvalue = 0;
-	
-	memset(&l_hints, 0, sizeof(struct addrinfo) );
-	l_hints.ai_family = AF_UNSPEC;
-	l_hints.ai_socktype = SOCK_STREAM;
-	
-	if ((l_resvalue = getaddrinfo(m_host, m_port, &l_hints, &l_result)) != 0)
-	{
-		fprintf(stderr, "Could not get addrinfo %s\n", gai_strerror(l_resvalue));
-		return -1;
-	}
-	
-	for (l_p = l_result; l_p != NULL; l_p = l_p->ai_next)
-	{
-		if ((l_resvalue =m_conn.socket(l_p)) != 0)
-		{
-			if (l_resvalue == -1) 
-			{
-				perror("Could not bind socket trying next");
-			} else if (l_resvalue == -2)
-			{
-				perror("Argument error to socket");
-			} else 
-			{
-				perror("What did I just return!?!?");
-			}
-			continue;
-		}
-		
-		if ((l_resvalue = m_conn.connect(l_p)) != 0)
-		{
-			if (l_resvalue == -1)
-			{
-				perror("Could not connect to server/port");
-			} else if (l_resvalue == -2)
-			{
-				perror("Argument error to connect");
-			} else {
-				perror("What did I just return!?!?");
-			}
-			m_conn.close();
-			continue;
-		}
-		
-		break;
-	}
-	
-	if (l_p == NULL)
-	{
-		perror("No valid addrinfo");
-		return -1;
-	}
-	
-	int fd = m_conn.getSocketFd();
-	epoll_event e;
-	e.data.fd = fd;
-	e.events = EPOLLOUT|EPOLLHUP;
-	
-	if (epoll_ctl(m_epfd, EPOLL_CTL_ADD, fd,&e) == -1)
-	{
-		perror("EPOLL error epoll_ctl:ADD");
-		return -1;
-	}
-	
-	if (setnonblock(fd) == -1)
-	{
-		perror("Could not set socket to non-block");
-		return -1;		
-	}
-	
-	
-	freeaddrinfo(l_result);
-	return 0;
-	
-}
-
-Network::Client::~Client()
-{
-	m_conn.close();
-}
-
-int Network::Client::setnonblock(int fd)
-{
-  int flags;
-  flags = fcntl(fd, F_GETFL);
-  flags |= O_NONBLOCK;
-  return fcntl(fd, F_SETFL, flags);
-}
-
-int Network::Client::start()
-{
-	for (;;)
-	{
-		epoll_event * e = new epoll_event[10];
-		int nfd;		
-		nfd = epoll_wait(m_epfd, e, 10, 500);
-        printf("nfd: %i\n", nfd);
-
-		for (int i = 0; i < nfd ; i++)
-		{
-				if (e[i].events & EPOLLRDHUP || e[i].events & EPOLLHUP || e[i].events & EPOLLERR)
-				{
-				    printf("Client Hangup/Error \n");
-					epoll_ctl(m_epfd, EPOLL_CTL_DEL, e[i].data.fd, NULL); // @todo add error checking
-				} 
-                else if (e[i].events & EPOLLOUT)
-				{
-					printf("Handling \n");
-					int ret = handler(e[i].data.fd);
-					printf("Handler returned %i\n", ret);
-					if (ret < 0)
-					{
-					    if (epoll_ctl(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL) != 0)
-						{
-							return -1;
-						}
-					}
-				}
-		}
-        delete e;
-	}
-	
-	return 0;
-}
-*/

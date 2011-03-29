@@ -27,12 +27,12 @@ m_teamsConfirmed =0;
 
 int GridServer::initGridGame()
 {
-    /*
 	gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam, m_idRangeFrom, m_idRangeTo); // needs to not do this in grid game constructor!
+    /*
 	printf("id=%lu, teams=%lu, robots=%lu, idfrom=%lu, idto=%lu\n", (unsigned long)m_uId, (unsigned long)m_teamsAvailable,(unsigned long) m_robotsPerTeam, (unsigned long)m_idRangeFrom, (unsigned long)m_idRangeTo);
     */
     // parameters: gridid, num_of_teams, robots_per_team, id_from, id_to
-    gridGameInstance = new GridGame(1, 2, 5, 10, 19);
+    //gridGameInstance = new GridGame(1, 2, 5, 10, 19);
     /*GridGame* gridGameInstance2 = new GridGame(2, 2, 5, 20, 29);
 
     Msg_RobotInfo newrobot;

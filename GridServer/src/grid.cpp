@@ -26,18 +26,18 @@ int main(int argc, char ** argv)
 			case('f'):
 			{
 				l_filename = optarg;
-				DEBUGPRINT("Prepairing to load init file: %s\n", l_filename);
+				DEBUGPRINT("GRID_SERVER STATUS:\t Prepairing to load init file: %s\n", l_filename);
 				break;
 			}
 			case('p'):
 			{
 				l_bindPort = optarg;
-				DEBUGPRINT("Prepairing to use port %s\n", l_bindPort);
+				DEBUGPRINT("GRID_SERVER STATUS:\t Prepairing to use port %s\n", l_bindPort);
 				break;
 			}
 			case('?'):
 			{
-				printf("Invalid paramater provided -%i\n", optopt);
+				printf("GRID_SERVER STATUS:\t Invalid paramater provided -%i\n", optopt);
 				printf("Usage: ./grid.bin -p <port> -f <init_file>\n");
 				break;
 			}
@@ -59,7 +59,7 @@ int main(int argc, char ** argv)
 	
 	if ((l_res = l_parser.readFile(l_filename, (void *)l_grid )) == ENOENT) 
 	{
-		printf("FAIL:\tError with parsing file: %s\n", l_filename);
+		printf("GRID_PARSER FAIL:\tError with parsing file: %s\n", l_filename);
 		return -1;
 	}
 	
@@ -67,7 +67,7 @@ int main(int argc, char ** argv)
 	
 	if (l_res < 0)
 	{
-		printf("FAIL:\tFailed to parse file\n");
+		printf("GRID_PARSER FAIL:\tFailed to parse file\n");
 		return -1;
 	}
 	
@@ -75,14 +75,14 @@ int main(int argc, char ** argv)
 	
 	if ((l_res = l_parser.verify()) < 0)
 	{
-		DEBUGPRINT("FAIL:\tGame not initialized");
+		DEBUGPRINT("GRID_PARSER FAIL:\tGame not initialized\n");
 		return -1;
 	} 
 	
 	
 	if (l_grid->init(l_bindPort) < 0) 
 	{
-		DEBUGPRINT("FAIL:\tcannot init port;");
+		DEBUGPRINT("GRID_PARSER FAIL:\tcannot init port\n");
 		return -1;
 	}
 	
