@@ -210,14 +210,23 @@ int GridServer::handler(int fd)
 
                     Msg_RobotInfo l_RoboInfo;
                     std::vector<Msg_RobotInfo> l_RoboUpdates;
-                
-                    unsigned char l_Buffer[l_RoboInfo.size*l_Size.msgSize];
+               
+                    int l_MessageSize = l_RoboInfo.size*l_Size.msgSize; 
+                    unsigned char l_Buffer[l_MessageSize];
+                    
+                    if (l_curConnection->recv(l_Buffer, l_MessageSize) == -1)
+				    {
+							DEBUGPRINT("Couldn't receive the number of boundary robo updates.\n");
+							return -1;
+					}
+
                     int l_Offset = 0;
 
                     for (int i = 0; i < l_Size.msgSize; i++)
                     {
                         unpack(l_Buffer+l_Offset, Msg_RobotInfo_format, &l_RoboInfo.robotid, &l_RoboInfo.x_pos, &l_RoboInfo.y_pos, &l_RoboInfo.speed, &l_RoboInfo.angle, &l_RoboInfo.puckid, &l_RoboInfo.gridid);
                         l_RoboUpdates.push_back(l_RoboInfo);
+                        DEBUGPRINT("Received boundary robo with %d %f %f\n", l_RoboInfo.robotid, l_RoboInfo.x_pos, l_RoboInfo.y_pos);
                         l_Offset += l_RoboInfo.size;
                     }
 
@@ -564,9 +573,12 @@ int GridServer::handler(int fd)
                     {
                         l_Offset = 0;
 
+                        DEBUGPRINT("Attempting to send to grid at position %d with fd %d\n", robots_to_pass[i].first, m_GridPosToFd[robots_to_pass[i].first]);
                         TcpConnection* l_GridCon = m_Clients[m_GridPosToFd[robots_to_pass[i].first]];
                         
                         l_Size.msgSize = robots_to_pass[i].second.size();
+
+                        DEBUGPRINT("Attempting to send %d boundary robo infos to another grid\n", l_Size.msgSize);
                         l_MessageSize = l_Header.size+l_Size.size+(l_Size.msgSize * l_RoboInfo.size);
 
                         unsigned char l_BoundaryBuffer[l_MessageSize];
@@ -580,6 +592,7 @@ int GridServer::handler(int fd)
                         for (int a = 0; a < l_Size.msgSize; a++)
                         {
                             Msg_RobotInfo& l_RoboToPack = robots_to_pass[i].second[a];
+                            DEBUGPRINT("Boundary robo with id %d and %f %f\n", l_RoboToPack.robotid, robots_to_pass[i].second[a].x_pos, robots_to_pass[i].second[a].y_pos);
                             pack(l_BoundaryBuffer+l_Offset, Msg_RobotInfo_format, l_RoboToPack.robotid, l_RoboToPack.x_pos, l_RoboToPack.y_pos, l_RoboToPack.speed, l_RoboToPack.angle, l_RoboToPack.puckid, l_RoboToPack.gridid);
                             l_Offset += l_RoboToPack.size;
                         }
