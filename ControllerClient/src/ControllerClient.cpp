@@ -94,7 +94,7 @@ int ControllerClient::initNeighbourGrids()
 
         if (i-1 < 0)
         {
-            l_LeftGrid = m_Grids.front();
+            l_LeftGrid = m_Grids.back();
         }
         else
         {
@@ -102,7 +102,7 @@ int ControllerClient::initNeighbourGrids()
         }
         if (i+1 == l_GridSize)
         {
-           l_RightGrid = m_Grids.back();
+           l_RightGrid = m_Grids.front();
         }
         else
         {
