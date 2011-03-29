@@ -58,7 +58,7 @@ MANUAL RUN SEQUENCE
 
       How to: 
 
-	  ./clock.bin -p {{port}}
+	  ./clock.bin -p {{port}} -c {{# of robot clients}}
 
       Configuration file:
 
