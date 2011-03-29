@@ -18,3 +18,6 @@ server.info
 
 #Hardeep's Kdevelop files :)
 .kdev*
+
+# depend files
+*_depends

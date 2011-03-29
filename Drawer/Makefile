@@ -61,7 +61,7 @@ drawer_release_objects:
 
 drawer_debug_objects:
 	@echo "Building drawer debug objects ---------------------------------------------------------"
-	$(shell cd $(drawer_DEBUG_OBJ_PATH); $(drawer_COMPILER) -c -I$(drawer_INCLUDE_PATH) -I$(drawer_INCLUDE_COMMON_PATH) $(addprefix $(drawer_SRC_PATH)/, $(drawer_SRC)))
+	$(shell cd $(drawer_DEBUG_OBJ_PATH); $(drawer_COMPILER) -g -c -I$(drawer_INCLUDE_PATH) -I$(drawer_INCLUDE_COMMON_PATH) $(addprefix $(drawer_SRC_PATH)/, $(drawer_SRC)))
 	@echo "Building drawer debug objects COMPLETE ------------------------------------------------"
 
 drawer_clean:

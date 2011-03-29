@@ -59,7 +59,9 @@ public:
      * Interface function to Network layer for returning sensor data for a list of robots
      * for a set of robots on a client
      */
-    int returnSensorData(std::vector<int> robot_ids_from_client, std::vector< RobotSensedObjectsPair >* sensor_data);
+    int returnSensorData(std::vector<uid>& robot_ids_from_client,
+                         std::vector< RobotSensedObjectsPair >* sensor_data,
+                         int& totalSensed);
 
     /**
      * Interface function to Network layer for processing actions for each robot.
@@ -69,7 +71,7 @@ public:
     /**
      * Interface function to updateRobots based on new/update robots on edge cases
      */
-    int updateRobots(std::vector<Msg_RobotInfo> robots_to_update);
+    int updateRobots(std::vector<Msg_RobotInfo>& robots_to_update);
 
     /**
      * Interface function to Network layer for processing actions for each robot.

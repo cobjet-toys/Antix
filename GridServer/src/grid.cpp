@@ -2,41 +2,87 @@
 #include "GridParser.h"
 #include <errno.h>
 #include "Config.h"
+#include <unistd.h>
 
 int main(int argc, char ** argv)
 {
-	Network::GridServer *l_grid = new Network::GridServer();
-    //l_grid->initGridGame();
-	if (argc < 3) 
+	
+	if (argc < 5) 
 	{
-		printf("Usage: ./grid.bin <port> <init_file>\n");
+		printf("Usage: ./grid.bin -p <port> -f <init_file>\n");
 		return -1;
 	}
+	
+	
+	int l_res = 0;
+	opterr = 0;
+	char * l_bindPort = NULL;
+	char * l_filename = NULL;
+	
+	while( (l_res = getopt(argc, argv, "p:f:")) != -1)
+	{
+		switch(l_res)
+		{
+			case('f'):
+			{
+				l_filename = optarg;
+				DEBUGPRINT("GRID_SERVER STATUS:\t Prepairing to load init file: %s\n", l_filename);
+				break;
+			}
+			case('p'):
+			{
+				l_bindPort = optarg;
+				DEBUGPRINT("GRID_SERVER STATUS:\t Prepairing to use port %s\n", l_bindPort);
+				break;
+			}
+			case('?'):
+			{
+				printf("GRID_SERVER STATUS:\t Invalid paramater provided -%i\n", optopt);
+				printf("Usage: ./grid.bin -p <port> -f <init_file>\n");
+				break;
+			}
+			default:
+			{
+				abort();
+				break;
+			}
+		}
+	}
+	
+	
+
+	Network::GridServer *l_grid = new Network::GridServer();
 	
 	GridParser l_parser;
 	
-	int l_res = 0;
+	l_res = 0;
 	
-	if ((l_res = l_parser.readFile(argv[2], (void *)l_grid )) == ENOENT) 
+	if ((l_res = l_parser.readFile(l_filename, (void *)l_grid )) == ENOENT) 
 	{
-		printf("FAIL:\tError with parsing file: %s\n", argv[2]);
+		printf("GRID_PARSER FAIL:\tError with parsing file: %s\n", l_filename);
 		return -1;
 	}
+	
+	l_res = 0;
+	
 	if (l_res < 0)
 	{
-		printf("FAIL:\tFailed to parse file\n");
+		printf("GRID_PARSER FAIL:\tFailed to parse file\n");
 		return -1;
 	}
+	
+	l_res = 0;
 	
 	if ((l_res = l_parser.verify()) < 0)
 	{
-		DEBUGPRINT("FAIL:\tGame not initialized");
+		DEBUGPRINT("GRID_PARSER FAIL:\tGame not initialized\n");
 		return -1;
 	} 
 	
-	if (l_grid->init(argv[1]) < 0) 
+	
+	if (l_grid->init(l_bindPort) < 0) 
 	{
-		DEBUGPRINT("FAIL:\tcannot init port;");
+		DEBUGPRINT("GRID_PARSER FAIL:\tcannot init port\n");
 		return -1;
 	}
 	

@@ -24,6 +24,26 @@ DrawServer::DrawServer()
 
 DrawServer::~DrawServer() 
 {
+	for(int i=0; i<this->m_pucks.size(); i++)
+	{
+		delete this->m_pucks[i];
+	}
+	this->m_pucks.clear();
+	
+	
+	for(int i=0; i<this->m_robots.size(); i++)
+	{
+		delete this->m_robots[i];
+	}
+	this->m_pucks.clear();
+	
+	
+	for(int i=0; i<this->m_teams.size(); i++)
+	{
+		delete this->m_teams[i];
+	}
+	this->m_teams.clear();
+
 }
 
 DrawServer* DrawServer::getInstance()
@@ -47,6 +67,34 @@ int DrawServer::initGrid(const char* host, const char* port, int id)
     
     setGridConfig(l_GridFd, 'T');
     return l_GridFd;
+}
+
+size_t DrawServer::initRobots(int size)
+{	
+	int teamId = 0;
+    Math::Position *pos = new Math::Position(0.0, 0.0, 0.0);
+    this->m_robots.clear();
+    
+    for (int i=0; i<size; i++)
+    {
+    	this->m_robots.push_back( new Game::Robot(pos, teamId, i) );
+    	
+    	if (i % this->m_totalNumTeams == 0) teamId++;
+    }
+    return this->m_robots.size();
+}
+
+size_t DrawServer::initPucks(int size)
+{	
+    Math::Position *pos = new Math::Position(0.0, 0.0, 0.0);
+    this->m_pucks.clear();
+    
+    for (int i=0; i<size; i++)
+    {
+    	this->m_pucks.push_back( new Game::Puck(pos) );
+    }
+    
+    return this->m_pucks.size();
 }
 
 int DrawServer::setGridConfig(int grid_fd, char send_data, float topleft_x, float topleft_y, float bottomright_x, float bottomright_y)
@@ -97,32 +145,21 @@ void DrawServer::initTeams()
 }
 
 void DrawServer::updateObject(Msg_RobotInfo newInfo)
-{
-	//if (newInfo == NULL) return;
-	
-    Math::Position *pos = new Math::Position(newInfo.x_pos, newInfo.x_pos, newInfo.angle);
-    if (!pos)
-    { 
-    	DEBUGPRINT("Object %d: Invalid position\n", newInfo.robotid);
-    	return;
-    }
-    
+{    
     uint32_t objType, objId;
     Antix::getTypeAndId(newInfo.robotid, &objType, &objId);
     if(objType == PUCK)
     {
-        if (!this->m_pucks[objId])
-        {
-			this->m_pucks[objId] = new Game::Puck(pos);
-        }
-      	else
-      	{
-			this->m_pucks[objId]->getPosition()->setX(newInfo.x_pos);
-			this->m_pucks[objId]->getPosition()->setY(newInfo.y_pos);        		
-      	}
+        this->m_pucks.at(objId)->getPosition()->setX(newInfo.x_pos);
+		this->m_pucks.at(objId)->getPosition()->setY(newInfo.y_pos);        		
     }
     else
-    {
+    {    
+    	
+    	this->m_robots.at(objId)->getPosition()->setX(newInfo.x_pos);
+		this->m_robots.at(objId)->getPosition()->setY(newInfo.y_pos);       
+		
+		/*
       	if (!this->m_robots[objId])
       	{
     		if (!this->m_teams[0])//newInfo.id/TEAM_ID_SHIFT])    
@@ -131,12 +168,8 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
     			  return;
     		}         			
 		    this->m_robots[objId] = new Game::Robot(pos, this->m_teams[0]->m_TeamId, objId);//newInfo.id/TEAM_ID_SHIFT]->getHome());
-      	}          	
-      	else
-      	{
-    		this->m_robots[objId]->getPosition()->setX(newInfo.x_pos);
-    		this->m_robots[objId]->getPosition()->setY(newInfo.y_pos);        		
-      	}
+      	}     
+      	*/
         
         //this->m_robots[newInfo.id]->m_PuckHeld = this->m_pucks[newInfo.puck_id];
     }
@@ -168,6 +201,8 @@ int DrawServer::handler(int fd)
             {
                 case(MSG_GRIDDATAFULL) :
                 {
+                    DEBUGPRINT("MSG_GRIDDATAFULL\n");
+                    
                     Msg_MsgSize l_NumObjects;
 	                Msg_RobotInfo l_ObjInfo;
 	                unsigned char l_ObjInfoBuf[l_ObjInfo.size];
@@ -200,7 +235,8 @@ int DrawServer::handler(int fd)
                 }
                 
                 case(MSG_GRIDDATACOMPRESS) : 
-                {
+                {                
+                    DEBUGPRINT("MSG_GRIDDATACOMPRESS\n");
 					return 0;
                 }
                 
@@ -223,13 +259,20 @@ int DrawServer::handler(int fd)
                         
                         unpack(l_TeamInfoBuf, Msg_TeamInit_format,
                                 &l_TeamInfo.id, &l_TeamInfo.x, &l_TeamInfo.y);
+                                
+                        DEBUGPRINT("Team: id=%d\tx=%f\ty=%f\n",
+                	        l_TeamInfo.id, l_TeamInfo.x, l_TeamInfo.y );
+                        
 
-						if (!this->m_teams[l_TeamInfo.id])
+						//TODO: check to make sure team doesn't already exist
 						{
 							Math::Position *homePos = new Math::Position(l_TeamInfo.x, l_TeamInfo.y, 0.0);
-		    				this->m_teams[l_TeamInfo.id] = new Game::Team(homePos, l_TeamInfo.id);
+		    				Game::Team *newTeam = new Game::Team(homePos, l_TeamInfo.id);
+		    				this->m_teams.push_back(newTeam);
 	    				}
     				}
+    				
+                    DEBUGPRINT("MSG_GRIDTEAMS: Finished.\n");
     				
 					return 0;
                 }

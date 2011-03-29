@@ -49,7 +49,7 @@ robot_release_objects:
 
 robot_debug_objects:
 	@echo "Building robot debug objects -------------------------------------------------------------------"
-	$(shell cd $(robot_DEBUG_OBJ_PATH); $(robot_COMPILER) -c -I$(robot_INCLUDE_PATH) -I$(robot_INCLUDE_COMMON_PATH) $(addprefix $(robot_SRC_PATH)/, $(robot_SRC)))
+	$(shell cd $(robot_DEBUG_OBJ_PATH); $(robot_COMPILER) -g -c -I$(robot_INCLUDE_PATH) -I$(robot_INCLUDE_COMMON_PATH) $(addprefix $(robot_SRC_PATH)/, $(robot_SRC)))
 	@echo "Building robot debug objects COMPLETE ----------------------------------------------------------"
 robot_clean: common_clean
 	@echo "Cleaning robot ALL -----------------------------------------------------------------------------"

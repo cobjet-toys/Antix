@@ -48,7 +48,7 @@ clock_release_objects:
 
 clock_debug_objects:
 	@echo "Building clock debug objects ---------------------------------------------------------"
-	$(shell cd $(clock_DEBUG_OBJ_PATH); $(clock_COMPILER) -c -I$(clock_INCLUDE_PATH)  -I$(clock_INCLUDE_COMMON_PATH) $(addprefix $(clock_SRC_PATH)/, $(clock_SRC)))
+	$(shell cd $(clock_DEBUG_OBJ_PATH); $(clock_COMPILER) -g -c -I$(clock_INCLUDE_PATH)  -I$(clock_INCLUDE_COMMON_PATH) $(addprefix $(clock_SRC_PATH)/, $(clock_SRC)))
 	@echo "Building clock debug objects COMPLETE ------------------------------------------------"
 
 clock_clean: common_clean 

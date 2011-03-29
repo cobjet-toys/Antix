@@ -25,14 +25,14 @@ int Server::init(const char* port, int maxConnections)
 	m_servers_total = maxConnections;
 	if (maxConnections == -1) m_ready = true;
 	
-    printf("Attempting to create a server socket on port: %s\n", port);
+    printf("SERVER STATUS:\t Attempting to create a server socket on port: %s\n", port);
     m_epfd = epoll_create(1000);
 	if (m_epfd < 0 ) return -1;
     //Copy the port to m_Port.
     size_t l_PortSize = strlen(port);
     if (l_PortSize > (MAX_PORT_LENGTH-1))
     {
-        perror("Port is of invalid size\n");
+        perror("SERVER ERROR:\t Port is of invalid size\n");
         return -2;
     }
     strncpy(m_Port, port, l_PortSize);
@@ -48,7 +48,7 @@ int Server::init(const char* port, int maxConnections)
     int l_ResValue = 0;
     if ((l_ResValue = getaddrinfo(NULL, m_Port, &l_Hints, &l_ServerInfo)) != 0)
     {
-        fprintf(stderr, "Error in getaddrinfo: %s\n", gai_strerror(l_ResValue));
+        fprintf(stderr, "SERVER ERROR:\t Error in getaddrinfo: %s\n", gai_strerror(l_ResValue));
         return -1; 
     }
 
@@ -59,17 +59,17 @@ int Server::init(const char* port, int maxConnections)
         {
             if (l_ResValue == -1)
             {
-                perror("Couldn't create socket from addrinfo.\n");
+                perror("SERVER ERROR:\t Couldn't create socket from addrinfo\n");
                 continue;
             }
             else if (l_ResValue == -2)
             {
-                perror("Invalid arguments passed to 'socket'\n");
+                perror("SERVER ERROR:\t Invalid arguments passed to 'socket'\n");
                 return -2;
             }
             else
 			{
-                perror("WTF is Hardeep returning.\n");
+                perror("SERVER ERROR:\t Invalid return.\n");
 				return -3;
 			}
         }
@@ -81,17 +81,17 @@ int Server::init(const char* port, int maxConnections)
             m_ServerConn.close();
             if (l_ResValue == -1)
             {
-                perror("Could bind to socket from addrinfo.\n");
+                perror("SERVER ERROR:\t Could bind to socket from addrinfo\n");
                 continue;
             }
             else if (l_ResValue == -2)
             {
-                perror("Invalid arguments passed to 'bind'.\n");
+                perror("SERVER ERROR:\t Invalid arguments passed to 'bind'\n");
                 return -2;
             }
             else
 			{
-                perror("WTF is Hardeep returning.\n");
+                perror("SERVER ERROR:\t Invalid return.\n");
 				return -3;
 			}
         }
@@ -101,7 +101,7 @@ int Server::init(const char* port, int maxConnections)
 
     if (l_AddrIter == NULL)
     {
-        fprintf(stderr, "Couldn't create a new socket.\n");
+        fprintf(stderr, "SERVER ERROR:\t Couldn't create a new socket\n");
         return -1;
     }
 
@@ -111,15 +111,15 @@ int Server::init(const char* port, int maxConnections)
     {
         if (l_ResValue == -1)
         {
-            perror("Failed to listen on socket\n");
+            perror("SERVER ERROR:\t Failed to listen on socket\n");
             return -1;
         }
         else if (l_ResValue == -2)
         {
-            perror("Invalid argument in 'listen'.\n");
+            perror("SERVER ERROR:\t Invalid argument in 'listen'\n");
             return -2;
         } else {
-			perror("WTF is Hardeep returning.\n");
+			perror("SERVER ERROR:\t Invalid return\n");
 			return -3;
 		}
     }
@@ -134,9 +134,112 @@ int Server::init(const char* port, int maxConnections)
 	this->setnonblock(fileDesc); // @ todo check for errors
 	this->addHandler(fileDesc, EPOLLIN|EPOLLET, &m_ServerConn); //@ todo check for errors
 	
-    printf("Server initialized and listening on port: %s\n", m_Port);
+    printf("SERVER STATUS:\t Server initialized and listening on port: %s\n", m_Port);
 	
 	return 0;
+}
+
+int Network::Server::initConnection(const char* host, const char* port)
+{
+	if (strlen(host) > INET6_ADDRSTRLEN || strlen(port) > MAX_PORT_LENGTH )
+	{
+		DEBUGPRINT("SERVER ERROR:\t Invalid port or host length to init\n");
+		return -2;
+	}
+	
+	if (host == NULL || port == NULL)
+	{
+		DEBUGPRINT("SERVER ERROR:\t Invalid arguments to init\n");
+	} 
+	
+	DEBUGPRINT("SERVER STATUS:\t Connection to host:%s:%s\n", host, port);
+	
+	addrinfo l_hints, *l_result, *l_p;
+	int l_resvalue = -1;
+	
+	memset(&l_hints, 0, sizeof(struct addrinfo) );
+	
+	l_hints.ai_family = AF_UNSPEC;
+	l_hints.ai_socktype = SOCK_STREAM;
+	
+	if ((l_resvalue = getaddrinfo(host, port, &l_hints, &l_result)) == -1)
+	{
+		DEBUGPRINT("SERVER ERROR:\t Could not get addrinfo: %s\n", gai_strerror(l_resvalue));
+		return -1;
+	}
+	
+	TcpConnection * conn = new TcpConnection();
+	
+	if (conn == NULL)
+	{
+		DEBUGPRINT("SERVER ERROR:\t Could not create new TCP Connection\n");
+		return -1;
+	}
+
+	for (l_p = l_result; l_p != NULL; l_p = l_p->ai_next)
+	{
+		if ((l_resvalue =conn->socket(l_p)) != 0)
+		{
+			if (l_resvalue == -1) 
+			{
+				DEBUGPRINT("SERVER ERROR:\t Could not connect socket trying next\n");
+			} else if (l_resvalue == -2)
+			{
+				DEBUGPRINT("SERVER ERROR:\t Argument error to socket\n");
+			} else 
+			{
+				DEBUGPRINT("SERVER ERROR:\t Invalid Return\n");
+			}
+			continue;
+		}
+		
+		if ((l_resvalue = conn->connect(l_p)) != 0)
+		{
+			if (l_resvalue == -1)
+			{
+				DEBUGPRINT("SERVER ERROR:\t Could not connect to server/port\n");
+			} else if (l_resvalue == -2)
+			{
+				DEBUGPRINT("SERVER ERROR:\t Argument error to connect\n");
+			} else {
+				DEBUGPRINT("SERVER ERROR:\t Invalid return\n");
+			}
+			conn->close();
+			continue;
+		}
+		
+		break;
+	}
+	
+	if (l_p == NULL)
+	{
+		DEBUGPRINT("SERVER FAILURE:\t Failed to connect to %s:%s\n", host, port);
+		return -1;
+	}
+	
+	int fileDesc = conn->getSocketFd();
+	int enable = 1;
+	
+	if (setsockopt(fileDesc, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == -1)
+	{
+		return -1;	
+	}
+	
+	if ( setnonblock(fileDesc) == -1)
+	{
+		DEBUGPRINT("SERVER ERROR:\t Could not set socket to non-blocking\n");
+	}
+	
+	if( addHandler(fileDesc, EPOLLET|EPOLLIN|EPOLLHUP, conn ) == -1)
+	{
+		DEBUGPRINT("SERVER ERROR:\t Could not add handler to tcpConnection\n");
+		return -1;
+	}
+	
+	
+	
+	return fileDesc;
+
 }
 
 
@@ -148,7 +251,7 @@ int Server::modifyHandler(int fd, unsigned int events)
 	e.events = events;
 	if (handle_epoll(m_epfd, EPOLL_CTL_MOD, fd, &e) != 0)
 	{
-		DEBUGPRINT("Failed to add epoll handler\n");
+		DEBUGPRINT("SERVER ERROR:\t Failed to add epoll handler\n");
 		return -1;
 	} 
     else
@@ -199,13 +302,13 @@ int Server::start()
 						this->setnonblock(fd); // @ todo check for errors
 						if( this->addHandler(fd, EPOLLIN|EPOLLET|EPOLLRDHUP, temp) != 0 )
 						{
-							printf("failed connecting to client.\n");
+							printf("SERVER ERROR:\t Failed connecting to client.\n");
 							// @ todo -- attempt recovery
 							return -1;
 						}
 						else
 						{
-							printf("A client connected.\n");
+							printf("SERVER STATUS:\t A client connected.\n");
 							m_servers_connected += 1;
 							if ((l_ret = this->handleNewConnection(fd)) < 0) return l_ret;
 							
@@ -224,7 +327,7 @@ int Server::start()
 			{
 				if (e[i].events & EPOLLRDHUP || e[i].events & EPOLLHUP || e[i].events & EPOLLERR)
 				{
-				    printf("Client Hangup/Error\n");
+				    printf("SERVER WARNING:\t Client Hangup/Error\n");
 					handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL); // @todo add error checking
 					continue;
 				} 
@@ -232,9 +335,7 @@ int Server::start()
 				{
 					if (m_ready)
 					{
-						//printf("Handling \n");
 						int ret = handler(e[i].data.fd);
-						//printf("Handler returned %i\n", ret);
 						if (ret < 0)
 						{
 							if (handle_epoll(m_epfd, EPOLL_CTL_DEL,e[i].data.fd, NULL) != 0)
@@ -243,16 +344,17 @@ int Server::start()
 							}
 						}
 						
-						if( modifyHandler(e[i].data.fd, EPOLLET|EPOLLIN|EPOLLHUP ) == -1)
-						{
-							DEBUGPRINT("Could not add handler to tcpConnection\n");
-							return -1;
-						}						
+												
 						
 					} else {
-						printf("SERVER ERROR:\t Handleing but not all clients connected\n");
+						printf("SERVER ERROR:\t Not handleing because not all clients connected\n");
 					}
 				}
+			}
+			if( modifyHandler(e[i].data.fd, EPOLLET|EPOLLIN|EPOLLHUP ) == -1)
+			{
+				DEBUGPRINT("SERVER ERROR:\t Could not add handler to TCP Connection\n");
+				return -1;
 			}
 		}
 	}
@@ -274,7 +376,7 @@ int Server::handle_epoll(int epfd, int op, int fd, epoll_event* event)
     int ret = epoll_ctl(epfd, op, fd, event);
     if(ret != 0)
     {
-        printf("error: %s\n", strerror(errno));
+        printf("SERVER ERROR:\t %s\n", strerror(errno));
         return -1;
     }
     return 0;

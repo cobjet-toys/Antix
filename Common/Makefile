@@ -45,7 +45,7 @@ common_release_objects:
 
 common_debug_objects:
 	@echo "Building common debug objects ---------------------------------------------------------"
-	$(shell cd $(common_DEBUG_OBJ_PATH); $(common_COMPILER) -c -I$(common_INCLUDE_PATH) $(addprefix $(common_SRC_PATH)/, $(common_SRC)))
+	$(shell cd $(common_DEBUG_OBJ_PATH); $(common_COMPILER) -g -c -I$(common_INCLUDE_PATH) $(addprefix $(common_SRC_PATH)/, $(common_SRC)))
 	@echo "Building common debug objects COMPLETE ------------------------------------------------"
 common_clean:
 	@echo "Cleaning common ALL -------------------------------------------------------------------"

@@ -58,6 +58,8 @@ namespace Network
         bool m_FOVEnabled;
         char m_drawerDataType;
         
+        int m_totalNumTeams;
+        
         int getWindowSize() { return this->m_windowSize; }
         float getWorldSize() { return this->m_worldSize; }
         float getFOVAngle() { return this->m_FOVAngle; }
@@ -74,6 +76,8 @@ namespace Network
         size_t getTeamsCount() { return this->m_teams.size(); }
         size_t getPucksCount() { return this->m_pucks.size(); }
         size_t getRobotsCount() { return this->m_robots.size(); }
+        size_t initPucks(int size);
+        size_t initRobots(int size);
 
 	private:
         int packHeaderMessage(unsigned char* buffer, uint16_t sender, uint16_t message);

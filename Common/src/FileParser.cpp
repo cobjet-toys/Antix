@@ -42,7 +42,7 @@ void FileParser::tokenizer(std::string &str, std::vector<std::string> &strVec)
 
 int FileParser::readFile(std::string filename, void *args)
 {
-	DEBUGPRINT("Parsing file\n");
+	DEBUGPRINT("FILE_PARSER STATUS:\t Parsing file\n");
     char temp[256];
     std::string str;
 
@@ -59,11 +59,11 @@ int FileParser::readFile(std::string filename, void *args)
         FileParser::tokenizer(str, fileContainer);
         if (fileContainer.size() > 0)
         {
-			DEBUGPRINT("Handeling line %s\n", temp);
+			DEBUGPRINT("FILE_PARSER STATUS:\t Handeling line %s\n", temp);
             int l_res = handler(fileContainer, args);
 			if (l_res < 0) return -1;
         } else {
-			DEBUGPRINT("Empty line read %s\n", temp);
+			DEBUGPRINT("FILE_PARSER STATUS:\t Empty line read %s\n", temp);
 		}
     }    
     return 0;
