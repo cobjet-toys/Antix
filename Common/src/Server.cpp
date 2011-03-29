@@ -236,6 +236,8 @@ int Network::Server::initConnection(const char* host, const char* port)
 		return -1;
 	}
 	
+	
+	
 	return fileDesc;
 
 }
@@ -342,16 +344,17 @@ int Server::start()
 							}
 						}
 						
-						if( modifyHandler(e[i].data.fd, EPOLLET|EPOLLIN|EPOLLHUP ) == -1)
-						{
-							DEBUGPRINT("SERVER ERROR:\t Could not add handler to TCP Connection\n");
-							return -1;
-						}						
+												
 						
 					} else {
 						printf("SERVER ERROR:\t Not handleing because not all clients connected\n");
 					}
 				}
+			}
+			if( modifyHandler(e[i].data.fd, EPOLLET|EPOLLIN|EPOLLHUP ) == -1)
+			{
+				DEBUGPRINT("SERVER ERROR:\t Could not add handler to TCP Connection\n");
+				return -1;
 			}
 		}
 	}
