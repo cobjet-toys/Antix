@@ -255,6 +255,7 @@ int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
     for (i = robotcounter; i < robotcounter+m_Robots_Per_Team; i++)
     {
         GameObject* l_Robot = m_Population[i];
+        if (l_Robot == NULL) exit(1);
         Msg_InitRobot temp;
         temp.id = l_Robot->getId();
         temp.x = l_Robot->getX();

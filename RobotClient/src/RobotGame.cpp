@@ -79,6 +79,7 @@ int RobotGame::receiveSensorData(vector< std::pair<uid, std::vector<Msg_SensedOb
         int robot_id = (*iter).first;
         Robot* l_robotp = m_robots[robot_id];
         DEBUGPRINT("Updating sensors for robo %d\n", (*iter).first);
+       
         l_robotp->updateSensors( (*iter).second );
     }
 

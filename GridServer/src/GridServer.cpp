@@ -583,8 +583,9 @@ int GridServer::handler(int fd)
                             pack(l_BoundaryBuffer+l_Offset, Msg_RobotInfo_format, l_RoboToPack.robotid, l_RoboToPack.x_pos, l_RoboToPack.y_pos, l_RoboToPack.speed, l_RoboToPack.angle, l_RoboToPack.puckid, l_RoboToPack.gridid);
                             l_Offset += l_RoboToPack.size;
                         }
-
+						DEBUGPRINT("Prepairing to send\n");
                         NetworkCommon::sendMsg(l_BoundaryBuffer, l_MessageSize, l_GridCon);
+                        DEBUGPRINT("Sent Message\n");
                     }
 
 					/*int l_numRobots = -1;
