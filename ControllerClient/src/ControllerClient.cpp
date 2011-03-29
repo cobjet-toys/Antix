@@ -86,6 +86,7 @@ int ControllerClient::initNeighbourGrids()
 {
     const int l_GridSize = m_Grids.size();
          
+    DEBUGPRINT("Found a total of %zu grids\n", m_Grids.size());
     for (int i = 0; i < l_GridSize; i++)
     {
         //Get our nearby grids.
@@ -93,7 +94,7 @@ int ControllerClient::initNeighbourGrids()
 
         if (i-1 < 0)
         {
-            l_LeftGrid = m_Grids.back();
+            l_LeftGrid = m_Grids.front();
         }
         else
         {
@@ -101,7 +102,7 @@ int ControllerClient::initNeighbourGrids()
         }
         if (i+1 == l_GridSize)
         {
-           l_RightGrid = m_Grids.front();
+           l_RightGrid = m_Grids.back();
         }
         else
         {
