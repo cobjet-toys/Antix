@@ -105,5 +105,5 @@ MANUAL RUN SEQUENCE
 	  TOTAL_NUM_PUCKS {{integer}}
 	  [ FOV_ANGLE {{float}} ]
 	  [ FOV_RANGE {{float}} ]
-	  GRID {{ID}} {{IP ADDRESS}} {{port}}
+	  GRID {{IP ADDRESS}} {{port}}
 
