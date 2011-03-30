@@ -176,7 +176,8 @@ GridGame::~GridGame()
 
 void GridGame::sortPopulation()
 {
-    //Sort on the x axis.
+    DEBUGPRINT("***Sort Population executing**\n");
+    //Sort on the y axis.
     int i;
     GameObject* l_Key;
     for(unsigned int j = 1; j < m_Population.size(); j++)
@@ -194,7 +195,6 @@ void GridGame::sortPopulation()
         m_YObjects[l_Key] = i+1;
     }
 
-    DEBUGPRINT("***Sort Population executing**\n");
 }
 
 
@@ -260,7 +260,7 @@ int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
         temp.id = l_Robot->getId();
         temp.x = l_Robot->getX();
         temp.y = l_Robot->getY();
-		DEBUGPRINT("ID: %d, X: %f, F: %f \n", temp.id, temp.x, temp.y);
+		//DEBUGPRINT("ID: %d, X: %f, F: %f \n", temp.id, temp.x, temp.y);
 
         robots->push_back(temp);
     }
@@ -608,8 +608,8 @@ int GridGame::addObjectToPop(GameObject* object)
 
     this->m_YObjects[object] = m_Population.size();
 
-    DEBUGPRINT("Total Population of Game Objects: %zu\n", m_Population.size());
-    printPopulation();
+    //DEBUGPRINT("Total Population of Game Objects: %zu\n", m_Population.size());
+    //printPopulation();
     
     //TODO: Sort robots at this point?
     

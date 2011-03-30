@@ -27,13 +27,15 @@ m_teamsConfirmed =0;
 
 int GridServer::initGridGame()
 {
-	gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam, m_idRangeFrom, m_idRangeTo); // needs to not do this in grid game constructor!
     /*
-	printf("id=%lu, teams=%lu, robots=%lu, idfrom=%lu, idto=%lu\n", (unsigned long)m_uId, (unsigned long)m_teamsAvailable,(unsigned long) m_robotsPerTeam, (unsigned long)m_idRangeFrom, (unsigned long)m_idRangeTo);
+	gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam, m_idRangeFrom, m_idRangeTo); // needs to not do this in grid game constructor!
     */
+
+	printf("id=%lu, teams=%lu, robots=%lu, idfrom=%lu, idto=%lu\n", (unsigned long)m_uId, (unsigned long)m_teamsAvailable,(unsigned long) m_robotsPerTeam, (unsigned long)m_idRangeFrom, (unsigned long)m_idRangeTo);
+ 
     // parameters: gridid, num_of_teams, robots_per_team, id_from, id_to
-    //gridGameInstance = new GridGame(1, 2, 5, 10, 19);
-    /*GridGame* gridGameInstance2 = new GridGame(2, 2, 5, 20, 29);
+    gridGameInstance = new GridGame(1, 2, 25000, 10, 50009);
+    GridGame* gridGameInstance2 = new GridGame(2, 2, 5, 20, 29);
 
     Msg_RobotInfo newrobot;
     newrobot.robotid = 400;
@@ -52,13 +54,13 @@ int GridServer::initGridGame()
     //std::vector<robot_info>* robot_info_vector;
     //gridGameInstance->initializeTeam(teams, robot_info_vector);
     DEBUGPRINT("=====Printing initial population of grid1 after initializing gridGameInstance\n");
-    gridGameInstance->printPopulation();
+    //gridGameInstance->printPopulation();
     DEBUGPRINT("=====Printing initial population of grid2 after initializing gridGameInstance\n");
-    gridGameInstance2->printPopulation();
+    //gridGameInstance2->printPopulation();
 
     DEBUGPRINT("=====Unregister Robot\n");
     gridGameInstance->unregisterRobot(1);
-    gridGameInstance->printPopulation();
+    //gridGameInstance->printPopulation();
 
     DEBUGPRINT("=====Get Sensor Data\n");
     gridGameInstance->returnSensorData(robots, sensed_items);
@@ -75,26 +77,29 @@ int GridServer::initGridGame()
     DEBUGPRINT("=====getRobots====\n");
     DEBUGPRINT("Should be depleted false: %d\n", (int)gridGameInstance->robotsDepleted());
     DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
+    /*
     for(std::vector<Msg_InitRobot>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
     {
         DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x, it->y);
     }
-
+    */
     gridGameInstance->getRobots(team_to_get, les_robots);
     DEBUGPRINT("=====getRobots====\n");
     DEBUGPRINT("Should be depleted true: %d\n", (int)gridGameInstance->robotsDepleted());
     DEBUGPRINT("teamid:%d, teamx:%f, teamy:%f\n", teamid, team_x, team_y);
+    /*
     for(std::vector<Msg_InitRobot>::iterator it = les_robots->begin(); it != les_robots->end(); it++)
     {
         DEBUGPRINT("id:%d,x:%f,y:%f\n", it->id, it->x, it->y);
     }
+    */
 
     DEBUGPRINT("=====Printing population after getting all of the robots for robotclient\n");
-    gridGameInstance->printPopulation();
+    //gridGameInstance->printPopulation();
 
     DEBUGPRINT("=====Register Robot\n");
     gridGameInstance->registerRobot(newrobot);
-    gridGameInstance->printPopulation();
+    //gridGameInstance->printPopulation();
 
     DEBUGPRINT("=====Get Sensor Data\n");
     gridGameInstance->returnSensorData(robots, sensed_items);
@@ -126,11 +131,11 @@ int GridServer::initGridGame()
             }
         }
         DEBUGPRINT("=====Printing population for grid 1\n");
-	    gridGameInstance->printPopulation();
+	    //gridGameInstance->printPopulation();
         DEBUGPRINT("=====Printing population for grid 2\n");
 	    gridGameInstance2->printPopulation();
         i++;
-    }*/
+    }
 	return 0;
 }
 
