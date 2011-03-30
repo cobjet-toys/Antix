@@ -527,7 +527,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             // check if the robots new position is in a new grid. If it is, we must remove the robot
             // from the grids population, and set the gridid in the Msg_RobotInfo, so the robotclient
             // can fix the mapping
-            if( temp.x_pos > m_rightBoundary && !(temp.x_pos > (m_WorldSize - robot_SensorRange)) )
+            if( outOfBoundsRight(temp) )
             {
                 // set the robot to the appropriate grid
                 temp.gridid = m_RightGrid;
@@ -536,8 +536,8 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
 
                 DEBUGPRINT("Robot has left this grid on the right side! Removing it from population\n");
 
-            }
-            else if( temp.x_pos < m_leftBoundary && !(temp.x_pos < (0.0f + robot_SensorRange)) )
+            } //&& !(temp.x_pos < (0.0f + robot_SensorRange)) 
+            else if( outOfBoundsLeft(temp) )
             {
                 // set the robot to the appropriate grid
                 temp.gridid = m_LeftGrid;
@@ -555,17 +555,20 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             results->push_back(temp);
 
             // check if robots are in the boundary zone
-            if(temp.x_pos > m_rightInnerBoundary)
+            if( inRightInnerBoundary(temp) || outOfBoundsRight(temp) )
             {
                 right_robots->push_back(temp);
-                DEBUGPRINT("Adding this robotid %d to the \"right_robots\" vector because it is in the boundary\n", temp.robotid);
+                DEBUGPRINT("Adding this robotid %d to the \"right_robots\" \
+                    vector because it is in the boundary\n or leaving our grid", temp.robotid);
             }
-            else if(temp.x_pos < m_leftInnerBoundary)
+            else if( inLeftInnerBoundary(temp) || outOfBoundsLeft(temp) )
             {
                 left_robots->push_back(temp);
-                DEBUGPRINT("Adding this robotid %d to the \"left_robots\" vector because it is in the boundary\n", temp.robotid);
+                DEBUGPRINT("Adding this robotid %d to the \"left_robots\" \
+                    vector because it is in the boundary\n or leaving our grid", temp.robotid);
             }
-        }else
+        }
+        else
         {
             DEBUGPRINT("****Robot is not in the population");
         }
@@ -579,6 +582,57 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
     sortPopulation();
 
     return 0;
+}
+
+// Returns 0 if inBounds
+// Returns 1 if moving to Right Grid
+// Returns -1 if moving to Left Grid
+bool GridGame::outOfBoundsLeft(Msg_RobotInfo& robot)
+{
+    if(m_GridId == 1)
+    {
+        if(robot.x_pos > m_WorldSize - robot_SensorRange)
+        {
+            return true;
+        }
+    }
+    else
+    {
+        if(robot.x_pos < m_leftBoundary)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool GridGame::outOfBoundsRight(Msg_RobotInfo& robot)
+{
+    if(m_GridId == m_NumGrids)
+    {
+        if(robot.x_pos < 0.0f + robot_SensorRange)
+        {
+            return true;
+        }
+    }
+    else
+    {
+        if(robot.x_pos > m_rightBoundary)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool GridGame::inLeftInnerBoundary(Msg_RobotInfo& robot)
+{
+    return (robot.x_pos > m_leftBoundary && robot.x_pos < m_leftInnerBoundary);
+}
+
+bool GridGame::inRightInnerBoundary(Msg_RobotInfo& robot)
+{
+    return (robot.x_pos < m_rightBoundary && robot.x_pos > m_rightInnerBoundary);
 }
 
 int GridGame::updateRobots(RobotInfoList& robots)

@@ -415,7 +415,7 @@ int GridServer::handler(int fd)
 					    exit(0);
 					} 
 					
-					DEBUGPRINT("got all robot <= sensory data total of %zu robots with %zu sensory objects\n",
+					DEBUGPRINT("got all robot <= sensory data total of %d robots with %d sensory objects\n",
 					            l_robotsTotal, l_totalSensed);
 					
 					Msg_header l_header = {SENDER_GRIDSERVER, MSG_RESPONDSENSORDATA}; // header for response
@@ -560,7 +560,7 @@ int GridServer::handler(int fd)
                     pack(l_ResultsBuffer+l_Offset, Msg_MsgSize_format, l_Size.msgSize);
                     l_Offset += l_Size.size;
 
-                    DEBUGPRINT("LSize %zu\n", l_Size.msgSize);
+                    DEBUGPRINT("LSize %d\n", l_Size.msgSize);
                     for (int i = 0; i < l_Size.msgSize; i++)
                     {
                         pack(l_ResultsBuffer+l_Offset, Msg_RobotInfo_format, l_Results[i].robotid, l_Results[i].x_pos, l_Results[i].y_pos, l_Results[i].speed, l_Results[i].angle, l_Results[i].puckid, l_Results[i].gridid);
