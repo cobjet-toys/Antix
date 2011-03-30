@@ -99,15 +99,20 @@ def start_process(name, **kwargs):
 def build_binary(name):
     script = "cd " + PATH
     if name is "clock":
-        script += CLOCK_BUILD_DIR + "; " + CLOCK_BUILD_COMMAND
+        script += CLOCK_BUILD_DIR + "; rm build/release/clock.bin; rm build/release/obj/*; "
+        script += CLOCK_BUILD_COMMAND
     elif name is "client":
-        script += ROBOT_CLIENT_BUILD_DIR + "; " + ROBOT_CLIENT_BUILD_COMMAND
+        script += ROBOT_CLIENT_BUILD_DIR + "; rm build/release/robot.bin; rm build/release/obj/*; "
+        script += ROBOT_CLIENT_BUILD_COMMAND
     elif name is "grid":
-        script += GRID_BUILD_DIR + "; " + GRID_BUILD_COMMAND
+        script += GRID_BUILD_DIR + "; rm build/release/grid.bin; rm build/release/obj/*; "
+        script += GRID_BUILD_COMMAND
     elif name is "drawer":
-        script += DRAWER_BUILD_DIR + "; " + DRAWER_BUILD_COMMAND
+        script += DRAWER_BUILD_DIR + "; rm build/release/drawer.bin; rm build/release/obj/*; "
+        script += DRAWER_BUILD_COMMAND
     elif name is "controller":
-        script += CTRL_CLIENT_BUILD_DIR + "; " + CTRL_CLIENT_BUILD_COMMAND
+        script += CTRL_CLIENT_BUILD_DIR + "; rm build/release/controller.bin; rm build/release/obj/*; "
+        script += CTRL_CLIENT_BUILD_COMMAND
         
     print "Running: " + script
 
