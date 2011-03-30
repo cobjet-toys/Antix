@@ -502,7 +502,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             DEBUGPRINT("Previous x: %f y: %f\n", l_Robot->getX(), l_Robot->getY());
             
             // TODO: Need to handle robots wrapping around both left and right, up and down
-            float new_ypos = l_Robot->getY() + 0.1;
+            float new_ypos = l_Robot->getY();
             if (new_ypos > m_WorldSize)
             {
                 new_ypos -= m_WorldSize;

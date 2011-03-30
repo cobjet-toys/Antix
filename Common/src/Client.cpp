@@ -179,7 +179,7 @@ int Network::Client::start()
 	{
       	int nfd;		
 		nfd = epoll_wait(m_epfd, e, 1, 500);
-        printf("nfd: %i\n", nfd);
+        DEBUGPRINT("nfd: %i\n", nfd);
         for (int i = 0; i < nfd; i++)
         {    
             if (e[i].events & EPOLLIN)

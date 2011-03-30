@@ -2,7 +2,7 @@
 #define CONFIG_H_
 
 #define DEBUG true
-//#define RELEASE
+#define RELEASE
 
 #ifdef RELEASE  
 #define DEBUGPRINT(format, args...) ((void)0)
