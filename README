@@ -92,7 +92,7 @@ MANUAL RUN SEQUENCE
 
       How to: 
 
-	  ./drawer.bin -f {{config file}} -p {{port}}
+	  ./drawer.bin -f {{config file}}
 
       Configuration file:
 
@@ -105,5 +105,5 @@ MANUAL RUN SEQUENCE
 	  TOTAL_NUM_PUCKS {{integer}}
 	  [ FOV_ANGLE {{float}} ]
 	  [ FOV_RANGE {{float}} ]
-	  GRID {{IP ADDRESS}} {{port}}
+	  GRID {{id}} {{IP ADDRESS}} {{port}}
 
