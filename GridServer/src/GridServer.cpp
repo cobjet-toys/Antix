@@ -42,7 +42,7 @@ int GridServer::initGridGame()
     newrobot.x_pos = 2.5;
     newrobot.y_pos = 2.5;
 
-    std::vector<int> robots;
+    std::vector<unsigned int> robots;
     robots.push_back(10);
     robots.push_back(14);
 
@@ -63,7 +63,8 @@ int GridServer::initGridGame()
     //gridGameInstance->printPopulation();
 
     DEBUGPRINT("=====Get Sensor Data\n");
-    gridGameInstance->returnSensorData(robots, sensed_items);
+    int totalSensed = 0;
+    gridGameInstance->returnSensorData(robots, sensed_items, totalSensed);
 
     // TEST for getRobots
     int teamid;
@@ -101,9 +102,6 @@ int GridServer::initGridGame()
     gridGameInstance->registerRobot(newrobot);
     //gridGameInstance->printPopulation();
 
-    DEBUGPRINT("=====Get Sensor Data\n");
-    gridGameInstance->returnSensorData(robots, sensed_items);
-	gridGameInstance->printPopulation();
 
     DEBUGPRINT("=====Process action and update robots\n");
     Msg_Action process_robot;
@@ -131,7 +129,7 @@ int GridServer::initGridGame()
             }
         }
         DEBUGPRINT("=====Printing population for grid 1\n");
-	    //gridGameInstance->printPopulation();
+	    gridGameInstance->printPopulation();
         DEBUGPRINT("=====Printing population for grid 2\n");
 	    gridGameInstance2->printPopulation();
         i++;
