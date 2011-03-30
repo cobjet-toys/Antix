@@ -29,7 +29,7 @@ using std::make_pair;
 typedef pair<int, GameObject*> ObjectIDPair;
 typedef pair<int, std::vector<sensed_item> > ObjectPair;
 
-GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_from, int id_to)
+GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_from, int id_to, float homeRadius, float worldSize, int numGrids, int puckTotal)
 {
 
     #ifdef DEBUG
@@ -52,10 +52,12 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
 
 
     //TODO: These values either will be read from config, or passed into constructor
-    home_Radius = 0.1;
-    m_WorldSize = 10;
-	m_NumGrids = 2;
-    m_PuckTotal = 6;
+    home_Radius = homeRadius;
+    m_WorldSize = worldSize;
+	m_NumGrids = numGrids;
+    m_PuckTotal = puckTotal;
+    
+    DEBUGPRINT("World info %f %f %i %i\n", home_Radius, m_WorldSize, m_NumGrids, m_PuckTotal);
 
     // calculate boundary zones
     float max_grid_size = m_WorldSize/m_NumGrids;
@@ -705,6 +707,16 @@ int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results)
 const float& GridGame::getWorldSize() const
 {
     return m_WorldSize;
+}
+
+const float& GridGame::getLeftBoundary() const
+{
+    return m_leftBoundary;
+}
+
+const float& GridGame::getRightBoundary() const
+{
+    return m_rightBoundary;
 }
 
 void GridGame::printPopulation(){

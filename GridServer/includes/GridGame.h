@@ -20,7 +20,7 @@ public:
      * All initializatoin of the game happens here.
      * Config options etc...
      */
-     GridGame(int gridid, int num_of_teams, int robots_per_team, int id_from, int id_to);
+     GridGame(int gridid, int num_of_teams, int robots_per_team, int id_from, int id_to, float homeRadius, float worldSize, int numGrids, int puckTotal);
     
     /**
      * Dtor. Delete the pucks and teams.
@@ -82,6 +82,16 @@ public:
      * Return the max world size.
      */
     const float& getWorldSize() const;
+
+    /**
+     * Return the left boundary.
+     */
+    const float& getLeftBoundary() const;
+
+    /**
+     * Return the right boundary.
+     */
+    const float& getRightBoundary() const;
 
     /**
      * Add a robot to the general population.

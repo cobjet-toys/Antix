@@ -34,6 +34,11 @@ private:
 	uint32_t m_idRangeFrom;
 	uint32_t m_idRangeTo;
 
+	float m_homeRadius; // information for the GridGame/GridClient
+    float m_worldSize;
+	int m_numGrids;
+    int m_puckTotal;
+
 	int m_robotsPerTeam;
 	int m_teamsAvailable;
 	int m_robotsAvailable;
