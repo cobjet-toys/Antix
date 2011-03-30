@@ -10,4 +10,6 @@
 #define DEBUGPRINT printf
 #endif
 
+#define ERRORPRINT printf
+
 #endif
