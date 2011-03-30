@@ -105,7 +105,7 @@ int RobotClient::sendRobotRequests()
         for (int i = 0; i < l_Size.msgSize;i++)
         {
             l_Req.id = l_RobotIds[i]; //REPLACE WITH ACTUAL ROBOT ID l_Req.id = l_RobotIds[i];
-            DEBUGPRINT("Add id %d to request.", l_Req.id);
+            DEBUGPRINT("Add id %d to request.\n", l_Req.id);
             if (pack(l_Buffer+l_CurrBuffIndex, Msg_RequestSensorData_format, l_Req.id) != l_Req.size)
             {
                 DEBUGPRINT("Error packing sensor request into the buffer\n");
@@ -303,7 +303,8 @@ int RobotClient::handler(int fd)
                 break;
                 case(MSG_RESPONDPROCESSACTION) :
                 {
-                    DEBUGPRINT("Received action responese\n");
+                    int gridId = m_GridFdToId[fd];
+                    DEBUGPRINT("Received action responses from grid: %d\n", gridId);
                     
                     Msg_MsgSize l_Size;
                     Msg_RobotInfo l_Result;
@@ -360,7 +361,6 @@ int RobotClient::handler(int fd)
                 case(MSG_RESPONDSENSORDATA) :
                 {
                     std::vector <std::pair <uid, std::vector<Msg_SensedObjectGroupItem > > > l_SensedInfo;
-                    //std::map<uid, std::vector<Msg_SensedObjectGroupItem> > l_SensedInfo;
 
                     //Receive the total number of robots we are getting sens info for.
                     Msg_MsgSize l_NumRobots;
@@ -384,9 +384,6 @@ int RobotClient::handler(int fd)
 
                         DEBUGPRINT("Robot %d, with ID %d, has sensed %d objects\n",
                                 i, l_RoboHeader.id, l_RoboHeader.objectCount);
-                        
-                        //HACKITY HACK - Increment the id so the robotclient and grid server ids coincide
-                        l_RoboHeader.id += 1;
 
                         
                         std::vector<Msg_SensedObjectGroupItem> l_SensedRobos;
@@ -414,46 +411,45 @@ int RobotClient::handler(int fd)
                     robotGameInstance->receiveSensorData(&l_SensedInfo);
 
                     m_ReadyGrids++; 
-                    DEBUGPRINT("Recevied sensory data from a grid. %d Ready, %zu total\n", m_ReadyGrids, m_Grids.size());
+                    DEBUGPRINT("Received sensory data from a grid. %d Ready, %zu total\n", m_ReadyGrids, m_Grids.size());
                     if (m_ReadyGrids == m_Grids.size())
                     {   
                         DEBUGPRINT("Finished receiving sensory info.\n");
-
-                        std::map<int, int>::const_iterator end = m_GridIdToFd.end();
-                        for(std::map<int, int>::const_iterator it = m_GridIdToFd.begin(); it != end; it++)
+                        std::vector<Msg_Action> l_RoboActions;
+                        std::vector<int>::const_iterator end = m_Grids.end();
+                        DEBUGPRINT("Getting actions from simulation\n");
+                        for(std::vector<int>::const_iterator it = m_Grids.begin(); it != end; it++)
                         {
-                            std::vector<Msg_Action> l_RoboActions;
-                            std::map<int, int>::const_iterator end = m_GridIdToFd.end();
-                            DEBUGPRINT("Getting actions from simulation\n");
-                            for(std::map<int, int>::const_iterator it = m_GridIdToFd.begin(); it != end; it++)
+                            int gridId = m_GridFdToId[(*it)];
+                            int gridFd = (*it);
+                            DEBUGPRINT("Grid ID: %d, Grid FD: %d\n", gridId, gridFd);
+                            
+                            robotGameInstance->sendAction(gridId, &l_RoboActions);
+                            DEBUGPRINT("Received %zu actions for grid %d \n", l_RoboActions.size(), gridId);
+                            
+                            Msg_header l_Header;
+                            Msg_MsgSize l_Size = {l_RoboActions.size()};
+                            Msg_Action l_Action;
+
+                            unsigned int l_MessageSize = l_Header.size+l_Size.size+ (l_Action.size*l_RoboActions.size());
+                            unsigned char l_ActionBuffer[l_MessageSize];
+                            unsigned int l_Offset = 0;
+
+                            packHeaderMessage(l_ActionBuffer+l_Offset, SENDER_CLIENT, MSG_PROCESSACTION);
+                            l_Offset += l_Header.size;
+
+                            pack(l_ActionBuffer+l_Offset, Msg_MsgSize_format, l_Size.msgSize);
+                            l_Offset += l_Size.size;
+
+                            for (int i = 0; i < l_RoboActions.size(); i++)
                             {
-                                robotGameInstance->sendAction((*it).first, &l_RoboActions);
-                                DEBUGPRINT("Received %zu actions for grid %d \n", l_RoboActions.size(), (*it).first);
-                                //TODO SEND ACTIONS.
-                                Msg_header l_Header;
-                                Msg_MsgSize l_Size = {l_RoboActions.size()};
-                                Msg_Action l_Action;
-
-                                unsigned int l_MessageSize = l_Header.size+l_Size.size+ (l_Action.size*l_RoboActions.size());
-                                unsigned char l_ActionBuffer[l_MessageSize];
-                                unsigned int l_Offset = 0;
-
-                                packHeaderMessage(l_ActionBuffer+l_Offset, SENDER_CLIENT, MSG_PROCESSACTION);
-                                l_Offset += l_Header.size;
-
-                                pack(l_ActionBuffer+l_Offset, Msg_MsgSize_format, l_Size.msgSize);
-                                l_Offset += l_Size.size;
-
-                                for (int i = 0; i < l_RoboActions.size(); i++)
-                                {
-                                    pack(l_ActionBuffer+l_Offset, Msg_Action_format, l_RoboActions[i].robotid, l_RoboActions[i].action, l_RoboActions[i].speed,l_RoboActions[i].angle);
-                                    l_Offset += l_Action.size;
-                                }
-                                sendWrapper(m_serverList[(*it).second],l_ActionBuffer, l_MessageSize);
-                                DEBUGPRINT("Sent process action request to grid server\n");
+                                pack(l_ActionBuffer+l_Offset, Msg_Action_format, l_RoboActions[i].robotid, l_RoboActions[i].action, l_RoboActions[i].speed,l_RoboActions[i].angle);
+                                l_Offset += l_Action.size;
                             }
-
-                       } 
+                            sendWrapper(m_serverList[(*it)],l_ActionBuffer, l_MessageSize);
+                            DEBUGPRINT("Sent process action request to grid server\n");
+                            l_RoboActions.clear();
+                        }
                         m_ReadyGrids = 0;
                     }
                      

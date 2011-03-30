@@ -8,6 +8,7 @@ global FIRST_FREE_MACHINE
 global current_clock_port
 global current_grid_port
 global current_drawer_port
+global FILE_ITER
 
 def start_process(name, **kwargs):
     machine, machine_ip = get_free_computer()
@@ -15,10 +16,13 @@ def start_process(name, **kwargs):
         print "No more free machines, exiting."
         sys.exit()
     
-    script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH
+    if START_LOCALLY:
+        script = "nohup " + PATH
+    else:
+        script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH
     if name is "clock":
         global current_clock_port
-        script += CLOCK_RUN_COMMAND + " -p " + str(current_clock_port)
+        script += CLOCK_RUN_COMMAND + " -p " + str(current_clock_port) + " -c " + str(NUM_ROBOT_CLIENTS)
         current_clock_port += 1
     elif name is "client":
         # setup full config file for robot client
@@ -35,12 +39,24 @@ def start_process(name, **kwargs):
         current_grid_port += 1
     elif name is "drawer":
         global current_drawer_port
-        script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG + " -p " + str(current_drawer_port)
+        if START_LOCALLY:
+            script = PATH
+            script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG + " -p " + str(current_drawer_port)
+        else:
+            script = "ssh -X -p 24 " + USER + "@" + machine + " '" + PATH
+            script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG + " -p " + str(current_drawer_port)
+            script += "'"
         current_drawer_port += 1
     elif name is "controller":
         script += CTRL_CLIENT_RUN_COMMAND + " -f " +PATH + "Controller/" + GRIDS_TMP
 
-    script += " > antix." + machine + ".out &'"
+    if name is not "drawer":
+        if START_LOCALLY:
+            global FILE_ITER
+            script += " > ~/antix." + name + str(FILE_ITER) + ".out &"
+            FILE_ITER += 1
+        else:
+            script += " > antix." + machine + ".out &'"
     print "Running: " + script
 
     try:
@@ -83,15 +99,20 @@ def start_process(name, **kwargs):
 def build_binary(name):
     script = "cd " + PATH
     if name is "clock":
-        script += CLOCK_BUILD_DIR + "; " + CLOCK_BUILD_COMMAND
+        script += CLOCK_BUILD_DIR + "; rm build/release/clock.bin; rm build/release/obj/*; "
+        script += CLOCK_BUILD_COMMAND
     elif name is "client":
-        script += ROBOT_CLIENT_BUILD_DIR + "; " + ROBOT_CLIENT_BUILD_COMMAND
+        script += ROBOT_CLIENT_BUILD_DIR + "; rm build/release/robot.bin; rm build/release/obj/*; "
+        script += ROBOT_CLIENT_BUILD_COMMAND
     elif name is "grid":
-        script += GRID_BUILD_DIR + "; " + GRID_BUILD_COMMAND
+        script += GRID_BUILD_DIR + "; rm build/release/grid.bin; rm build/release/obj/*; "
+        script += GRID_BUILD_COMMAND
     elif name is "drawer":
-        script += DRAWER_BUILD_DIR + "; " + DRAWER_BUILD_COMMAND
+        script += DRAWER_BUILD_DIR + "; rm build/release/drawer.bin; rm build/release/obj/*; "
+        script += DRAWER_BUILD_COMMAND
     elif name is "controller":
-        script += CTRL_CLIENT_BUILD_DIR + "; " + CTRL_CLIENT_BUILD_COMMAND
+        script += CTRL_CLIENT_BUILD_DIR + "; rm build/release/controller.bin; rm build/release/obj/*; "
+        script += CTRL_CLIENT_BUILD_COMMAND
         
     print "Running: " + script
 
@@ -200,6 +221,8 @@ GRIDS_TMP_FILE = open(GRIDS_TMP, 'w', 0) # 0 means no buffer
 GRIDS_IDS_TMP_FILE = open(GRIDS_IDS_TMP, 'w', 0) # 0 means no buffer
 
 FIRST_FREE_MACHINE = 0
+
+FILE_ITER = 0
 
 # copy the clock/port setting
 current_clock_port = int(CLOCK_PORT)

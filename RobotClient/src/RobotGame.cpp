@@ -61,9 +61,9 @@ int RobotGame::requestSensorData(int grid_id, IDList* robot_ids)
     return 0;
 }
 
-int RobotGame::receiveSensorData(vector< std::pair<uid, std::vector<Msg_SensedObjectGroupItem> > >* sensor_data)
+int RobotGame::receiveSensorData(vector< std::pair<uid, std::vector<Msg_SensedObjectGroupItem> > >* sensorData)
 {
-	if(sensor_data == NULL)
+	if(sensorData == NULL)
 	{
 		return -1;
 	}
@@ -72,14 +72,18 @@ int RobotGame::receiveSensorData(vector< std::pair<uid, std::vector<Msg_SensedOb
     // there may be some trouble with pieceing more sensor data together for edge robots
     
     vector< std::pair<uid, SensedItemsList> >::iterator iter;
-    for(iter = sensor_data->begin(); iter != sensor_data->end(); iter++)
+    for(iter = sensorData->begin(); iter != sensorData->end(); iter++)
     {
         DEBUGPRINT("robo id: %d\n", (*iter).first);
-        //cout << (*iter).first << " " << (*iter).second.at(0).id << endl;
-        int robot_id = (*iter).first;
-        Robot* l_robotp = m_robots[robot_id];
-        DEBUGPRINT("Updating sensors for robo %d\n", (*iter).first);
-       
+        uid robotId = (*iter).first;
+        Robot* l_robotp = m_robots[robotId];
+        if(l_robotp == NULL)
+        {
+            DEBUGPRINT("Error: Invalid robotId %d\n", robotId);
+            return -1;
+        }
+        
+        DEBUGPRINT("Updating sensors for robo %d\n", robotId);       
         l_robotp->updateSensors( (*iter).second );
     }
 
@@ -102,7 +106,7 @@ int RobotGame::sendAction(int grid_id, vector<Msg_Action>* robot_actions)
     RobotList robots = m_robotsByGrid[grid_id];
     RobotList::iterator iter;
    
-    DEBUGPRINT("Gettin actions for grid id %d with %zu robots\n", grid_id, robots.size()); 
+    DEBUGPRINT("Getting actions for grid id %d with %zu robots\n", grid_id, robots.size()); 
     // Loop through the robots, and get an action to do for each robot
     for(iter = robots.begin(); iter != robots.end(); iter++)
     {
@@ -124,27 +128,37 @@ int RobotGame::actionResult(vector<Msg_RobotInfo>* results)
         uid robotId = (*iter).robotid;
         Msg_RobotInfo result = (*iter);
         Robot* l_robotp = m_robots[robotId];
+        if(l_robotp == NULL)
+        {
+            DEBUGPRINT("Error: Invalid robotId %d for this grid", robotId);
+            return -1;
+        }
+        
         // TODO Currently our action_result message does not send a rotational velocity
         l_robotp->setSpeed( new Math::Speed( result.speed, 0.0) );
         l_robotp->setPosition( result.x_pos, result.y_pos, result.angle );
         
         int oldGridId = m_robotGrids.find(robotId)->second;
         int newGridId = result.gridid;
-        vector<Robot*>::iterator iter = find(m_robotsByGrid[oldGridId].begin(),
-                                             m_robotsByGrid[oldGridId].end(),
-                                             l_robotp);
-        if(iter != m_robotsByGrid[oldGridId].end())
+
+        if(oldGridId != newGridId)
         {
+            DEBUGPRINT("Moving robot %d from OldGridId: %d, to new gridId, %d\n",robotId, oldGridId, newGridId);
             // Remove from the reference to oldGrid
-            m_robotsByGrid[oldGridId].erase(iter);
-            m_robotsByGrid[newGridId].push_back(l_robotp);
-        }
-        else
-        {
-            //not found
-            DEBUGPRINT("Couldn't find robot %d with gridId %d", robotId, oldGridId);
+            std::vector<Robot*>::iterator toRemove = std::remove( m_robotsByGrid[oldGridId].begin(),
+                                                                  m_robotsByGrid[oldGridId].end(),
+                                                                  l_robotp );
+            if((*toRemove) != NULL)
+            {
+                m_robotsByGrid[oldGridId].erase( toRemove );
+                m_robotsByGrid[newGridId].push_back(l_robotp);
+            }
+            else
+            {
+                DEBUGPRINT("Robot not found in oldGrid %d", oldGridId);
+            }
         }
     }
-    
     return 0;
 }
+

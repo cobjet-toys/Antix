@@ -59,28 +59,18 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
 
     // calculate boundary zones
     float max_grid_size = m_WorldSize/m_NumGrids;
-    m_leftBoundary = gridid - 1;
+    m_leftBoundary = (gridid - 1)*max_grid_size;
     m_rightBoundary = m_leftBoundary + max_grid_size;
     m_leftInnerBoundary = m_leftBoundary + robot_SensorRange; 
     m_rightInnerBoundary = m_rightBoundary - robot_SensorRange; 
 
     // determine the left and right grid ids
-    if (m_GridId == 1)
-    {
-        m_LeftGrid = m_NumGrids;
-        m_RightGrid = m_GridId + 1;
-    }
-    else if(m_GridId == m_NumGrids)
-    {
-        m_LeftGrid = m_GridId - 1;
-        m_RightGrid = 1;
-    }
+    m_LeftGrid = (m_GridId - 1 == 0) ? m_NumGrids : m_GridId - 1;
+    m_RightGrid = (m_GridId + 1 > m_NumGrids) ? 1 : m_GridId + 1;
 
-    #ifdef DEBUG
     DEBUGPRINT("Left grid: %d Right grid: %d\n", m_LeftGrid, m_RightGrid);
     DEBUGPRINT("Left boundary: %f Left inner boundary: %f\n", m_leftBoundary, m_leftInnerBoundary);
     DEBUGPRINT("Right boundary: %f Right inner boundary: %f\n", m_rightBoundary, m_rightInnerBoundary);
-    #endif
 
     // Safety
     m_Population.clear();
@@ -109,12 +99,16 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
         if (i%robots_per_team == 0)
         {
             //std::cout << "WTF2 id:" <<i << "robots per team: "<< robots_per_team << std::endl;
-            Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
+            Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize,
+                                                                             m_leftBoundary, 
+                                                                             m_rightBoundary);
             l_team = new Team(l_RobotPosition, i/robots_per_team);
             m_Teams.push_back(l_team);
         }
 
-        Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
+        Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, 
+                                                                         m_leftBoundary,
+                                                                         m_rightBoundary);
         Game::Robot* l_Robot = new Robot(l_RobotPosition, i );
         addObjectToPop(l_Robot);
     }
@@ -131,8 +125,9 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     {
        std::cout << i << std::endl;
        //Get a random location.
-       Math::Position* l_PuckPos = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
-
+       Math::Position* l_PuckPos = Math::Position::randomPosition(m_WorldSize, 
+                                                                  m_leftBoundary,
+                                                                  m_rightBoundary);
        //Create the puck.
        Puck* l_Puck = new Puck(l_PuckPos, i);
        addObjectToPop(l_Puck);
@@ -323,33 +318,40 @@ int GridGame::unregisterRobot(unsigned int robotid)
 
 }
 
-///int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::map<int, std::vector<sensed_item> >* sensed_items_map)
-int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::vector< RobotSensedObjectsPair >* sensor_data)
+int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
+                               std::vector< RobotSensedObjectsPair >* sensor_data,
+                               int& totalSensed)
 {
-    DEBUGPRINT("====Entering returnSensorData method");
-
+    DEBUGPRINT("====Entering returnSensorData method\n");
+    /*
     #ifdef DEBUG
-
-    for( std::map<GameObject*, int>::iterator it = m_YObjects.begin(); it != m_YObjects.end(); it++){
-
-        std::cout << it->first << " => " << it->second << std::endl;
-
-    }
-
-    #endif
-
-    //std::map<int, std::vector<sensed_item> > l_sensed_items_map; 
-
-    std::vector<int>::iterator clientend = robot_ids_from_client.end();
-    for(std::vector<int>::iterator it = robot_ids_from_client.begin(); it != clientend; it++)
+    for(std::map<GameObject*, int>::iterator it = m_YObjects.begin(); it != m_YObjects.end(); it++)
     {
+        std::cout << it->first << " => " << it->second << std::endl;
+    }
+    #endif
+    */
+
+    printPopulation();
+    
+    std::vector<uid>::iterator clientend = robot_ids_from_client.end();
+    for(std::vector<uid>::iterator it = robot_ids_from_client.begin(); it != clientend; it++)
+    {
+        uid robotId = (*it);
+        DEBUGPRINT("Getting sensor data for robotid: %d\n", robotId);
         // grab GameObject from int id
-        GameObject* tempobj = m_MapPopulation[(*it)]; 
+        GameObject* tempobj = m_MapPopulation[robotId];
+        
+        if(tempobj == NULL)
+        {
+            DEBUGPRINT("RobotID %d not found in population, exiting.\n", robotId);
+            return -1;
+        }
 
         // grab vector position in sorted population
         int position = m_YObjects[tempobj];
 
-        printf("position for gameobject id %d: %d\n", (*tempobj).m_id, position); 
+        //printf("position for gameobject id %d: %d\n", (*tempobj).m_id, position); 
 
         GameObject* position_obj = m_Population[position];
 
@@ -359,25 +361,30 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::vect
 
         while ( counter >= 0 )
         {
-            if ( (tempobj->getY() - position_obj->getY()) < robot_SensorRange ){
-
-                if ( abs(tempobj->getX() - position_obj->getX()) < robot_SensorRange ){
+            if ( (tempobj->getY() - position_obj->getY()) < robot_SensorRange )
+            {
+                if ( abs(tempobj->getX() - position_obj->getX()) < robot_SensorRange )
+                {
                     Msg_SensedObjectGroupItem temp_sensed;
                     temp_sensed.id = (*position_obj).m_id;
                     temp_sensed.x = position_obj->getX();
                     temp_sensed.y = position_obj->getY();
+
                     // if the game object found in the sensor range is the same
                     // as the robot we are looking for, do not add the same robot to
                     // its own sensed objects
                     if (tempobj->getId() != position_obj->getId())
                     {
                         temp_vector.push_back( temp_sensed );
+                        totalSensed++;
                     }
+                    
                 }
                 counter--;
                 position_obj = m_Population[counter];
             }
-            else{
+            else
+            {
                 break;
             }
         }
@@ -385,27 +392,33 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::vect
         counter = position;
         position_obj = m_Population[position];
 
-        DEBUGPRINT("Counter: %d - Size client list: %zu\n", counter, robot_ids_from_client.size() );
+        //DEBUGPRINT("Counter: %d - Size client list: %zu\n", counter, robot_ids_from_client.size() );
 
         while ( counter < m_Population.size() )
         {
-            printf("here1\n");
-            if ( (position_obj->getY() - tempobj->getY()) < robot_SensorRange ){
-                printf("here2\n");
-
-                if ( abs(position_obj->getX() - tempobj->getX()) < robot_SensorRange ){
-                    printf("here3\n");
+            if ( (position_obj->getY() - tempobj->getY()) < robot_SensorRange )
+            {
+                if ( abs(position_obj->getX() - tempobj->getX()) < robot_SensorRange )
+                {
                     Msg_SensedObjectGroupItem temp_sensed;
                     temp_sensed.id = (*position_obj).m_id;
                     temp_sensed.x = position_obj->getX();
                     temp_sensed.y = position_obj->getY();
-                    
-                    temp_vector.push_back( temp_sensed );
+
+                    // if the game object found in the sensor range is the same
+                    // as the robot we are looking for, do not add the same robot to
+                    // its own sensed objects
+                    if (tempobj->getId() != position_obj->getId())
+                    {
+                        temp_vector.push_back( temp_sensed );
+                        totalSensed++;
+                    }
                 }
                 counter++;
                 position_obj = m_Population[counter];
             }
-            else{
+            else
+            {
                 break;
             }
         }
@@ -446,7 +459,7 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::vect
     #endif
     
 
-    return 1;
+    return 0;
 
 }
 
@@ -475,8 +488,8 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
         DEBUGPRINT("Size 0");
         RobotInfoList left_robots;
         RobotInfoList right_robots;
-        std::pair<int, RobotInfoList > left_robots_pair = std::make_pair(m_LeftGrid, left_robots);
-        std::pair<int, RobotInfoList > right_robots_pair = std::make_pair(m_RightGrid, right_robots);
+        std::pair<int, RobotInfoList > left_robots_pair = std::make_pair(0, left_robots);
+        std::pair<int, RobotInfoList > right_robots_pair = std::make_pair(1, right_robots);
         robots_to_pass->push_back(left_robots_pair);
         robots_to_pass->push_back(right_robots_pair);
     }
@@ -542,17 +555,21 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
 
                 DEBUGPRINT("Robot has left this grid on the left side! Removing it from population\n");
             }
+            else
+            {
+                temp.gridid = m_GridId;
+            }
 
             // add the robot to the results (which will be processed by the client who requested
             results->push_back(temp);
 
             // check if robots are in the boundary zone
-            if( (temp.x_pos > m_rightInnerBoundary) && (temp.x_pos <= m_rightBoundary) )
+            if(temp.x_pos > m_rightInnerBoundary)
             {
                 right_robots->push_back(temp);
                 DEBUGPRINT("Adding this robotid %d to the \"right_robots\" vector because it is in the boundary\n", temp.robotid);
             }
-            else if( (temp.x_pos < m_leftInnerBoundary) && (temp.x_pos >= m_leftBoundary ) )
+            else if(temp.x_pos < m_leftInnerBoundary)
             {
                 left_robots->push_back(temp);
                 DEBUGPRINT("Adding this robotid %d to the \"left_robots\" vector because it is in the boundary\n", temp.robotid);
@@ -668,10 +685,7 @@ int GridGame::removeObjectFromPop(int objectid)
 
 int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results)
 {
-
     std::vector<GameObject*>::iterator endit = m_Population.end();
-
-
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != endit; it++)
     {   
         // Computes robots altered position (Random)
@@ -695,8 +709,7 @@ int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results)
         results->push_back(l_ObjInfo);
     }
     DEBUGPRINT("Done pushing robots to drawer\n");
-
-
+    return 0;
 }
 
 const float& GridGame::getWorldSize() const
@@ -712,4 +725,5 @@ void GridGame::printPopulation(){
 		m_Population[i]->printInfo();
 
 	}
+	return;
 }
