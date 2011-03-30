@@ -304,8 +304,8 @@ int GridGame::registerRobot(Msg_RobotInfo robot)
     // add robot to the population
     addObjectToPop(l_Robot);
 
-    //Sort robots at this point
-    sortPopulation();
+    //Used to sort robots at this point, nevermind that!
+    //sortPopulation();
 
     return 1;
     
@@ -330,7 +330,7 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::vect
 
     #ifdef DEBUG
 
-    for( std::map<GameObject*, int>::iterator it = m_YObjects.begin(); it != m_YObjects.end(); it++){
+    for( std::tr1::unordered_map<GameObject*, int>::iterator it = m_YObjects.begin(); it != m_YObjects.end(); it++){
 
         std::cout << it->first << " => " << it->second << std::endl;
 
@@ -487,7 +487,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
     {
         // grab the robots and update their positions
         DEBUGPRINT("Looking for robot: %d\n", (*it).robotid);
-        std::map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
+        std::tr1::unordered_map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
         if (robot_find != m_MapPopulation.end())
         {
             Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
@@ -578,7 +578,7 @@ int GridGame::updateRobots(RobotInfoList& robots)
     {
         DEBUGPRINT("Entering updateRobot function for loop\n");
         // grab the robots and update their positions
-        std::map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
+        std::tr1::unordered_map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
         if (robot_find == m_MapPopulation.end())
         {
             DEBUGPRINT("***NEW ROBOT\n");

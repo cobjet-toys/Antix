@@ -12,6 +12,8 @@
 #include <vector>
 #include <map>
 #include <stdint.h>
+#include <tr1/unordered_map>
+
 
 class GridGame
 {
@@ -115,11 +117,11 @@ private:
     std::vector<Game::Team*> m_Teams;
 
     //O(1) lookup of robots by id;     
-    std::map<int, Game::GameObject*> m_MapPopulation;
+    std::tr1::unordered_map<int, Game::GameObject*> m_MapPopulation;
 
 
     //O(1) lookup of our sorted vector;     
-    std::map<Game::GameObject*, int> m_YObjects;
+    std::tr1::unordered_map<Game::GameObject*, int> m_YObjects;
 
     //Returns the max window size.
     unsigned int m_WindowSize;
