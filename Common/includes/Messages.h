@@ -209,6 +209,15 @@ typedef struct{
 static const char * Msg_RobotIdRange_format = "ll";
 
 typedef struct{
+	float homeRadius; // information for the GridGame/GridClient
+    float worldSize;
+	uint32_t numGrids;
+    uint32_t puckTotal;
+    static const size_t size = 16; 
+} Msg_WorldInfo;
+static const char * Msg_WorldInfo_format = "ffll";
+
+typedef struct{
 	uint32_t teams;
 	uint32_t robotsPerTeam;
 	static const size_t size = 8;

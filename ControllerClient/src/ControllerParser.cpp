@@ -3,6 +3,7 @@
 #include "Config.h"
 #include "ControllerClient.h"
 #include <stdlib.h>
+#include <unistd.h>
 
 ControllerParser::ControllerParser(): FileParser()
 {
@@ -16,7 +17,8 @@ ControllerParser::~ControllerParser()
 int ControllerParser::handler(std::vector<std::string> commands, void *args)
 {
 	Network::ControllerClient * l_cntlClient = (Network::ControllerClient *) args;
-	DEBUGPRINT("Entering handler\n");
+	DEBUGPRINT("Entering handlers\n");
+
 	if (!commands.empty()) // grid parser
 	{
 		std::string command = commands.at(0);
@@ -38,7 +40,34 @@ int ControllerParser::handler(std::vector<std::string> commands, void *args)
 			l_cntlClient->initClock(ipAddr, port);
 			return (ipAddr != NULL && port != NULL)?0:-1;
 		}		
-		
+		if ( command == "HOME_RADIUS" && commands.size() >= 2)
+		{
+			float radius = atof(commands.at(1).c_str());
+			printf("PARSED: Home radius: %f\n", radius);
+			l_cntlClient->setHomeRadius(radius);
+			return true;
+		}	
+		if ( command == "WORLD_SIZE" && commands.size() >= 2)
+		{
+			float worldSize = atof(commands.at(1).c_str());
+			printf("PARSED: World size: %f\n", worldSize);
+			l_cntlClient->setWorldSize(worldSize);
+			return true;
+		}
+		if ( command == "NUM_GRIDS" && commands.size() >= 2)
+		{
+			int gridSize = atoi(commands.at(1).c_str());
+			printf("PARSED: Number of grids: %i\n", gridSize);
+			l_cntlClient->numGrids(gridSize);
+			return true;
+		}	
+		if ( command == "PUCK_TOTAL" && commands.size() >= 2)
+		{
+			int pucks = atoi(commands.at(1).c_str());
+			printf("PARSED: Number of pucks: %i\n", pucks);
+			l_cntlClient->numPucksTotal(pucks);
+			return true;
+		}								
 		if (command == "#")
 		{
 			DEBUGPRINT("Skipped Comment\n");

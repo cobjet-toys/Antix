@@ -20,14 +20,14 @@ GridServer::GridServer():Server()
 	m_robotsAvailable = 0;
 	m_robotsConfirmed = 0;
 	m_ControllerFd = -1;
-m_teamsConfirmed =0;	
+	m_teamsConfirmed =0;	
 	m_drawerConn = 0;
 	updateDrawerFlag = 0;
 }
 
 int GridServer::initGridGame()
 {
-	gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam, m_idRangeFrom, m_idRangeTo); // needs to not do this in grid game constructor!
+	gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam, m_idRangeFrom, m_idRangeTo, m_homeRadius, m_worldSize, m_numGrids, m_puckTotal); // needs to not do this in grid game constructor!
     /*
 	printf("id=%lu, teams=%lu, robots=%lu, idfrom=%lu, idto=%lu\n", (unsigned long)m_uId, (unsigned long)m_teamsAvailable,(unsigned long) m_robotsPerTeam, (unsigned long)m_idRangeFrom, (unsigned long)m_idRangeTo);
     */
@@ -286,6 +286,8 @@ int GridServer::handler(int fd)
 					Msg_GridId l_gridId;
 					unsigned char l_gridIdBuff[l_gridId.size];
 					Msg_header l_header;
+					Msg_WorldInfo l_worldInfo;
+					unsigned char l_worldInfoBuff[l_worldInfo.size];
 					
 					
 					if (l_curConnection->recv(l_gridIdBuff, l_gridId.size) < 0)
@@ -294,9 +296,20 @@ int GridServer::handler(int fd)
 						return -1;
 					}
 					
-					unpack(l_gridIdBuff, Msg_GridId_format, &m_uId);
+					if (l_curConnection->recv(l_worldInfoBuff, l_worldInfo.size) < 0) 
+					{
+						DEBUGPRINT("GRID_SERVER FAILED:\t Failed to receive world information\n");
+					}
 					
+					unpack(l_gridIdBuff, Msg_GridId_format, &m_uId); // unpack this grid's id
+					unpack(l_worldInfoBuff, Msg_WorldInfo_format, &m_homeRadius, &m_worldSize, &m_numGrids, &m_puckTotal); // unpack all world info
+
+					DEBUGPRINT("World info %f %f %i %i\n", m_homeRadius, m_worldSize, m_numGrids, m_puckTotal);
+
+					// Now grid has it's id, and world info it needs to know about the range 
+
 					Msg_GridRequestIdRage l_reqGridRange;
+					
 					
 					unsigned char l_gridBuff[l_header.size + l_gridId.size + l_reqGridRange.size];
 					
