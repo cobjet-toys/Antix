@@ -38,12 +38,12 @@ public:
     /**
      * Update the objects visible to the robot.
      */
-    void updateSensors( SensedItemsList sensedItems );
+    void updateSensors(SensedItemsList sensedItems );
 
     /**
      * Update the position of the robot.
      */
-    void updatePosition( const float x_pos, const float y_pos);
+    void updatePosition(const float x_pos, const float y_pos);
 
     /**
      * Update the AI - this is what tells the robot what to do.

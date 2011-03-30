@@ -500,15 +500,17 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             temp.robotid = l_Robot->getId();
             temp.x_pos = l_Robot->getX();
             DEBUGPRINT("Previous x: %f y: %f\n", l_Robot->getX(), l_Robot->getY());
+            
+            // TODO: Need to handle robots wrapping around both left and right, up and down
             float new_ypos = l_Robot->getY() + 0.1;
             if (new_ypos > m_WorldSize)
             {
-                new_ypos = 0;
+                new_ypos -= m_WorldSize;
             }
             float new_xpos = l_Robot->getX() + 0.1;
             if (new_xpos > m_WorldSize)
             {
-                new_xpos = 0;
+                new_xpos -= m_WorldSize;
             }
             temp.x_pos = new_xpos;
             temp.y_pos = new_ypos;
@@ -523,7 +525,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             // check if the robots new position is in a new grid. If it is, we must remove the robot
             // from the grids population, and set the gridid in the Msg_RobotInfo, so the robotclient
             // can fix the mapping
-            if ( temp.x_pos > m_rightBoundary)
+            if( temp.x_pos > m_rightBoundary && !(temp.x_pos > (m_WorldSize - robot_SensorRange)) )
             {
                 // set the robot to the appropriate grid
                 temp.gridid = m_RightGrid;
@@ -533,7 +535,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
                 DEBUGPRINT("Robot has left this grid on the right side! Removing it from population\n");
 
             }
-            else if( temp.x_pos < m_leftBoundary)
+            else if( temp.x_pos < m_leftBoundary && !(temp.x_pos < (0.0f + robot_SensorRange)) )
             {
                 // set the robot to the appropriate grid
                 temp.gridid = m_LeftGrid;
@@ -600,6 +602,7 @@ int GridGame::updateRobots(RobotInfoList& robots)
             l_Robot->updatePosition((*it).x_pos, (*it).y_pos);
             l_Robot->m_PuckHeld = (*it).puckid;
             l_Robot->getPosition()->setOrient((*it).angle);
+            DEBUGPRINT("MOVED TO: %f\n", l_Robot->getPosition()->getX());
         }
 
     }

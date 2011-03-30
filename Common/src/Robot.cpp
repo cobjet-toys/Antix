@@ -52,26 +52,9 @@ int Robot::setSpeed(Speed* speed)
 
 void Robot::updatePosition(const float x_pos, const float y_pos)
 {
-    /*
-    //Calculate our displacement based on our speed and current position.
-    Math::Position* l_CurrentPos = getPosition();
-    float l_Dx = m_Speed->getForwSpeed() * cos(l_CurrentPos->getOrient());
-    float l_Dy = m_Speed->getForwSpeed() * sin(l_CurrentPos->getOrient());
-    float l_Da = m_Speed->getRotSpeed();
-    float l_WorldSize = Robotix::getInstance()->getWorldSize();
-
-    //Update our new position.
-    l_CurrentPos->setX(Math::DistanceNormalize( l_CurrentPos->getX() + l_Dx, l_WorldSize )); 
-    l_CurrentPos->setY(Math::DistanceNormalize( l_CurrentPos->getY() + l_Dy, l_WorldSize )); 
-    l_CurrentPos->setOrient( Math::AngleNormalize(l_CurrentPos->getOrient() + l_Da) );
-
-    //If we're holding a puck, update the puck position as well.
-    if (Holding())
-    {
-        m_PuckHeld->getPosition()->setX(l_CurrentPos->getX());
-        m_PuckHeld->getPosition()->setY(l_CurrentPos->getY()); 
-    }
-    */
+    this->getPosition()->setX(x_pos);
+    this->getPosition()->setY(y_pos);
+    return;
 }
 
 void Robot::updateSensors( SensedItemsList sensedItems )
