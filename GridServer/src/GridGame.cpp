@@ -433,7 +433,7 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
     //sensed_items_map = &l_sensed_items_map;
 
     
-    #ifdef DEBUG
+    #ifndef RELEASE
     //for( std::map<int, std::vector<sensed_item> >::iterator it = l_sensed_items_map.begin(); it != l_sensed_items_map.end(); it++){
     for( std::vector< RobotSensedObjectsPair >::iterator it = sensor_data->begin(); it != sensor_data->end(); it++){
 
@@ -707,7 +707,7 @@ int GridGame::removeObjectFromPop(int objectid)
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != end; it++)
     {
         if ((**it).m_id == objectid){
-            printf("Found %d robot!\n", objectid);
+            DEBUGPRINT("Found %d robot!\n", objectid);
             this->m_Population.erase(it);
             break;
         }

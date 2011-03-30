@@ -272,7 +272,7 @@ int GridServer::handler(int fd)
                         unpack(l_NeighbourBuffer+l_Offset, Msg_gridNeighbour_format, &l_Neighbour.position,
                                 &l_Neighbour.ip, &l_Neighbour.port);
                         l_Offset += l_Neighbour.size;
-                        printf("Received a new neighbour at position %hd, with IP %s and Port %s\n",
+                        DEBUGPRINT("Received a new neighbour at position %hd, with IP %s and Port %s\n",
                                 l_Neighbour.position, l_Neighbour.ip, l_Neighbour.port);
                         m_GridPosToFd[l_Neighbour.position] = initConnection(l_Neighbour.ip, l_Neighbour.port); 
                         //TODO Handle new neighbour.
@@ -435,7 +435,7 @@ int GridServer::handler(int fd)
 					
 					DEBUGPRINT("msg size: %i\n", l_responseMsgSize);
 					
-					unsigned char msgBuffer[l_responseMsgSize];
+					unsigned char* msgBuffer = new unsigned char[l_responseMsgSize];
 					
 					if (pack(msgBuffer, Msg_header_format, l_header.sender, l_header.message) != l_header.size)
 					{
@@ -508,6 +508,8 @@ int GridServer::handler(int fd)
 					}
 					
 					DEBUGPRINT("Sent Response\n");
+
+                    delete msgBuffer;
 						
 					return 0;
 					

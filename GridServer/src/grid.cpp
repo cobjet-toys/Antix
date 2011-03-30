@@ -65,7 +65,7 @@ int main(int argc, char ** argv)
 	
 	if ((l_res = l_parser.readFile(l_filename, (void *)l_grid )) == ENOENT) 
 	{
-		printf("GRID_PARSER FAIL:\tError with parsing file: %s\n", l_filename);
+		LOGPRINT("GRID_PARSER FAIL:\tError with parsing file: %s\n", l_filename);
 		return -1;
 	}
 	
@@ -73,7 +73,7 @@ int main(int argc, char ** argv)
 	
 	if (l_res < 0)
 	{
-		printf("GRID_PARSER FAIL:\tFailed to parse file\n");
+		LOGPRINT("GRID_PARSER FAIL:\tFailed to parse file\n");
 		return -1;
 	}
 	
@@ -81,18 +81,22 @@ int main(int argc, char ** argv)
 	
 	if ((l_res = l_parser.verify()) < 0)
 	{
-		DEBUGPRINT("GRID_PARSER FAIL:\tGame not initialized\n");
+		LOGPRINT("GRID_PARSER FAIL:\tGame not initialized\n");
 		return -1;
 	} 
 	
 	
 	if (l_grid->init(l_bindPort) < 0) 
 	{
-		DEBUGPRINT("GRID_PARSER FAIL:\tcannot init port\n");
+		LOGPRINT("GRID FAIL:\t Cannot init port\n");
 		return -1;
 	}
 	
-	l_grid->start();
+	if (l_grid->start() < 0 )
+	{
+		LOGPRINT("GRID FAIL:\t Server failed, did not exit cleanly.\n");
+		return -1;
+	}
 	
 	return 0;
 }
