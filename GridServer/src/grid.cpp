@@ -3,9 +3,14 @@
 #include <errno.h>
 #include "Config.h"
 #include <unistd.h>
+#include <time.h>
 
 int main(int argc, char ** argv)
 {
+    //Seed random number generator
+    // TODO RE-Enable this
+    srand((unsigned)time(0));
+    
     setbuf(stdout, NULL);
 	
 	if (argc < 5) 

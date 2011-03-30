@@ -14,6 +14,7 @@ Network::ClockServer::ClockServer()
 	m_responded = 0;
 	m_clockConn = NULL;
 	m_ready = false;
+	m_timesteps = 0;
 }
 
 Network::ClockServer::~ClockServer()
@@ -120,6 +121,8 @@ int Network::ClockServer::allConnectionReadyHandler()
 
 int Network::ClockServer::SendHeartBeat()
 {
+    m_timesteps++;
+    DEBUGPRINT("TOTAL TIMESTEPS COMPLETED: %d\n", m_timesteps);
 	m_responded = 0;
 	DEBUGPRINT("All Clients ready\n");
 	

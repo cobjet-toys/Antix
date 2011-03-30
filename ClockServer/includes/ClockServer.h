@@ -29,6 +29,7 @@ private:
     int m_responded;
     TcpConnection * m_clockConn;
     bool m_ready;
+    uint32_t m_timesteps;
 };
 }
 
