@@ -398,7 +398,7 @@ int GridServer::handler(int fd)
                     // collect the sensory information
 					gridGameInstance->returnSensorData(l_robotIdVector, sensedItems, l_totalSensed); 
 					
-					DEBUGPRINT("got all robot <= sensory data total of %zui robots with %zui sensory objects\n",
+					DEBUGPRINT("got all robot <= sensory data total of %zu robots with %zu sensory objects\n",
 					            l_robotsTotal, l_totalSensed);
 					
 					Msg_header l_header = {SENDER_GRIDSERVER, MSG_RESPONDSENSORDATA}; // header for response
@@ -413,9 +413,8 @@ int GridServer::handler(int fd)
 					
 					l_responseMsgSize += l_header.size; // append header size
 					l_responseMsgSize += l_msgSize.size; // append size of msg length 
-					
-					l_responseMsgSize += (l_robotsTotal * l_robotHeader.size); // append the total size for number of robot ids
-					l_responseMsgSize += (l_totalSensed * l_sensedObject.size); // all sensed items
+					l_responseMsgSize += (l_robotsTotal * l_robotHeader.size); // total number or robots
+					l_responseMsgSize += (l_totalSensed * l_sensedObject.size); // total number of sensed items
 					
 					DEBUGPRINT("msg size: %i\n", l_responseMsgSize);
 					
@@ -439,12 +438,12 @@ int GridServer::handler(int fd)
 					
 					DEBUGPRINT("AFTER PACKING SIZE %d\n", l_position);
 					
-					std::vector< RobotSensedObjectsPair >::iterator map_end = sensedItems->end(); 
+					std::vector< RobotSensedObjectsPair >::iterator mapEnd = sensedItems->end(); 
 					 // sensed item iterator
 					
 					DEBUGPRINT("Set up iterator\n");
                     Msg_SensedObjectGroupItem l_sensedItem;								
-					for(std::vector< RobotSensedObjectsPair >::iterator it = sensedItems->begin(); it != map_end; it++)
+					for(std::vector< RobotSensedObjectsPair >::iterator it = sensedItems->begin(); it != mapEnd; it++)
 					{
 						// for each robot requested
 						l_robotHeader.id = it->first;
@@ -483,6 +482,7 @@ int GridServer::handler(int fd)
 						}
 						
 					}
+					DEBUGPRINT("Position in Buffer: %d, Size of message: %d", l_position, l_responseMsgSize);
 					
 					if (l_curConnection->send(msgBuffer, l_responseMsgSize) == -1)
 					{
