@@ -154,17 +154,17 @@ void * drawer_function(void* gridPtr)
 
         try
         {
-            printf("UpdateDrawer return[%d]: %d\n", frame, grid->updateDrawer(frame));
+            DEBUGPRINT("UpdateDrawer return[%d]: %d\n", frame, grid->updateDrawer(frame));
         }
         catch(std::exception & e)
         {
-            printf("Failed To Updated Drawer!\n");
+            DEBUGPRINT("Failed To Updated Drawer.\n");
             perror(e.what());
             return NULL;
         }
     }
 
-    printf("Finished Execution!!\n");   
+    DEBUGPRINT("Exitting drawer_function()\n");   
 	return NULL;
 }
 
@@ -824,6 +824,11 @@ int GridServer::handler(int fd)
 		                    return -1;
 		                }
                     }
+                    
+                    //change send-to-drawer status accordingly
+                    float l_gridLeft = gridGameInstance->getLeftBoundary();
+                    float l_gridRight = gridGameInstance->getRightBoundary();
+                    updateDrawerFlag = (l_gridLeft >= configData.tl_x && l_gridRight <= configData.br_x);
             
                     return 0;
                 }
@@ -847,6 +852,8 @@ int GridServer::handler(int fd)
 
 int GridServer::updateDrawer(uint32_t framestep)
 {
+	if (!updateDrawerFlag) return 0;
+
     Msg_header l_Header = {SENDER_GRIDSERVER, MSG_GRIDDATAFULL };
 
 
@@ -885,126 +892,7 @@ int GridServer::updateDrawer(uint32_t framestep)
     {
         DEBUGPRINT("Failed to send\n");
         return -1;
-    }
- 
-/*    int m_totalRobots = 10;		
-    int m_totalPucks = 5;
-    int l_totalObjects = m_totalRobots + m_totalPucks;
-
-
-    // Creates an array of random values, to draw the pucks -- TEMPORARY TESTING -- //
-    srand(time(NULL));
-    float randPuckVals[m_totalPucks * 2];
-    for(int i = 0; i < m_totalPucks * 2; i++){randPuckVals[i] = (float)(rand()%600);}*/
-    // Creates an array of random values for robot positions -- TEMPORARY TESTING -- //
-    //float robotOrientation[this->m_totalRobots];
-    //for(int i = 0; i < this->m_totalRobots; i++){robotPosition[i] = (float)(rand()%100)/100;}
-
-    // Filled out fake data
-    /*
-    float robotPosition[m_totalRobots][2];
-    for(int i = 0; i < m_totalRobots; i++){
-        for(int j = 0; j < 2; j++){
-            robotPosition[i][j] = (float)(rand()%600);
-        }
-    }
-    */
-
-/*
-    Msg_header l_header = {SENDER_GRIDSERVER, MSG_GRIDDATAFULL}; // header for response
-    Msg_MsgSize l_msgSize;
-    memset(&l_msgSize, 0, l_msgSize.size);	
-    l_msgSize.msgSize = l_totalObjects; 	//robots + pucks
-    DEBUGPRINT("Sending %d robots, %d pucks.\n", m_totalRobots, m_totalPucks );
-
-    Msg_RobotInfo l_ObjInfo;	//for each object
-
-    unsigned int l_responseMsgSize = 0;	
-    l_responseMsgSize += l_header.size; 					// append header size	
-    l_responseMsgSize += l_msgSize.size;					// append msgSize size
-    l_responseMsgSize += (l_totalObjects * l_ObjInfo.size); // append the total size for number of object info
-
-    unsigned char msgBuffer[l_responseMsgSize];
-
-    if (pack(msgBuffer, Msg_header_format, l_header.sender, l_header.message) != l_header.size)
-    {
-        DEBUGPRINT("Could not pack header\n");
-        return -1;
-    }
-
-    int l_position = l_header.size;
-
-    if (pack(msgBuffer+l_position, Msg_MsgSize_format, l_msgSize.msgSize) != l_msgSize.size) // pack number of robots
-    {
-        DEBUGPRINT("Could not pack number of robots\n");
-        return -1;
-    }
-    //printf("Sending %d objects.\n", l_msgSize.msgSize);
-
-    l_position += l_msgSize.size; // shift by robot size header
-
-    // Getting GameObjects from population from gridGameInstance
-    std::vector<Msg_RobotInfo> objects;
-    gridGameInstance->getPopulation(&objects);
-
-    std::vector<Msg_RobotInfo>::iterator endit = objects.end();
-    //for(int i = 0; i < m_totalRobots; i++)
-    for(std::vector<Msg_RobotInfo>::iterator it = objects.begin(); it != endit; it++)
-    {
-        // Computes robots altered position (Random)
-        //robotPosition[i][0] += float((rand()%200)-100)/50;
-        //robotPosition[i][1] += float((rand()%200)-100)/50;
-
-        //float posX = robotPosition[i][0];
-        //float posY = robotPosition[i][1];
-        //float orientation = 1.0;
-
-        // for each object being pushed
-
-        //DEBUGPRINT("Expected: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
-                   //l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck );
-                       
-        if (pack(msgBuffer+l_position, Msg_RobotInfo_format,
-                 (*it).robotid, (*it).x_pos, (*it).y_pos, 0, 0 ) != l_ObjInfo.size)
-        {
-            DEBUGPRINT("Could not pack robot header\n");
-            return -1;
-        }
-
-        l_position += l_ObjInfo.size;
-        
-        //DEBUGPRINT("CURRENT POSITION SIZE %d\n", l_position);		
-    }
-
-    
-    for(int i = 0; i < m_totalPucks; i++)
-    {
-        float posX = randPuckVals[(2*i)];
-        float posY = randPuckVals[(2*i) + 1];
-
-        // for each object being pushed
-        l_ObjInfo.robotid = Antix::writeId(i, PUCK);
-        l_ObjInfo.x_pos = posX;
-        l_ObjInfo.y_pos = posY;
-        l_ObjInfo.angle = 1.0;
-        l_ObjInfo.puckid = '0';
-
-        //DEBUGPRINT("Object: newInfo.id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%c\n",
-        //           l_ObjInfo.id, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.has_puck);
-                         
-        if(pack(msgBuffer+l_position, Msg_RobotInfo_format,
-           &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.puckid) != l_ObjInfo.size)
-        {
-            DEBUGPRINT("Could not pack robot header\n");
-            return -1;
-        }
-
-        l_position += l_ObjInfo.size;
-        //DEBUGPRINT("CURRENT POSITION SIZE %d\n", l_position);		
-    }
-    */
-
-   
+    }   
     
     return 0;
 }

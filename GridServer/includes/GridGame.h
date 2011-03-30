@@ -84,6 +84,16 @@ public:
     const float& getWorldSize() const;
 
     /**
+     * Return the left boundary.
+     */
+    const float& getLeftBoundary() const;
+
+    /**
+     * Return the right boundary.
+     */
+    const float& getRightBoundary() const;
+
+    /**
      * Add a robot to the general population.
      * Used when a team is initialized.
      */

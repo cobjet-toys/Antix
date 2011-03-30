@@ -9,11 +9,6 @@
 #include <stdlib.h>
 #include <string>
 
-namespace Network
-{
-	class DrawServer;
-}
-
 class DrawerParser: public FileParser
 {
 

@@ -707,6 +707,16 @@ const float& GridGame::getWorldSize() const
     return m_WorldSize;
 }
 
+const float& GridGame::getLeftBoundary() const
+{
+    return m_leftBoundary;
+}
+
+const float& GridGame::getRightBoundary() const
+{
+    return m_rightBoundary;
+}
+
 void GridGame::printPopulation(){
 
 	for (int i = 0; i < m_Population.size(); i++){

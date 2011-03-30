@@ -20,7 +20,6 @@
 
 class Team;
 class Puck;
-class DrawParser;
 
 namespace Network
 {
@@ -34,9 +33,7 @@ namespace Network
 
 
 	class DrawServer: public Client
-	{
-	friend class DrawParser;
-	
+	{	
 	public:                      
 
 	    DrawServer();
@@ -46,26 +43,18 @@ namespace Network
         // Client/connection methods
         virtual int handler(int fd);
 		int initGrid(const char * host, const char * port, int id);
-		int setGridConfig(int grid_fd, char send_data, float topleft_x = 0.0, float topleft_y = 0.0, float bottomright_x = 0.0, float bottomright_y = 0.0);
+		int sendGridConfig(int grid_fd);
         void initTeams();
-        void updateObject(Msg_RobotInfo newInfo);
+        void updateObject(Msg_RobotInfo newInfo);        
         
-        int m_windowSize;
-        float m_worldSize;
-        float m_FOVAngle;
-        float m_FOVRange;
-        float m_homeRadius;
-        bool m_FOVEnabled;
-        char m_drawerDataType;
-        
-        int m_totalNumTeams;
+        void updateViewRange(float tl_x, float tl_y, float br_x, float br_y);        
         
         int getWindowSize() { return this->m_windowSize; }
         float getWorldSize() { return this->m_worldSize; }
-        float getFOVAngle() { return this->m_FOVAngle; }
-        float getFOVRange() { return this->m_FOVRange; }
         float getHomeRadius() { return this->m_homeRadius; }
         bool getFOVEnabled() { return this->m_FOVEnabled; }
+        float getFOVAngle() { return this->m_FOVAngle; }
+        float getFOVRange() { return this->m_FOVRange; }
 
         std::vector<Game::Team*>::iterator getFirstTeam() { return this->m_teams.begin(); }
         std::vector<Game::Puck*>::iterator getFirstPuck() { return this->m_pucks.begin(); }
@@ -78,6 +67,17 @@ namespace Network
         size_t getRobotsCount() { return this->m_robots.size(); }
         size_t initPucks(int size);
         size_t initRobots(int size);
+                
+        int m_totalNumTeams;
+        
+        // below block of functions *SHOULD* only be called by DrawerParser
+        void setWindowSize(int val);
+        void setWorldSize(float val) { this->m_worldSize = val; }
+        void setHomeRadius(float val) { this->m_homeRadius = val; }
+        void setFOVEnabled(bool val) { this->m_FOVEnabled = val; }
+        void setFOVAngle(float val) { this->m_FOVAngle = val; }
+        void setFOVRange(float val) { this->m_FOVRange = val; }
+        void setDrawerDataType(char val) { this->m_drawerDataType = val; }
 
 	private:
         int packHeaderMessage(unsigned char* buffer, uint16_t sender, uint16_t message);
@@ -85,13 +85,24 @@ namespace Network
         int sendWrapper(TcpConnection* conn, unsigned char* buffer, int msgSize);
         
         static DrawServer* m_instance;
+        
+        int m_windowSize;
+        float m_worldSize;
+        float m_homeRadius;
+        bool m_FOVEnabled;
+        float m_FOVAngle;
+        float m_FOVRange;
+        char m_drawerDataType;
 
         std::vector<Game::Puck*> m_pucks;
         std::vector<Game::Robot*> m_robots;
         std::vector<Game::Team*> m_teams;
         
-
         uint32_t m_framestep;
+        float m_viewTL_x;
+        float m_viewTL_y;
+        float m_viewBR_x;
+        float m_viewBR_y;
     };
 }
 

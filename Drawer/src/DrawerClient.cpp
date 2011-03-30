@@ -19,7 +19,12 @@ DrawServer::DrawServer()
     this->m_FOVRange = 0.0;
     this->m_homeRadius = 20.0;
     this->m_framestep = 0;
-    this->m_drawerDataType = DRAWER_FULLDETAILS;
+    this->m_drawerDataType = DRAWER_FULLDETAILS;    
+    
+	this->m_viewTL_x = 0;
+	this->m_viewTL_y = 0;
+	this->m_viewBR_x = this->m_windowSize;
+	this->m_viewBR_y = this->m_windowSize;
 }
 
 DrawServer::~DrawServer() 
@@ -56,6 +61,15 @@ DrawServer* DrawServer::getInstance()
     return m_instance;
 }
 
+void DrawServer::setWindowSize(int val)
+{
+	this->m_windowSize = val;
+	this->m_viewBR_x = this->m_windowSize;
+	this->m_viewBR_y = this->m_windowSize;
+}
+
+// Sends initialization message to grid @ host:port, telling it 
+// to send info about its known pucks and robots
 int DrawServer::initGrid(const char* host, const char* port, int id)
 {
     int l_GridFd = initConnection(host, port);
@@ -65,14 +79,16 @@ int DrawServer::initGrid(const char* host, const char* port, int id)
         DEBUGPRINT("Failed creating connection to a grid server\n");
     }
     
-    setGridConfig(l_GridFd, 'T');
+    sendGridConfig(l_GridFd);
     return l_GridFd;
 }
 
+// Fills local collection of robots with correct number of robots
+// per team, starting off view (-1,-1)
 size_t DrawServer::initRobots(int size)
 {	
 	int teamId = 0;
-    Math::Position *pos = new Math::Position(0.0, 0.0, 0.0);
+    Math::Position *pos = new Math::Position(-1.0, -1.0, 0.0);
     this->m_robots.clear();
     
     for (int i=0; i<size; i++)
@@ -84,9 +100,11 @@ size_t DrawServer::initRobots(int size)
     return this->m_robots.size();
 }
 
+// Fills local collection of robots with correct number of pucks
+// starting off view (-1,-1)
 size_t DrawServer::initPucks(int size)
 {	
-    Math::Position *pos = new Math::Position(0.0, 0.0, 0.0);
+    Math::Position *pos = new Math::Position(-1.0, -1.0, 0.0);
     this->m_pucks.clear();
     
     for (int i=0; i<size; i++)
@@ -97,7 +115,22 @@ size_t DrawServer::initPucks(int size)
     return this->m_pucks.size();
 }
 
-int DrawServer::setGridConfig(int grid_fd, char send_data, float topleft_x, float topleft_y, float bottomright_x, float bottomright_y)
+void DrawServer::updateViewRange(float tl_x, float tl_y, float br_x, float br_y)
+{	
+	this->m_viewTL_x = tl_x;
+	this->m_viewTL_y = tl_y;
+	this->m_viewBR_x = br_x;
+	this->m_viewBR_y = br_y;	
+	
+	std::map<int, TcpConnection*>::iterator it;	
+	
+	for (it = this->m_serverList.begin(); it != this->m_serverList.end(); it++)
+	{
+		this->sendGridConfig((*it).first);
+	}
+}
+
+int DrawServer::sendGridConfig(int grid_fd)
 {
 	//send config to grid
     TcpConnection * l_curConn = m_serverList[grid_fd];
@@ -120,12 +153,12 @@ int DrawServer::setGridConfig(int grid_fd, char send_data, float topleft_x, floa
     l_BufferOf += l_Header.size;
     
     //Pack config message
-	l_DrawerConfig.send_data = send_data;
+	l_DrawerConfig.send_data = 'T';
 	l_DrawerConfig.data_type = this->m_drawerDataType;
-	l_DrawerConfig.tl_x = topleft_x;
-	l_DrawerConfig.tl_y = topleft_y;
-	l_DrawerConfig.br_x = bottomright_x;
-	l_DrawerConfig.br_y = bottomright_y;
+	l_DrawerConfig.tl_x = this->m_viewTL_x;
+	l_DrawerConfig.tl_y = this->m_viewTL_y;
+	l_DrawerConfig.br_x = this->m_viewBR_x;
+	l_DrawerConfig.br_y = this->m_viewBR_y;
     pack(l_Buffer+l_BufferOf, Msg_DrawerConfig_format, 
     	l_DrawerConfig.send_data, l_DrawerConfig.data_type, l_DrawerConfig.tl_x, l_DrawerConfig.tl_y, l_DrawerConfig.br_x, l_DrawerConfig.br_y);
     
