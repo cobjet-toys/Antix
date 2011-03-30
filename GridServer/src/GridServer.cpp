@@ -34,7 +34,7 @@ int GridServer::initGridGame()
 	printf("id=%lu, teams=%lu, robots=%lu, idfrom=%lu, idto=%lu\n", (unsigned long)m_uId, (unsigned long)m_teamsAvailable,(unsigned long) m_robotsPerTeam, (unsigned long)m_idRangeFrom, (unsigned long)m_idRangeTo);
  
     // parameters: gridid, num_of_teams, robots_per_team, id_from, id_to
-    gridGameInstance = new GridGame(1, 2, 25000, 10, 50009);
+    gridGameInstance = new GridGame(1, 2, 5, 10, 19);
     GridGame* gridGameInstance2 = new GridGame(2, 2, 5, 20, 29);
 
     Msg_RobotInfo newrobot;

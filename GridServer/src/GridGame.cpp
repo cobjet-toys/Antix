@@ -366,8 +366,13 @@ int GridGame::returnSensorData(std::vector<int> robot_ids_from_client, std::vect
                     temp_sensed.id = (*position_obj).m_id;
                     temp_sensed.x = position_obj->getX();
                     temp_sensed.y = position_obj->getY();
-                    
-                    temp_vector.push_back( temp_sensed );
+                    // if the game object found in the sensor range is the same
+                    // as the robot we are looking for, do not add the same robot to
+                    // its own sensed objects
+                    if (tempobj->getId() != position_obj->getId())
+                    {
+                        temp_vector.push_back( temp_sensed );
+                    }
                 }
                 counter--;
                 position_obj = m_Population[counter];
