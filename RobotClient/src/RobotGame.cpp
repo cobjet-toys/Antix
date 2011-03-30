@@ -75,15 +75,15 @@ int RobotGame::receiveSensorData(vector< std::pair<uid, std::vector<Msg_SensedOb
     for(iter = sensorData->begin(); iter != sensorData->end(); iter++)
     {
         DEBUGPRINT("robo id: %d\n", (*iter).first);
-        int robot_id = (*iter).first;
-        Robot* l_robotp = m_robots[robot_id];
+        uid robotId = (*iter).first;
+        Robot* l_robotp = m_robots[robotId];
         if(l_robotp == NULL)
         {
-            DEBUGPRINT("Error: Invalid robotId for this grid %d", robot_id);
+            DEBUGPRINT("Error: Invalid robotId %d\n", robotId);
             return -1;
         }
         
-        DEBUGPRINT("Updating sensors for robo %d\n", (*iter).first);       
+        DEBUGPRINT("Updating sensors for robo %d\n", robotId);       
         l_robotp->updateSensors( (*iter).second );
     }
 
@@ -128,24 +128,37 @@ int RobotGame::actionResult(vector<Msg_RobotInfo>* results)
         uid robotId = (*iter).robotid;
         Msg_RobotInfo result = (*iter);
         Robot* l_robotp = m_robots[robotId];
+        if(l_robotp == NULL)
+        {
+            DEBUGPRINT("Error: Invalid robotId %d for this grid", robotId);
+            return -1;
+        }
+        
         // TODO Currently our action_result message does not send a rotational velocity
         l_robotp->setSpeed( new Math::Speed( result.speed, 0.0) );
         l_robotp->setPosition( result.x_pos, result.y_pos, result.angle );
         
         int oldGridId = m_robotGrids.find(robotId)->second;
         int newGridId = result.gridid;
-        DEBUGPRINT("OldGridId: %d, new gridId, %d\n", oldGridId, newGridId);
-        //vector<Robot*>::iterator iter = find(m_robotsByGrid[oldGridId].begin(),
-        //                                     m_robotsByGrid[oldGridId].end(),
-        //                                     l_robotp);
 
-        /*if(oldGridId != newGridId)
+        if(oldGridId != newGridId)
         {
+            DEBUGPRINT("Moving robot %d from OldGridId: %d, to new gridId, %d\n",robotId, oldGridId, newGridId);
             // Remove from the reference to oldGrid
-            m_robotsByGrid[oldGridId].erase(iter);
-            m_robotsByGrid[newGridId].push_back(l_robotp);
-        }*/
+            std::vector<Robot*>::iterator toRemove = std::remove( m_robotsByGrid[oldGridId].begin(),
+                                                                  m_robotsByGrid[oldGridId].end(),
+                                                                  l_robotp );
+            if((*toRemove) != NULL)
+            {
+                m_robotsByGrid[oldGridId].erase( toRemove );
+                m_robotsByGrid[newGridId].push_back(l_robotp);
+            }
+            else
+            {
+                DEBUGPRINT("Robot not found in oldGrid %d", oldGridId);
+            }
+        }
     }
-    
     return 0;
 }
+

@@ -42,16 +42,10 @@ void Position::setY(const float& yloc)
     m_Ypos = yloc;
 }
 
-/* DEPRECIATED
-Position* Position::randomPosition(const float& maxSize)
-{ 
-    Position *newPos = new Position(drand48()*maxSize, drand48()*maxSize, 0.0f);
-    return newPos;
-}
-*/
-
-Position* Position::randomPosition(const float& worldSize, const float& numGrids, const int& gridid)
-{ 
-    Position *newPos = new Position(drand48()*(worldSize/numGrids) + gridid - 1, drand48()*worldSize, 0.0f);
+Position* Position::randomPosition(const float& worldSize, const float& lbound, const int& rbound)
+{
+    float x_pos = ((rbound - lbound)*((float)rand()/(float)RAND_MAX)) + lbound;
+    float y_pos = ((float)rand()/(float)RAND_MAX)*worldSize;
+    Position *newPos = new Position(x_pos, y_pos, 0.0f);
     return newPos;
 }

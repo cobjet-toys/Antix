@@ -368,7 +368,7 @@ int GridServer::handler(int fd)
 						return -1;
 					}
 					
-					DEBUGPRINT("Client has requested actions for %i robots\n", l_numRobots);
+					DEBUGPRINT("Client is requesting sensor data for %i robots\n", l_numRobots);
 					
 					std::vector<uid> l_robotIdVector;
 					l_robotIdVector.clear();
@@ -396,7 +396,11 @@ int GridServer::handler(int fd)
 					std::vector< RobotSensedObjectsPair >* sensedItems = new std::vector< RobotSensedObjectsPair >(); 
                     
                     // collect the sensory information
-					gridGameInstance->returnSensorData(l_robotIdVector, sensedItems, l_totalSensed); 
+					if(gridGameInstance->returnSensorData(l_robotIdVector, sensedItems, l_totalSensed) != 0)
+					{
+					    DEBUGPRINT("FAILED TO GET ALL SENSOR DATA. Exiting.\n");
+					    exit(0);
+					} 
 					
 					DEBUGPRINT("got all robot <= sensory data total of %zu robots with %zu sensory objects\n",
 					            l_robotsTotal, l_totalSensed);
@@ -543,6 +547,7 @@ int GridServer::handler(int fd)
                     pack(l_ResultsBuffer+l_Offset, Msg_MsgSize_format, l_Size.msgSize);
                     l_Offset += l_Size.size;
 
+                    DEBUGPRINT("LSize %zu\n", l_Size.msgSize);
                     for (int i = 0; i < l_Size.msgSize; i++)
                     {
                         pack(l_ResultsBuffer+l_Offset, Msg_RobotInfo_format, l_Results[i].robotid, l_Results[i].x_pos, l_Results[i].y_pos, l_Results[i].speed, l_Results[i].angle, l_Results[i].puckid, l_Results[i].gridid);
@@ -653,14 +658,12 @@ int GridServer::handler(int fd)
 					Msg_InitRobot l_robot;
 					size_t l_length = l_header.size + l_Team.size + l_size.size + (l_robots->size() * l_robot.size);
 					unsigned char * l_message = new unsigned char[l_length];
-					DEBUGPRINT("a1\n");
 					int l_offset = 0;
 					NetworkCommon::packHeader(l_message, SENDER_GRIDSERVER, MSG_RESPONDINITTEAM);
 					
 
 
 					l_offset += l_header.size;
-					DEBUGPRINT("a2\n");
 
 					pack(l_message+l_offset, Msg_TeamInit_format, l_Team.id, l_Team.x, l_Team.y);
 
@@ -673,13 +676,13 @@ int GridServer::handler(int fd)
 						return -1;
 					}
 					l_offset += l_size.size;
-					DEBUGPRINT("a3\n");
+
 					for( int i = 0; i < m_robotsPerTeam;i ++ )
 					{
 						l_robot.id = l_robots->at(i).id;
 						l_robot.x = l_robots->at(i).x;
 						l_robot.y = l_robots->at(i).y;
-						DEBUGPRINT("ID: %d, X: %f, F: %f \n", l_robot.id, l_robot.x, l_robot.y);
+						DEBUGPRINT("ID: %d, X: %f, Y: %f \n", l_robot.id, l_robot.x, l_robot.y);
 						
 						if (pack(l_message+l_offset, Msg_InitRobot_format, l_robot.id, l_robot.x, l_robot.y) != l_robot.size)
 						{
