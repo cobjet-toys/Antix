@@ -897,7 +897,7 @@ int GridServer::updateDrawer(uint32_t framestep)
     {
         pack(l_Buffer+l_Offset, Msg_RobotInfo_format, objects[i].robotid, objects[i].x_pos, objects[i].y_pos, 0, 0, 0 ); 
         unpack(l_Buffer+l_Offset, Msg_RobotInfo_format,
-                                &l_RoboInfo.robotid, &l_RoboInfo.x_pos, &l_RoboInfo.y_pos, &l_RoboInfo.angle, &l_RoboInfo.puckid, &l_RoboInfo.gridid );
+                                &l_RoboInfo.robotid, &l_RoboInfo.x_pos, &l_RoboInfo.y_pos, &l_RoboInfo.speed, &l_RoboInfo.angle, &l_RoboInfo.puckid, &l_RoboInfo.gridid );
 
         DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\tgrid=%d\n",
                         	        l_RoboInfo.robotid, l_RoboInfo.x_pos, l_RoboInfo.y_pos, l_RoboInfo.angle, l_RoboInfo.puckid, l_RoboInfo.gridid );
