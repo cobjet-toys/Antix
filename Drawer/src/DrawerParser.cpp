@@ -19,13 +19,13 @@ int DrawerParser::handler(std::vector<std::string> commands, void *args)
 	if (!commands.empty())
 	{
 		std::string command = commands.at(0);
-		if ( command == "GRID" && commands.size() >= 4)
+		if ( command == "GRID" && commands.size() >= 3)
 		{
 			int id = atoi(commands.at(1).c_str());
 			const char * host = commands.at(2).c_str();
 			const char * port = commands.at(3).c_str();
 			DEBUGPRINT("PARSED: GRID ID %i with IP %s and PORT %s\n", id, host, port);
-			return l_drawer->initGrid(host, port, id);
+			return l_drawer->initGrid(host, port);
 		}
 		else if (command == "WINDOW_SIZE")
 		{

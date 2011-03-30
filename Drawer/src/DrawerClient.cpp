@@ -70,7 +70,7 @@ void DrawServer::setWindowSize(int val)
 
 // Sends initialization message to grid @ host:port, telling it 
 // to send info about its known pucks and robots
-int DrawServer::initGrid(const char* host, const char* port, int id)
+int DrawServer::initGrid(const char* host, const char* port)
 {
     int l_GridFd = initConnection(host, port);
 
