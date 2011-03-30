@@ -22,7 +22,7 @@ def start_process(name, **kwargs):
         script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH
     if name is "clock":
         global current_clock_port
-        script += CLOCK_RUN_COMMAND + " -p " + str(current_clock_port)
+        script += CLOCK_RUN_COMMAND + " -p " + str(current_clock_port) + " -c " + str(NUM_ROBOT_CLIENTS)
         current_clock_port += 1
     elif name is "client":
         # setup full config file for robot client
