@@ -25,13 +25,13 @@ int main(int argc, char ** argv)
 			case('p'):
 			{
 				l_port = optarg;
-				printf("Prepairing to use port: %s\n", l_port);
+				DEBUGPRINT("Prepairing to use port: %s\n", l_port);
 				break;
 			}
 			case('c'):
 			{
 				l_numClients = atoi(optarg);
-				printf("Prepairing to wait on %i clients\n", l_numClients);
+				DEBUGPRINT("Prepairing to wait on %i clients\n", l_numClients);
 				break;
 			}			
 			case('?'):
@@ -44,14 +44,21 @@ int main(int argc, char ** argv)
 			
 		}
 	
-	}
-	
-	
+	}	
 
 	Network::ClockServer *l_serv = new Network::ClockServer();
 
-	l_serv->init(l_port, l_numClients+1); // this +1 is magic for the controller client
-	l_serv->start();
+	if (l_serv->init(l_port, l_numClients+1) < 0) // this +1 is magic for the controller client
+	{
+		ERRORPRINT("CLOCK_SERVER ERROR:\t Failed to init CLOCK\n");
+		return -1;
+	}
+	
+	if (l_serv->start() < 0)
+	{
+		ERRORPRINT("CLOCK_SERVER ERROR:\t CLOCK_SERVER failure. Exiting\n");
+		return -1;		
+	}
 	
 	return 0;
 }
