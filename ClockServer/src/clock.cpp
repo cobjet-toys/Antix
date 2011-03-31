@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "ClockParser.h"
 #include <errno.h>
+#include "Config.h"
 
 int main(int argc, char ** argv)
 {

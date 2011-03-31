@@ -2,7 +2,8 @@
 #define CONFIG_H_
 
 //#define RELEASE
-//#define STEP_BY_STEP //OOOOHHH BABY! Gonna get to you gurrrrl.
+#define DEBUG
+#define STEP_BY_STEP //OOOOHHH BABY! Gonna get to you gurrrrl.
 #define LOGGING
 //#define GRIDTEST // Used when wanting to compile with individual unit testing
                  // GridGame instances
