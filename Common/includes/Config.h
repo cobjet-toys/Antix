@@ -2,7 +2,8 @@
 #define CONFIG_H_
 
 #define DEBUG true
-#define RELEASE
+//#define RELEASE
+#define LOGGING
 
 #ifdef RELEASE  
 #define DEBUGPRINT(format, args...) ((void)0)
@@ -11,5 +12,12 @@
 #endif
 
 #define ERRORPRINT printf
+
+#ifdef LOGGING  
+#define LOGPRINT(format, args...) ((void)0)
+#else
+#define LOGPRINT printf
+#endif
+
 
 #endif

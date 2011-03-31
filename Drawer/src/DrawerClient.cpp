@@ -70,7 +70,7 @@ void DrawServer::setWindowSize(int val)
 
 // Sends initialization message to grid @ host:port, telling it 
 // to send info about its known pucks and robots
-int DrawServer::initGrid(const char* host, const char* port, int id)
+int DrawServer::initGrid(const char* host, const char* port)
 {
     int l_GridFd = initConnection(host, port);
 
@@ -181,31 +181,28 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
 {    
     uint32_t objType, objId;
     Antix::getTypeAndId(newInfo.robotid, &objType, &objId);
-    if(objType == PUCK)
-    {
-        this->m_pucks.at(objId)->getPosition()->setX(newInfo.x_pos);
-		this->m_pucks.at(objId)->getPosition()->setY(newInfo.y_pos);        		
-    }
-    else
-    {    
-    	
-    	this->m_robots.at(objId)->getPosition()->setX(newInfo.x_pos);
-		this->m_robots.at(objId)->getPosition()->setY(newInfo.y_pos);       
-		
-		/*
-      	if (!this->m_robots[objId])
-      	{
-    		if (!this->m_teams[0])//newInfo.id/TEAM_ID_SHIFT])    
-    		{
-    			  DEBUGPRINT("No home for team %d\n", 1);//newInfo.id/TEAM_ID_SHIFT);
-    			  return;
-    		}         			
-		    this->m_robots[objId] = new Game::Robot(pos, this->m_teams[0]->m_TeamId, objId);//newInfo.id/TEAM_ID_SHIFT]->getHome());
-      	}     
-      	*/
-        
-        //this->m_robots[newInfo.id]->m_PuckHeld = this->m_pucks[newInfo.puck_id];
-    }
+
+	printf("Object type=%d, id=%d\n", objType, objId);
+
+	try
+	{
+		if(objType == PUCK)
+		{
+		    this->m_pucks.at(objId)->getPosition()->setX(newInfo.x_pos);
+			this->m_pucks.at(objId)->getPosition()->setY(newInfo.y_pos);        		
+		}
+		else
+		{    
+			
+			this->m_robots.at(objId)->getPosition()->setX(newInfo.x_pos);
+			this->m_robots.at(objId)->getPosition()->setY(newInfo.y_pos);       		    
+		    //this->m_robots[newInfo.id]->m_PuckHeld = this->m_pucks[newInfo.puck_id];
+		}
+	}
+	catch (std::exception &e)
+	{
+		printf("%s doesn't exist at %d\n", (objType == PUCK) ? "Puck" : "Robot",  objId);
+	}
 }
 
 
@@ -249,12 +246,10 @@ int DrawServer::handler(int fd)
                     {
                         bzero(&l_ObjInfo, l_ObjInfo.size);
                         
-                        DEBUGPRINT("1\n");
                         recvWrapper(l_Conn, l_ObjInfoBuf, l_ObjInfo.size);
-                        DEBUGPRINT("2\n");
 
                         unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
-                                &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.speed, &l_ObjInfo.angle, &l_ObjInfo.puckid );
+                                &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.speed, &l_ObjInfo.angle, &l_ObjInfo.puckid, &l_ObjInfo.gridid );
 
                         DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\n",
                         	        l_ObjInfo.robotid, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.puckid );

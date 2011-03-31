@@ -109,10 +109,10 @@ public:
 
 private:
 
-    /**
-     * List of pucks.
-     */
-    //std::vector<Game::Puck*> m_Pucks;
+    bool outOfBoundsLeft(Msg_RobotInfo& robot);
+    bool outOfBoundsRight(Msg_RobotInfo& robot);
+    bool inLeftInnerBoundary(Msg_RobotInfo& robot);
+    bool inRightInnerBoundary(Msg_RobotInfo& robot);
 
     /**
      * List and map of all available robots.

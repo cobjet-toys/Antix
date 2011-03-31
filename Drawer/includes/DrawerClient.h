@@ -42,7 +42,7 @@ namespace Network
 
         // Client/connection methods
         virtual int handler(int fd);
-		int initGrid(const char * host, const char * port, int id);
+		int initGrid(const char * host, const char * port);
 		int sendGridConfig(int grid_fd);
         void initTeams();
         void updateObject(Msg_RobotInfo newInfo);        
