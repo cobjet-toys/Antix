@@ -26,6 +26,10 @@ ControllerClient::ControllerClient():Client()
 	m_totalRobotClientsReady = 0;
 	m_curRange = 0;
 	m_totalGridsPending = 0;
+	m_homeRadius = 0.0f;
+    m_worldSize = 0.0f;
+	m_numGrids = 0;
+    m_puckTotal = 0;	
 }
 
 int ControllerClient::initGrid(const char* host, const char* port)
@@ -56,21 +60,35 @@ int ControllerClient::initGrid(const char* host, const char* port)
 	Msg_header l_header;
 	Msg_GridId l_gridId;
 	
-	unsigned char l_headerBuff[l_header.size+l_gridId.size];
+	Msg_WorldInfo l_worldInfo;
+	l_worldInfo.homeRadius = m_homeRadius; 
+    l_worldInfo.worldSize = m_worldSize;
+	l_worldInfo.numGrids = m_numGrids;
+    l_worldInfo.puckTotal = m_puckTotal;	
+	
+	unsigned char l_headerBuff[l_header.size+l_gridId.size+l_worldInfo.size];
 	
 	if (NetworkCommon::packHeader(l_headerBuff, SENDER_CONTROLLER, MSG_REQUESTGRIDWAITING) < 0)
 	{
 		DEBUGPRINT("CONTROLLER_CLIENT: FAILED:\t Cannot pack ready header to %s:%s, connection.\n", host, port);
 		return -1;
 	}
-	
-	if (pack(l_headerBuff+l_header.size, Msg_GridId_format, m_totalGrids) != l_gridId.size)
+	int l_offset = l_header.size;
+	if (pack(l_headerBuff+l_offset, Msg_GridId_format, m_totalGrids) != l_gridId.size)
 	{
 		DEBUGPRINT("CONTROLLER_CLIENT: FAILED:\t failed packing id to %s:%s, connection.\n", host, port);
 		return -1;
 	}
 	
-	if (NetworkCommon::sendMsg(l_headerBuff, l_header.size+l_gridId.size, l_con) < 0)
+	l_offset += l_gridId.size;
+	
+	if (pack(l_headerBuff+l_offset, Msg_WorldInfo_format, l_worldInfo.homeRadius, l_worldInfo.worldSize, l_worldInfo.numGrids, l_worldInfo.puckTotal) != l_worldInfo.size)
+	{
+		DEBUGPRINT("CONTROLLER_CLIENT: FAILED:\t failed packing world info to %s:%s, connection.\n", host, port);
+		return -1;
+	}
+	
+	if (NetworkCommon::sendMsg(l_headerBuff, l_header.size+l_gridId.size+l_worldInfo.size, l_con) < 0)
 	{
 		DEBUGPRINT("CONTROLLER_CLIENT: FAILED:\t Cannot send ready header to %s:%s, connection.\n", host, port);
 		return -1;
@@ -195,6 +213,26 @@ int ControllerClient::beginSimulation()
     NetworkCommon::sendMsg(l_Buffer, l_MsgSize, l_ClockCon);
 }
 
+void ControllerClient::setHomeRadius(float homeRadius)
+{
+	m_homeRadius = homeRadius;
+}
+
+void ControllerClient::setWorldSize(float worldSize)
+{
+	m_worldSize = worldSize;
+}
+
+void ControllerClient::numGrids(int numGrids)
+{
+	m_numGrids = numGrids;
+}
+
+void ControllerClient::numPucksTotal(int pucksTotal)
+{
+	m_puckTotal = pucksTotal;
+}
+
 int ControllerClient::handler(int fd)
 {
 	DEBUGPRINT("CONTROLLER_CLIENT: STATUS\t Handling file descriptor: %i\n", fd);
@@ -229,12 +267,14 @@ int ControllerClient::handler(int fd)
 				{
 					Msg_GridId l_gridId;
 					Msg_GridRequestIdRage l_reqGridRange;
+
 					
 					unsigned char l_id[l_gridId.size + l_reqGridRange.size];
 
 					memset(&l_id, 0, l_gridId.size + l_reqGridRange.size);
 					memset(&l_gridId, 0, l_gridId.size);
 					memset(&l_reqGridRange, 0, l_reqGridRange.size);
+
 					
 					if (l_Conn->recv(l_id, l_gridId.size) < 0)
 					{

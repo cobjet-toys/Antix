@@ -148,10 +148,11 @@ int RobotGame::actionResult(vector<Msg_RobotInfo>* results)
             std::vector<Robot*>::iterator toRemove = std::remove( m_robotsByGrid[oldGridId].begin(),
                                                                   m_robotsByGrid[oldGridId].end(),
                                                                   l_robotp );
-            if((*toRemove) != NULL)
+            if(toRemove != m_robotsByGrid[oldGridId].end())
             {
                 m_robotsByGrid[oldGridId].erase( toRemove );
                 m_robotsByGrid[newGridId].push_back(l_robotp);
+                m_robotGrids[robotId] = newGridId;
             }
             else
             {

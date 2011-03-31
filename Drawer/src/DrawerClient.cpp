@@ -19,7 +19,12 @@ DrawServer::DrawServer()
     this->m_FOVRange = 0.0;
     this->m_homeRadius = 20.0;
     this->m_framestep = 0;
-    this->m_drawerDataType = DRAWER_FULLDETAILS;
+    this->m_drawerDataType = DRAWER_FULLDETAILS;    
+    
+	this->m_viewTL_x = 0;
+	this->m_viewTL_y = 0;
+	this->m_viewBR_x = this->m_windowSize;
+	this->m_viewBR_y = this->m_windowSize;
 }
 
 DrawServer::~DrawServer() 
@@ -56,7 +61,16 @@ DrawServer* DrawServer::getInstance()
     return m_instance;
 }
 
-int DrawServer::initGrid(const char* host, const char* port, int id)
+void DrawServer::setWindowSize(int val)
+{
+	this->m_windowSize = val;
+	this->m_viewBR_x = this->m_windowSize;
+	this->m_viewBR_y = this->m_windowSize;
+}
+
+// Sends initialization message to grid @ host:port, telling it 
+// to send info about its known pucks and robots
+int DrawServer::initGrid(const char* host, const char* port)
 {
     int l_GridFd = initConnection(host, port);
 
@@ -65,14 +79,16 @@ int DrawServer::initGrid(const char* host, const char* port, int id)
         DEBUGPRINT("Failed creating connection to a grid server\n");
     }
     
-    setGridConfig(l_GridFd, 'T');
+    sendGridConfig(l_GridFd);
     return l_GridFd;
 }
 
+// Fills local collection of robots with correct number of robots
+// per team, starting off view (-1,-1)
 size_t DrawServer::initRobots(int size)
 {	
 	int teamId = 0;
-    Math::Position *pos = new Math::Position(0.0, 0.0, 0.0);
+    Math::Position *pos = new Math::Position(-1.0, -1.0, 0.0);
     this->m_robots.clear();
     
     for (int i=0; i<size; i++)
@@ -84,9 +100,11 @@ size_t DrawServer::initRobots(int size)
     return this->m_robots.size();
 }
 
+// Fills local collection of robots with correct number of pucks
+// starting off view (-1,-1)
 size_t DrawServer::initPucks(int size)
 {	
-    Math::Position *pos = new Math::Position(0.0, 0.0, 0.0);
+    Math::Position *pos = new Math::Position(-1.0, -1.0, 0.0);
     this->m_pucks.clear();
     
     for (int i=0; i<size; i++)
@@ -97,7 +115,22 @@ size_t DrawServer::initPucks(int size)
     return this->m_pucks.size();
 }
 
-int DrawServer::setGridConfig(int grid_fd, char send_data, float topleft_x, float topleft_y, float bottomright_x, float bottomright_y)
+void DrawServer::updateViewRange(float tl_x, float tl_y, float br_x, float br_y)
+{	
+	this->m_viewTL_x = tl_x;
+	this->m_viewTL_y = tl_y;
+	this->m_viewBR_x = br_x;
+	this->m_viewBR_y = br_y;	
+	
+	std::map<int, TcpConnection*>::iterator it;	
+	
+	for (it = this->m_serverList.begin(); it != this->m_serverList.end(); it++)
+	{
+		this->sendGridConfig((*it).first);
+	}
+}
+
+int DrawServer::sendGridConfig(int grid_fd)
 {
 	//send config to grid
     TcpConnection * l_curConn = m_serverList[grid_fd];
@@ -120,12 +153,12 @@ int DrawServer::setGridConfig(int grid_fd, char send_data, float topleft_x, floa
     l_BufferOf += l_Header.size;
     
     //Pack config message
-	l_DrawerConfig.send_data = send_data;
+	l_DrawerConfig.send_data = 'T';
 	l_DrawerConfig.data_type = this->m_drawerDataType;
-	l_DrawerConfig.tl_x = topleft_x;
-	l_DrawerConfig.tl_y = topleft_y;
-	l_DrawerConfig.br_x = bottomright_x;
-	l_DrawerConfig.br_y = bottomright_y;
+	l_DrawerConfig.tl_x = this->m_viewTL_x;
+	l_DrawerConfig.tl_y = this->m_viewTL_y;
+	l_DrawerConfig.br_x = this->m_viewBR_x;
+	l_DrawerConfig.br_y = this->m_viewBR_y;
     pack(l_Buffer+l_BufferOf, Msg_DrawerConfig_format, 
     	l_DrawerConfig.send_data, l_DrawerConfig.data_type, l_DrawerConfig.tl_x, l_DrawerConfig.tl_y, l_DrawerConfig.br_x, l_DrawerConfig.br_y);
     
@@ -148,31 +181,28 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
 {    
     uint32_t objType, objId;
     Antix::getTypeAndId(newInfo.robotid, &objType, &objId);
-    if(objType == PUCK)
-    {
-        this->m_pucks.at(objId)->getPosition()->setX(newInfo.x_pos);
-		this->m_pucks.at(objId)->getPosition()->setY(newInfo.y_pos);        		
-    }
-    else
-    {    
-    	
-    	this->m_robots.at(objId)->getPosition()->setX(newInfo.x_pos);
-		this->m_robots.at(objId)->getPosition()->setY(newInfo.y_pos);       
-		
-		/*
-      	if (!this->m_robots[objId])
-      	{
-    		if (!this->m_teams[0])//newInfo.id/TEAM_ID_SHIFT])    
-    		{
-    			  DEBUGPRINT("No home for team %d\n", 1);//newInfo.id/TEAM_ID_SHIFT);
-    			  return;
-    		}         			
-		    this->m_robots[objId] = new Game::Robot(pos, this->m_teams[0]->m_TeamId, objId);//newInfo.id/TEAM_ID_SHIFT]->getHome());
-      	}     
-      	*/
-        
-        //this->m_robots[newInfo.id]->m_PuckHeld = this->m_pucks[newInfo.puck_id];
-    }
+
+	printf("Object type=%d, id=%d\n", objType, objId);
+
+	try
+	{
+		if(objType == PUCK)
+		{
+		    this->m_pucks.at(objId)->getPosition()->setX(newInfo.x_pos);
+			this->m_pucks.at(objId)->getPosition()->setY(newInfo.y_pos);        		
+		}
+		else
+		{    
+			
+			this->m_robots.at(objId)->getPosition()->setX(newInfo.x_pos);
+			this->m_robots.at(objId)->getPosition()->setY(newInfo.y_pos);       		    
+		    //this->m_robots[newInfo.id]->m_PuckHeld = this->m_pucks[newInfo.puck_id];
+		}
+	}
+	catch (std::exception &e)
+	{
+		printf("%s doesn't exist at %d\n", (objType == PUCK) ? "Puck" : "Robot",  objId);
+	}
 }
 
 
@@ -216,12 +246,10 @@ int DrawServer::handler(int fd)
                     {
                         bzero(&l_ObjInfo, l_ObjInfo.size);
                         
-                        DEBUGPRINT("1\n");
                         recvWrapper(l_Conn, l_ObjInfoBuf, l_ObjInfo.size);
-                        DEBUGPRINT("2\n");
 
                         unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
-                                &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.speed, &l_ObjInfo.angle, &l_ObjInfo.puckid );
+                                &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.speed, &l_ObjInfo.angle, &l_ObjInfo.puckid, &l_ObjInfo.gridid );
 
                         DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\n",
                         	        l_ObjInfo.robotid, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.puckid );

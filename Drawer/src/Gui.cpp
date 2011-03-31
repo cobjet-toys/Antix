@@ -9,7 +9,6 @@
 #include <GLUT/glut.h>
 #endif
 
-static int threaded = 1;
 
 void * listener_function(void* args)
 {
@@ -35,7 +34,7 @@ void displayFunc()
     drawTeams();
     drawPucks();
     drawRobots(20);
-    drawTest(50, 16, 45.0, 6);
+    //drawTest(50, 16, 45.0, 6);
     
     // ----- Draws framerate ----- //
     prevT = currT;
@@ -473,7 +472,7 @@ void initializePositionLookupArrays(double radius, int count, GLfloat *xVals, GL
 }
 
 void mouseClickHandler(int button, int state, int x, int y)
-{
+{	
     if(button == GLUT_LEFT_BUTTON)
     {
         actionType = 0; // Drag -- Translation action
@@ -492,6 +491,7 @@ void mouseClickHandler(int button, int state, int x, int y)
                 inDrag = false;     
                 xEnd = x;
                 yEnd = y;
+                drawServerRef->updateViewRange(left, top, right, bottom);
                 break;
             default:
                 break;
@@ -515,11 +515,12 @@ void mouseClickHandler(int button, int state, int x, int y)
                 inDrag = false;     
                 xEnd = x;
                 yEnd = y;
+                drawServerRef->updateViewRange(left, top, right, bottom);
                 break;
             default:
                 break;
         }
-    }   
+    }
 }
 
 void mouseMotionHandler(int x, int y)

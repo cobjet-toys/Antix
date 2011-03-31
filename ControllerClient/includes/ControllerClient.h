@@ -24,7 +24,12 @@ public:
     int initNeighbourGrids(); 
 
     int beginSimulation();
-
+    
+    void setHomeRadius(float homeRadius); // information for the GridGame/GridClient
+    void setWorldSize(float worldSize);
+	void numGrids(int numGrids);
+	void numPucksTotal(int pucksTotal);
+	
 private:
 
     std::map<int, std::pair<char[INET6_ADDRSTRLEN], char[MAX_PORTCHARACTERS]> > m_GridConInfo;
@@ -40,6 +45,12 @@ private:
 	uint32_t m_totalRobotClientsReady;
 	
 	uint32_t m_curRange;
+	
+	float m_homeRadius; // information for the GridGame/GridClient
+    float m_worldSize;
+	int m_numGrids;
+    int m_puckTotal;
+	
 };
 }
 

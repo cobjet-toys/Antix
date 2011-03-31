@@ -21,3 +21,9 @@ server.info
 
 # depend files
 *_depends
+
+#config files
+robotConfig.txt
+controllerClient.txt
+clockInit.txt
+gridConfig.txt

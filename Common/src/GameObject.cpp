@@ -1,6 +1,7 @@
 #include "GameObject.h"
 #include <math.h>
 #include <stdio.h>
+#include "Config.h"
 
 using namespace Game;
 
@@ -26,7 +27,7 @@ Math::Position* GameObject::getPosition()
 void GameObject::printInfo()
 {
 
-	printf("Position: %f, %f - id:%d\n", (*getPosition()).getX(), (*getPosition()).getY(), m_id);
+	DEBUGPRINT("Position: %f, %f - id:%d\n", (*getPosition()).getX(), (*getPosition()).getY(), m_id);
 
 }
 

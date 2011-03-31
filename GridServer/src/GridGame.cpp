@@ -29,7 +29,7 @@ using std::make_pair;
 typedef pair<int, GameObject*> ObjectIDPair;
 typedef pair<int, std::vector<sensed_item> > ObjectPair;
 
-GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_from, int id_to)
+GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_from, int id_to, float homeRadius, float worldSize, int numGrids, int puckTotal)
 {
 
     #ifdef DEBUG
@@ -52,10 +52,12 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
 
 
     //TODO: These values either will be read from config, or passed into constructor
-    home_Radius = 0.1;
-    m_WorldSize = 10;
-	m_NumGrids = 2;
-    m_PuckTotal = 6;
+    home_Radius = homeRadius;
+    m_WorldSize = worldSize;
+	m_NumGrids = numGrids;
+    m_PuckTotal = puckTotal;
+    
+    DEBUGPRINT("World info %f %f %i %i\n", home_Radius, m_WorldSize, m_NumGrids, m_PuckTotal);
 
     // calculate boundary zones
     float max_grid_size = m_WorldSize/m_NumGrids;
@@ -444,7 +446,7 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
     //sensed_items_map = &l_sensed_items_map;
 
     
-    #ifdef DEBUG
+    #ifndef RELEASE
     //for( std::map<int, std::vector<sensed_item> >::iterator it = l_sensed_items_map.begin(); it != l_sensed_items_map.end(); it++){
     for( std::vector< RobotSensedObjectsPair >::iterator it = sensor_data->begin(); it != sensor_data->end(); it++){
 
@@ -468,21 +470,8 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
 
     // basic movement, not checking collisons
     // not even checking the angle sent by the client.
-
     // check to see if the robot is in the boundary zone, if they are add them to robots_to_pass
-    // TODO: Should I be using the "new" keyword? I imagine I want to allocate to the heap, not the stack
-    // I think this could have been less complicated in terms of datastructures if we just used a map,
-    // but I didn't want to waste time communicating that change. This could be a bitch to change if we have squares
-    /* 
 
-    // set the grid ids to the left and right
-    //left_robots_pair->first = m_LeftGrid;
-    //right_robots_pair->first = m_RightGrid;
-
-    // set the pairs to the correct vector of robots
-    //left_robots_pair->second = left_robots;
-    //left_robots_pair->second = right_robots;
-    */
     if(robots_to_pass->size() == 0)
     {
         DEBUGPRINT("Size 0");
@@ -513,15 +502,20 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             temp.robotid = l_Robot->getId();
             temp.x_pos = l_Robot->getX();
             DEBUGPRINT("Previous x: %f y: %f\n", l_Robot->getX(), l_Robot->getY());
-            float new_ypos = l_Robot->getY() + 0.1;
+            
+            // TODO: Need to handle robots wrapping around both left and right, up and down
+            float old_ypos = l_Robot->getY();
+            float new_ypos = old_ypos;
             if (new_ypos > m_WorldSize)
             {
-                new_ypos = 0;
+                new_ypos -= m_WorldSize;
             }
-            float new_xpos = l_Robot->getX() + 0.1;
+            
+            float old_xpos = l_Robot->getX();
+            float new_xpos = old_xpos + 0.1;
             if (new_xpos > m_WorldSize)
             {
-                new_xpos = 0;
+                new_xpos -= m_WorldSize;
             }
             temp.x_pos = new_xpos;
             temp.y_pos = new_ypos;
@@ -536,7 +530,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             // check if the robots new position is in a new grid. If it is, we must remove the robot
             // from the grids population, and set the gridid in the Msg_RobotInfo, so the robotclient
             // can fix the mapping
-            if ( temp.x_pos > m_rightBoundary)
+            if( outOfBoundsRight(new_xpos) )
             {
                 // set the robot to the appropriate grid
                 temp.gridid = m_RightGrid;
@@ -545,8 +539,8 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
 
                 DEBUGPRINT("Robot has left this grid on the right side! Removing it from population\n");
 
-            }
-            else if( temp.x_pos < m_leftBoundary)
+            } //&& !(temp.x_pos < (0.0f + robot_SensorRange)) 
+            else if( outOfBoundsLeft(new_xpos) )
             {
                 // set the robot to the appropriate grid
                 temp.gridid = m_LeftGrid;
@@ -564,25 +558,35 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             results->push_back(temp);
 
             // check if robots are in the boundary zone
-            if(temp.x_pos > m_rightInnerBoundary)
+            if( inRightInnerBoundary(new_xpos) || outOfBoundsRight(new_xpos) )
             {
                 right_robots->push_back(temp);
-                DEBUGPRINT("Adding this robotid %d to the \"right_robots\" vector because it is in the boundary\n", temp.robotid);
+                DEBUGPRINT("Adding this robotid %d to the \"right_robots\"vector because it is in the boundary\n or leaving our grid\n", temp.robotid);
             }
-            else if(temp.x_pos < m_leftInnerBoundary)
+            else if( inLeftInnerBoundary(new_xpos) || outOfBoundsLeft(new_xpos) )
             {
                 left_robots->push_back(temp);
-                DEBUGPRINT("Adding this robotid %d to the \"left_robots\" vector because it is in the boundary\n", temp.robotid);
+                DEBUGPRINT("Adding this robotid %d to the \"left_robots\"vector because it is in the boundary\n or leaving our grid\n", temp.robotid);
             }
-        }else
+            
+            // Check to see if robot was in boundary zone, and then left. If so, tell neighbor that robot
+            // is now gone.
+            if( inLeftInnerBoundary(old_xpos) && inMidZone(new_xpos) )
+            {
+                temp.gridid = 0;
+                left_robots->push_back(temp);
+            }
+            else if( inRightInnerBoundary(old_xpos) && inMidZone(new_xpos) )
+            {
+                temp.gridid = 0;
+                right_robots->push_back(temp);
+            }
+        }
+        else
         {
             DEBUGPRINT("****Robot is not in the population");
         }
     }
-
-    // set the values to be processed by the state machine
-    //robots_to_pass->push_back(*left_robots_pair);
-    //robots_to_pass->push_back(*right_robots_pair);
 
     // sort population after we update the positions
     sortPopulation();
@@ -590,9 +594,61 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
     return 0;
 }
 
+bool GridGame::outOfBoundsLeft(float x_pos)
+{
+    if(m_GridId == 1)
+    {
+        if(x_pos > m_WorldSize - robot_SensorRange)
+        {
+            return true;
+        }
+    }
+    else
+    {
+        if(x_pos < m_leftBoundary)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool GridGame::outOfBoundsRight(float x_pos)
+{
+    if(m_GridId == m_NumGrids)
+    {
+        if(x_pos < 0.0f + robot_SensorRange)
+        {
+            return true;
+        }
+    }
+    else
+    {
+        if(x_pos > m_rightBoundary)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool GridGame::inLeftInnerBoundary(float x_pos)
+{
+    return (x_pos > m_leftBoundary && x_pos < m_leftInnerBoundary);
+}
+
+bool GridGame::inRightInnerBoundary(float x_pos)
+{
+    return (x_pos < m_rightBoundary && x_pos > m_rightInnerBoundary);
+}
+
+bool GridGame::inMidZone(float x_pos)
+{
+    return ( x_pos > m_leftInnerBoundary && x_pos < m_rightInnerBoundary );
+}
+
 int GridGame::updateRobots(RobotInfoList& robots)
 {
-
     DEBUGPRINT("Entering updateRobot function\n");
 
     // iterate through each robot recieved by grabbing that robot from our population array
@@ -608,26 +664,30 @@ int GridGame::updateRobots(RobotInfoList& robots)
         }
         else
         {
-            DEBUGPRINT("***UPDATE ROBOT\n");
-            Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
-            l_Robot->updatePosition((*it).x_pos, (*it).y_pos);
-            l_Robot->m_PuckHeld = (*it).puckid;
-            l_Robot->getPosition()->setOrient((*it).angle);
+            if((*it).gridid == 0)
+            {
+                DEBUGPRINT("***REMOVE ROBOT %d\n", (*it).robotid);
+                removeObjectFromPop((*it).robotid);
+            }
+            else
+            {
+                DEBUGPRINT("***UPDATE ROBOT %d\n", (*it).robotid);
+                Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
+                l_Robot->updatePosition((*it).x_pos, (*it).y_pos);
+                l_Robot->m_PuckHeld = (*it).puckid;
+                l_Robot->getPosition()->setOrient((*it).angle);
+                DEBUGPRINT("MOVED TO: %f\n", l_Robot->getPosition()->getX());
+            }
         }
-
     }
-
     sortPopulation();
-
+    return 0;
 }
 
 int GridGame::addObjectToPop(GameObject* object)
 {
-
     this->m_MapPopulation[(*object).m_id] = object ;
-
     this->m_Population.push_back(object);
-
     this->m_YObjects[object] = m_Population.size();
 
     //DEBUGPRINT("Total Population of Game Objects: %zu\n", m_Population.size());
@@ -640,32 +700,24 @@ int GridGame::addObjectToPop(GameObject* object)
 
 int GridGame::removeObjectFromPop(GameObject* object)
 {
-
     int returnval = removeObjectFromPop((*object).m_id);
-
     return returnval;
-
 }
 
 int GridGame::removeObjectFromPop(int objectid)
 {
-
     GameObject* obj = m_MapPopulation[objectid];
-
     m_MapPopulation.erase( objectid );
-
     m_YObjects.erase( obj );
-    
     std::vector<GameObject*>::iterator end = m_Population.end();
    
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != end; it++)
     {
         if ((**it).m_id == objectid){
-            printf("Found %d robot!\n", objectid);
+            DEBUGPRINT("Removing robot %d from the population!\n", objectid);
             this->m_Population.erase(it);
             break;
         }
-
     }
 
     /*
@@ -680,7 +732,6 @@ int GridGame::removeObjectFromPop(int objectid)
     }*/
 
     return 0;
-
 }
 
 int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results)
@@ -717,13 +768,22 @@ const float& GridGame::getWorldSize() const
     return m_WorldSize;
 }
 
-void GridGame::printPopulation(){
+const float& GridGame::getLeftBoundary() const
+{
+    return m_leftBoundary;
+}
 
+const float& GridGame::getRightBoundary() const
+{
+    return m_rightBoundary;
+}
+
+void GridGame::printPopulation()
+{
 	for (int i = 0; i < m_Population.size(); i++){
 	
         DEBUGPRINT("%d - ", i);
 		m_Population[i]->printInfo();
-
 	}
 	return;
 }

@@ -20,7 +20,7 @@ public:
      * All initializatoin of the game happens here.
      * Config options etc...
      */
-     GridGame(int gridid, int num_of_teams, int robots_per_team, int id_from, int id_to);
+     GridGame(int gridid, int num_of_teams, int robots_per_team, int id_from, int id_to, float homeRadius, float worldSize, int numGrids, int puckTotal);
     
     /**
      * Dtor. Delete the pucks and teams.
@@ -84,6 +84,16 @@ public:
     const float& getWorldSize() const;
 
     /**
+     * Return the left boundary.
+     */
+    const float& getLeftBoundary() const;
+
+    /**
+     * Return the right boundary.
+     */
+    const float& getRightBoundary() const;
+
+    /**
      * Add a robot to the general population.
      * Used when a team is initialized.
      */
@@ -99,10 +109,11 @@ public:
 
 private:
 
-    /**
-     * List of pucks.
-     */
-    //std::vector<Game::Puck*> m_Pucks;
+    bool outOfBoundsLeft(float x_pos);
+    bool outOfBoundsRight(float x_pos);
+    bool inLeftInnerBoundary(float x_pos);
+    bool inRightInnerBoundary(float x_pos);
+    bool inMidZone(float x_pos);
 
     /**
      * List and map of all available robots.
