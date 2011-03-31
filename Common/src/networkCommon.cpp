@@ -3,7 +3,68 @@
 #include "Packer.h"
 #include "Config.h"
 #include <string.h>
+#include "Messages.h"
 
+int NetworkCommon::sendWrapper(TcpConnection * conn, unsigned char* buffer, int msgSize)
+{
+    if (conn->send(buffer, msgSize) == -1)
+    {
+        ERRORPRINT("Failed to send a message.\n");
+        return -1;
+    }
+    return 0;
+}
+
+int NetworkCommon::recvWrapper(TcpConnection* conn, unsigned char* buffer, int msgSize)
+{
+    if (conn->recv(buffer, msgSize) == -1)
+    {
+        ERRORPRINT("Failed to receive a message.\n");
+        return -1;
+    }
+    return 0;
+}
+
+int NetworkCommon::packHeaderMessage(unsigned char * buffer, Msg_header *header)
+{
+    unsigned int l_Packed = 0;
+
+    l_Packed = pack(buffer, Msg_header_format, header->sender, header->message);
+
+    if (l_Packed != header->size)
+    {
+        ERRORPRINT("Failed to pack a header message. Sender: %d, Message: %d\n", header->sender, header->message);
+        return -1;
+    }
+    return l_Packed;	
+}
+
+int NetworkCommon::packSizeMessage(unsigned char * buffer, Msg_MsgSize *size)
+{
+    unsigned int l_Packed = 0;
+
+    l_Packed = pack(buffer, Msg_MsgSize_format, size->msgSize);
+
+    if (l_Packed != size->size)
+    {
+        ERRORPRINT("Failed to pack a size message%d.\n", size->msgSize);
+        return -1;
+    }
+    return l_Packed;	
+}
+
+int NetworkCommon::packSensReqMessage(unsigned char * buffer, Msg_RequestSensorData *sens)
+{
+    unsigned int l_Packed = 0;
+
+    l_Packed = pack(buffer, Msg_RequestSensorData_format, sens->id);
+    if (l_Packed != sens->size)
+    {
+        ERRORPRINT("Failed to pack a sensory request%d.\n", sens->id);
+        return -1;
+    }
+    return l_Packed;	
+}
 
 int NetworkCommon::recvHeader(uint16_t &sender, uint16_t &message, TcpConnection * curConnection)
 {

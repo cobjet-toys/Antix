@@ -5,10 +5,10 @@
 #include <map>
 #include <vector>
 #include "Types.h"
+#include <networkCommon.h>
 
 #ifdef DEBUG
 #include <time.h>
-#include <networkCommon.h>
 #endif
 
 using namespace Network;
@@ -31,39 +31,9 @@ RobotClient::RobotClient():Client(), m_ReadyGrids(0), m_ReadyActionGrids(0)
 	m_totalRobotsReceived = 0;
 }
 
-int RobotClient::sendWrapper(TcpConnection * conn, unsigned char* buffer, int msgSize)
+RobotClient::~RobotClient()
 {
-    if (conn->send(buffer, msgSize) == -1)
-    {
-        DEBUGPRINT("Failed to send a message.\n");
-        return -1;
-    }
-    return 0;
-}
-
-int RobotClient::recvWrapper(TcpConnection* conn, unsigned char* buffer, int msgSize)
-{
-    if (conn->recv(buffer, msgSize) == -1)
-    {
-        DEBUGPRINT("Failed to receive a message.\n");
-        return -1;
-    }
-    return 0;
-}
-
-int RobotClient::packHeaderMessage(unsigned char* buffer, uint16_t sender, uint16_t message)
-{
-    Msg_header l_Header;
-
-    l_Header.sender = sender;
-    l_Header.message = message;
-
-    if (pack(buffer, Msg_header_format, l_Header.sender, l_Header.message) != l_Header.size)
-    {
-        DEBUGPRINT("Failed to pack a header message. Sender: %d, Message: %d", sender, message);
-        return -1;
-    }
-    return 0;
+    delete robotGameInstance;
 }
 
 int RobotClient::sendRobotRequests()
@@ -80,6 +50,7 @@ int RobotClient::sendRobotRequests()
     for (std::vector<int>::const_iterator it = m_Grids.begin(); it != l_GridEnd; it++)
     {
         vector<uid> l_RobotIds;
+        l_RobotIds.clear();
         DEBUGPRINT("Requesting sensory info from grid id: %d\n", m_GridFdToId[(*it)]);
         robotGameInstance->requestSensorData(m_GridFdToId[(*it)], &l_RobotIds);
         
@@ -87,37 +58,35 @@ int RobotClient::sendRobotRequests()
         DEBUGPRINT("Requesting sensory info for %zu robots\n", l_RobotIds.size());
 
         unsigned int l_MessageSize = (l_Size.msgSize*l_Req.size)+l_Header.size+l_Size.size;
-        unsigned char l_Buffer[l_MessageSize];
+        unsigned char* l_Buffer = new unsigned char[l_MessageSize];
+
+        if (l_Buffer == NULL)
+        {
+            ERRORPRINT("Couldn't allocate memory for a buffer to store sensory info requests\n");
+            return -1;
+        }
 
         //Keep track of where in the buffer we are packing into.
         unsigned int l_CurrBuffIndex = 0; 
 
         //Add our header.
-        packHeaderMessage(l_Buffer+l_CurrBuffIndex, SENDER_CLIENT, MSG_REQUESTSENSORDATA);        
-        l_CurrBuffIndex += l_Header.size;
+        l_Header.sender = SENDER_CLIENT;
+        l_Header.message = MSG_REQUESTSENSORDATA;
+        l_CurrBuffIndex += NetworkCommon::packHeaderMessage(l_Buffer+l_CurrBuffIndex, &l_Header);        
 
          //Add the number of elements we are sending
-        pack(l_Buffer+l_CurrBuffIndex, Msg_MsgSize_format, l_Size.msgSize);
-        l_CurrBuffIndex += l_Size.size;
-
+        l_CurrBuffIndex += NetworkCommon::packSizeMessage(l_Buffer+l_CurrBuffIndex, &l_Size);
         DEBUGPRINT("Requesting sensory info for %d robots\n", l_Size.msgSize);
                
         for (int i = 0; i < l_Size.msgSize;i++)
         {
-            l_Req.id = l_RobotIds[i]; //REPLACE WITH ACTUAL ROBOT ID l_Req.id = l_RobotIds[i];
+            l_Req.id = l_RobotIds[i];
+            l_CurrBuffIndex += NetworkCommon::packSensReqMessage(l_Buffer+l_CurrBuffIndex, &l_Req);
             DEBUGPRINT("Add id %d to request.\n", l_Req.id);
-            if (pack(l_Buffer+l_CurrBuffIndex, Msg_RequestSensorData_format, l_Req.id) != l_Req.size)
-            {
-                DEBUGPRINT("Error packing sensor request into the buffer\n");
-                return -1;
-            }
-            l_CurrBuffIndex += l_Req.size;
         }
-        DEBUGPRINT("\n");
-        sendWrapper(m_serverList[(*it)], l_Buffer, l_MessageSize);
+        NetworkCommon::sendWrapper(m_serverList[(*it)], l_Buffer, l_MessageSize);
  
-        unpack(l_Buffer, Msg_header_format, &l_Header.sender, &l_Header.message);
-        DEBUGPRINT("Sender: %d Message: %d\n", l_Header.sender, l_Header.message);
+        delete []l_Buffer;
     } 
     return 0;
 }
@@ -156,15 +125,31 @@ int RobotClient::initClock(const char* host, const char* port)
 int RobotClient::handleNewGrid(int id)
 {
 
-    printf("Initializing a new grid.\n");
+    DEBUGPRINT("Initializing a new grid.\n");
     //Header message;
-    Msg_header l_Header;
-    unsigned char l_Buffer[l_Header.size];
-    packHeaderMessage(l_Buffer, SENDER_CLIENT, MSG_REQUESTINITTEAM);
+    Msg_header l_Header = {SENDER_CLIENT, MSG_REQUESTINITTEAM};
+    unsigned char *l_Buffer = new unsigned char[l_Header.size];
+
+    if (l_Buffer == NULL)
+    {
+        ERRORPRINT("Couldn't allocate a buffer to store header\n");
+        return -1;
+    }
+    NetworkCommon::packHeaderMessage(l_Buffer, &l_Header);
     
     int l_GridFd = m_GridIdToFd[id];
-    sendWrapper(m_serverList[l_GridFd], l_Buffer, l_Header.size);
+    TcpConnection* l_GridCon = m_serverList[l_GridFd];
+    if (l_GridCon == NULL)
+    {
+        DEBUGPRINT("Error getting connection for grid id %d, mapped to fd %d\n", id, l_GridFd);
+        return -1;
+    }
+
+    NetworkCommon::sendWrapper(m_serverList[l_GridFd], l_Buffer, l_Header.size);
+
 	m_totalGridRequests++;
+    delete l_Buffer;
+    return 0;
 }
 
 int RobotClient::handler(int fd)
@@ -173,13 +158,24 @@ int RobotClient::handler(int fd)
 
     //Create a 'header' message and buffer to receive into.
     Msg_header l_Header;
-    unsigned char l_HeaderBuffer[l_Header.size];
+    unsigned char *l_HeaderBuffer = new unsigned char[l_Header.size];
+
+    if (l_HeaderBuffer == NULL)
+    {
+        ERRORPRINT("Couldn't allocate space for a header\n");
+        return -1;
+    }
 
     //Get our TCPConnection for this socket.
     TcpConnection *l_Conn =  m_serverList[fd];
         
+    if (l_Conn == NULL)
+    {
+        DEBUGPRINT("Invalid connection for fd %d\n", fd);
+        return -1;
+    }
     //Receive the header message.
-    recvWrapper(l_Conn, l_HeaderBuffer, l_Header.size);
+    NetworkCommon::recvWrapper(l_Conn, l_HeaderBuffer, l_Header.size);
 
     //Unpack the buffer into the 'header' message.
     unpack(l_HeaderBuffer, Msg_header_format, &l_Header.sender, &l_Header.message); 
@@ -196,7 +192,7 @@ int RobotClient::handler(int fd)
                     time_t curr_sec = time(NULL); 
                     if (curr_sec > init_sec)
                     {
-                        printf("Number of timesteps: %d\n", Timesteps);
+                        LOGPRINT("Number of timesteps: %d\n", Timesteps);
                         init_sec = time(NULL);
                         Timesteps = 0;
                    }
@@ -206,10 +202,16 @@ int RobotClient::handler(int fd)
                    
                    //Create a heartbeat message and buffer to receive into.
                    Msg_HB l_HB;
-                   unsigned char l_hbBuffer[l_HB.size]; 
+                   unsigned char *l_hbBuffer = new unsigned char[l_HB.size]; 
+
+                   if (l_hbBuffer == NULL)
+                   {
+                       ERRORPRINT("Couldn't allocate buffer space for receiving heartbeat\n");
+                       return -1;
+                   }
                   
                    //Receive the heartbeat.
-                   recvWrapper(l_Conn, l_hbBuffer, l_HB.size); 
+                   NetworkCommon::recvWrapper(l_Conn, l_hbBuffer, l_HB.size); 
 
                    //Unpack heartbeat message from our buffer.
                    unpack(l_hbBuffer, Msg_HB_format, &l_HB.hb);
@@ -220,6 +222,8 @@ int RobotClient::handler(int fd)
                    {
                        DEBUGPRINT("Error sending robot sensor requests\n");
                    }
+
+                   delete []l_hbBuffer;
                }
             }
             break;
@@ -231,9 +235,15 @@ int RobotClient::handler(int fd)
                     DEBUGPRINT("Receiving robot ids and positions for a team.\n");
 
                     Msg_TeamInit l_Team;
-                    unsigned char l_TeamBuffer[l_Team.size];
+                    unsigned char* l_TeamBuffer = new unsigned char[l_Team.size];
 
-                    recvWrapper(l_Conn, l_TeamBuffer, l_Team.size);
+                    if (l_TeamBuffer == NULL)
+                    {
+                        ERRORPRINT("Couldn't allocate space for receing team info\n");
+                        return -1;
+                    }
+
+                    NetworkCommon::recvWrapper(l_Conn, l_TeamBuffer, l_Team.size);
 
                     unpack(l_TeamBuffer, Msg_TeamInit_format, &l_Team.id, &l_Team.x, &l_Team.y);
 
@@ -242,7 +252,7 @@ int RobotClient::handler(int fd)
                     Msg_MsgSize l_NumRobots;
                     unsigned char l_NumRoboBuffer[l_NumRobots.size];
 
-                    recvWrapper(l_Conn, l_NumRoboBuffer, l_NumRobots.size);
+                    NetworkCommon::recvWrapper(l_Conn, l_NumRoboBuffer, l_NumRobots.size);
 
                     unpack(l_NumRoboBuffer, Msg_MsgSize_format, &l_NumRobots.msgSize);
 
@@ -252,12 +262,17 @@ int RobotClient::handler(int fd)
                     //Receive the robot data.
                     Msg_InitRobot l_Robo;
                     unsigned int l_MessageSize = l_Robo.size*l_NumRobots.msgSize;
-					printf("%ui\n", l_MessageSize);
 			
 					unsigned int l_Offset = 0;
-                    unsigned char l_RoboBuffer[l_MessageSize];
+                    unsigned char* l_RoboBuffer = new unsigned char[l_MessageSize];
 
-                    recvWrapper(l_Conn, l_RoboBuffer, l_MessageSize);
+                    if (l_RoboBuffer == NULL)
+                    {
+                        ERRORPRINT("Couldn't allocate buffer space for receiving team robots\n");
+                        return -1;
+                    }
+
+                    NetworkCommon::recvWrapper(l_Conn, l_RoboBuffer, l_MessageSize);
                     
                     //For each robot, recv, unpack, and add to game.
                     for (int i =0; i < l_NumRobots.msgSize; i++)
@@ -273,32 +288,29 @@ int RobotClient::handler(int fd)
                     l_NumRobots.msgSize;
                     m_totalGridResponses += 1;
 					
-					printf("%lu %lu %lu\n", (unsigned long)m_totalGridRequests, (unsigned long)m_totalRobotsReceived, (unsigned long)m_totalGridResponses);
+					DEBUGPRINT("%lu %lu %lu\n", (unsigned long)m_totalGridRequests, (unsigned long)m_totalRobotsReceived, (unsigned long)m_totalGridResponses);
 					
-					/*if (m_totalGridRequests == m_totalGridResponses)
+		        	/*if (m_totalGridRequests == m_totalGridResponses)
 					{*/
 						//DEBUGPRINT("ROBOT_CLIENT STATUS:\t Got all Grid repsonses for INIT TEAMS\n");
 						
 
-						unsigned char l_gridMessage[l_Header.size];
+		    		unsigned char l_gridMessage[l_Header.size];
 						
-						if (NetworkCommon::packHeader(l_gridMessage, SENDER_CLIENT, MSG_CONFIRMTEAM))
-						{
-							DEBUGPRINT("ROBOT_CLIENT STATUS:\t Failed to pack header\n");
-							return -1;
-						}
+					if (NetworkCommon::packHeader(l_gridMessage, SENDER_CLIENT, MSG_CONFIRMTEAM))
+					{
+						DEBUGPRINT("ROBOT_CLIENT STATUS:\t Failed to pack header\n");
+                        return -1;
+					}
 						
+					if (NetworkCommon::sendMsg(l_gridMessage, l_Header.size , l_Conn) < 0)
+					{
+						DEBUGPRINT("ROBOT_CLIENT: STATUS\t Could not send the robot size message\n");
+					}
 						
-						
-						if (NetworkCommon::sendMsg(l_gridMessage, l_Header.size , l_Conn) < 0)
-						{
-							DEBUGPRINT("ROBOT_CLIENT: STATUS\t Could not send the robot size message\n");
-						}
-						
-						
-					
-					DEBUGPRINT("derp?\n");
-					//return 0;
+					delete []l_RoboBuffer;	
+				    delete []l_TeamBuffer;	
+                    return 0;
                 }
                 break;
                 case(MSG_RESPONDPROCESSACTION) :
@@ -309,18 +321,30 @@ int RobotClient::handler(int fd)
                     Msg_MsgSize l_Size;
                     Msg_RobotInfo l_Result;
 
-                    unsigned char l_SizeBuffer[l_Size.size];
+                    unsigned char *l_SizeBuffer = new unsigned char[l_Size.size];
 
-                    recvWrapper(l_Conn, l_SizeBuffer, l_Size.size);
+                    if (l_SizeBuffer == NULL)
+                    {
+                        ERRORPRINT("Couldn't allocate buffer space for the number of actions\n");
+                        return -1;
+                    }
+
+                    NetworkCommon::recvWrapper(l_Conn, l_SizeBuffer, l_Size.size);
 
                     unpack(l_SizeBuffer, Msg_MsgSize_format, &l_Size.msgSize);
 
                     DEBUGPRINT("Expecting %d results robos\n", l_Size.msgSize);
 
                     unsigned int l_MessageSize = l_Size.msgSize*l_Result.size;
-                    unsigned char l_RobotInfoBuff[l_MessageSize];
+                    unsigned char *l_RobotInfoBuff = new unsigned char[l_MessageSize];
 
-                    recvWrapper(l_Conn, l_RobotInfoBuff, l_MessageSize);
+                    if (l_RobotInfoBuff == NULL)
+                    {
+                        ERRORPRINT("Couldn't allocate buffer for receiving actions responses\n");
+                        return -1;
+                    }
+
+                    NetworkCommon::recvWrapper(l_Conn, l_RobotInfoBuff, l_MessageSize);
 
                     unsigned int l_Offset = 0;
                     std::vector<Msg_RobotInfo> l_Results;
@@ -338,13 +362,25 @@ int RobotClient::handler(int fd)
                     if (m_ReadyActionGrids == m_Grids.size())
                     {
                         TcpConnection* l_ClockConn = m_serverList[m_ClockFd];
+
+                        if (l_ClockConn == NULL)
+                        {
+                            ERRORPRINT("Error in getting the clock connection\n");
+                            return -1;
+                        }
                         //Prepare our 'header' message.
-                        Msg_header l_Header;
+                        Msg_header l_Header = {SENDER_CLIENT, MSG_HEARTBEAT};
                         Msg_HB l_HB = {m_HeartBeat};
 
                         unsigned int l_MessageSize = l_Header.size+l_HB.size;
-                        unsigned char l_HBBuffer[l_MessageSize];
-                        packHeaderMessage(l_HBBuffer, SENDER_CLIENT, MSG_HEARTBEAT);
+                        unsigned char* l_HBBuffer = new unsigned char[l_MessageSize];
+
+                        if (l_HBBuffer == NULL)
+                        {
+                            ERRORPRINT("Error creating buffer for sending heartbeat\n");
+                            return -1;
+                        }
+                        NetworkCommon::packHeaderMessage(l_HBBuffer, &l_Header);
                       
                         //Pack the hearbeat into the header message buffer.
                         if (pack(l_HBBuffer+l_Header.size, Msg_HB_format, l_HB.hb) != l_HB.size)
@@ -352,10 +388,15 @@ int RobotClient::handler(int fd)
                             DEBUGPRINT("Failed to pack the HB message\n");
                             return -1;
                         }
-                        sendWrapper(l_ClockConn, l_HBBuffer, l_MessageSize);
+                        NetworkCommon::sendWrapper(l_ClockConn, l_HBBuffer, l_MessageSize);
                         DEBUGPRINT("Sent heartbeat.\n");
                         m_ReadyActionGrids = 0;
+
+                        delete[]l_HBBuffer;
                     }
+
+                    delete[]l_RobotInfoBuff;
+                    delete[]l_SizeBuffer;
                     break;
                 }
                 case(MSG_RESPONDSENSORDATA) :
@@ -366,7 +407,7 @@ int RobotClient::handler(int fd)
                     Msg_MsgSize l_NumRobots;
                     unsigned char l_NumRobBuffer[l_NumRobots.size];
 
-                    recvWrapper(l_Conn, l_NumRobBuffer, l_NumRobots.size);
+                    NetworkCommon::recvWrapper(l_Conn, l_NumRobBuffer, l_NumRobots.size);
                     unpack(l_NumRobBuffer, Msg_MsgSize_format, &l_NumRobots.msgSize);
 
                     DEBUGPRINT("Expecting %d robots.\n", l_NumRobots.msgSize );
@@ -376,9 +417,14 @@ int RobotClient::handler(int fd)
                     {
                         //First get the header telling us how many objects are sensed and for which object.
                         Msg_SensedObjectGroupHeader l_RoboHeader;
-                        unsigned char l_GroupHeaderBuff[l_RoboHeader.size];
+                        unsigned char *l_GroupHeaderBuff = new unsigned char[l_RoboHeader.size];
 
-                        recvWrapper(l_Conn, l_GroupHeaderBuff, l_RoboHeader.size);
+                        if (l_GroupHeaderBuff == NULL)
+                        {
+                            ERRORPRINT("Error allocating space for the group header in respond sensor data\n");
+                            return -1;
+                        }
+                        NetworkCommon::recvWrapper(l_Conn, l_GroupHeaderBuff, l_RoboHeader.size);
                         unpack(l_GroupHeaderBuff, Msg_SensedObjectGroupHeader_format,
                                 &l_RoboHeader.id, &l_RoboHeader.objectCount);
 
@@ -393,20 +439,28 @@ int RobotClient::handler(int fd)
                             
                            //Receive a sensed item.
                            Msg_SensedObjectGroupItem l_SensedItem;
-                           unsigned char l_SensedItemBuffer[l_SensedItem.size]; 
+                           unsigned char * l_SensedItemBuffer = new unsigned char[l_SensedItem.size]; 
+
+                           if (l_SensedItemBuffer == NULL)
+                           {
+                               ERRORPRINT("Couldn't allocate memory for sensed item buffer\n");
+                               return -1;
+                           }
                             
                            //Receive and insert into our map of sensed items.
-                           recvWrapper(l_Conn, l_SensedItemBuffer, l_SensedItem.size);
+                           NetworkCommon::recvWrapper(l_Conn, l_SensedItemBuffer, l_SensedItem.size);
                            unpack(l_SensedItemBuffer, Msg_SensedObjectGroupItem_format, &l_SensedItem.id,
                                    &l_SensedItem.x, &l_SensedItem.y);
                            l_SensedRobos.push_back(l_SensedItem);
 
                            DEBUGPRINT("Sensed object with ID %d, pos(%d, %d)\n", l_SensedItem.id,
                                    l_SensedItem.x, l_SensedItem.y);
+                           delete []l_SensedItemBuffer;
                         }
                         
                         std::pair<uid, std::vector<Msg_SensedObjectGroupItem > > l_RoboInfo (l_RoboHeader.id, l_SensedRobos);
                         l_SensedInfo.push_back(l_RoboInfo);
+                        delete []l_GroupHeaderBuff;
                     }
                     robotGameInstance->receiveSensorData(&l_SensedInfo);
 
@@ -427,15 +481,21 @@ int RobotClient::handler(int fd)
                             robotGameInstance->sendAction(gridId, &l_RoboActions);
                             DEBUGPRINT("Received %zu actions for grid %d \n", l_RoboActions.size(), gridId);
                             
-                            Msg_header l_Header;
+                            Msg_header l_Header = {SENDER_CLIENT, MSG_PROCESSACTION};
                             Msg_MsgSize l_Size = {l_RoboActions.size()};
                             Msg_Action l_Action;
 
                             unsigned int l_MessageSize = l_Header.size+l_Size.size+ (l_Action.size*l_RoboActions.size());
-                            unsigned char l_ActionBuffer[l_MessageSize];
+                            unsigned char *l_ActionBuffer = new unsigned char[l_MessageSize];
+
+                            if (l_ActionBuffer == NULL)
+                            {
+                                ERRORPRINT("Error allocating buffer for sendin actions \n");
+                                return -1;
+                            }
                             unsigned int l_Offset = 0;
 
-                            packHeaderMessage(l_ActionBuffer+l_Offset, SENDER_CLIENT, MSG_PROCESSACTION);
+                            NetworkCommon::packHeaderMessage(l_ActionBuffer+l_Offset, &l_Header);
                             l_Offset += l_Header.size;
 
                             pack(l_ActionBuffer+l_Offset, Msg_MsgSize_format, l_Size.msgSize);
@@ -443,12 +503,18 @@ int RobotClient::handler(int fd)
 
                             for (int i = 0; i < l_RoboActions.size(); i++)
                             {
-                                pack(l_ActionBuffer+l_Offset, Msg_Action_format, l_RoboActions[i].robotid, l_RoboActions[i].action, l_RoboActions[i].speed,l_RoboActions[i].angle);
+                                if (pack(l_ActionBuffer+l_Offset, Msg_Action_format, l_RoboActions[i].robotid, l_RoboActions[i].action, l_RoboActions[i].speed,l_RoboActions[i].angle) != l_Action.size)
+                                {
+                                    ERRORPRINT("Error packing robo actions");
+                                    return -1;
+                                }
                                 l_Offset += l_Action.size;
                             }
-                            sendWrapper(m_serverList[(*it)],l_ActionBuffer, l_MessageSize);
+                            NetworkCommon::sendWrapper(m_serverList[(*it)],l_ActionBuffer, l_MessageSize);
                             DEBUGPRINT("Sent process action request to grid server\n");
                             l_RoboActions.clear();
+
+                            delete[]l_ActionBuffer;
                         }
                         m_ReadyGrids = 0;
                     }
@@ -458,6 +524,7 @@ int RobotClient::handler(int fd)
             break;
     }
 
+    delete l_HeaderBuffer;
 
     return 0;
 }

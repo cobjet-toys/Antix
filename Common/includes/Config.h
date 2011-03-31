@@ -1,9 +1,10 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#define DEBUG true
 //#define RELEASE
+//#define STEP_BY_STEP //OOOOHHH BABY! Gonna get to you gurrrrl.
 #define LOGGING
+
 
 #ifdef RELEASE  
 #define DEBUGPRINT(format, args...) ((void)0)

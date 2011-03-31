@@ -4,6 +4,7 @@
 #include <string.h>
 #include "Config.h"
 #include <networkCommon.h>
+#include <iostream>
 
 Network::ClockServer::ClockServer()
 {
@@ -125,6 +126,11 @@ int Network::ClockServer::SendHeartBeat()
     DEBUGPRINT("TOTAL TIMESTEPS COMPLETED: %d\n", m_timesteps);
 	m_responded = 0;
 	DEBUGPRINT("All Clients ready\n");
+	
+	#ifdef STEP_BY_STEP
+	char f;
+	std::cin >> f;
+	#endif
 	
 	std::vector<int>::const_iterator l_End = m_clientList.end();
 	
