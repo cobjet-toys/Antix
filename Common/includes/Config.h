@@ -12,6 +12,8 @@
 #define DEBUGPRINT printf
 #endif
 
+#define ERRORPRINT printf
+
 #ifdef LOGGING  
 #define LOGPRINT(format, args...) ((void)0)
 #else
