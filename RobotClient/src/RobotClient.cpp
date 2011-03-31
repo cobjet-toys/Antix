@@ -79,7 +79,7 @@ int RobotClient::sendRobotRequests()
         }
         NetworkCommon::sendWrapper(m_serverList[(*it)], l_Buffer, l_MessageSize);
  
-        delete l_Buffer;
+        delete []l_Buffer;
     } 
     return 0;
 }
