@@ -81,7 +81,7 @@ MANUAL RUN SEQUENCE
 
 	  GRID {{ID}} {{IP ADDRESS}} {{port}}
 	  CLOCK {{IP ADDRESS}} {{port}}
-	  GRID_INIT {{ID}} # will request a team from this grid
+	  INIT_GRID {{ID}} # will request a team from this grid
 
     RUN: Drawer
     ======================================================================
