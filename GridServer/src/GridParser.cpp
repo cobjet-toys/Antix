@@ -27,7 +27,7 @@ int GridParser::handler(std::vector<std::string> commands, void *args)
 		if ( command == "NUMBER_OF_TEAMS" && commands.size() >= 2)
 		{
 			int teamsNum = atoi(commands.at(1).c_str());
-			printf("GRID_PARSER STATUS:\t PARSED: Number of teams: %i\n", teamsNum);
+			LOGPRINT("GRID_PARSER STATUS:\t PARSED: Number of teams: %i\n", teamsNum);
 			l_gridServer->setTeams(teamsNum);
 			if (teamsNum > 0 )
 			{
@@ -39,7 +39,7 @@ int GridParser::handler(std::vector<std::string> commands, void *args)
 		if (command == "ROBOTS_PER_TEAM" && commands.size() >= 2)
 		{
 			int robotPerTeam = atoi(commands.at(1).c_str());
-			printf("GRID_PARSER STATUS:\t PARSED: Robots Per Team: %i\n", robotPerTeam);
+			LOGPRINT("GRID_PARSER STATUS:\t PARSED: Robots Per Team: %i\n", robotPerTeam);
 			l_gridServer->setRobotsPerTeam(robotPerTeam);
 			if (robotPerTeam > 0 )
 			{

@@ -4,6 +4,7 @@
 #include <string.h>
 #include "Config.h"
 #include <networkCommon.h>
+#include <iostream>
 
 Network::ClockServer::ClockServer()
 {
@@ -34,16 +35,25 @@ int Network::ClockServer::handler(int fd)
     //Get our TCPConnection for this socket.
     TcpConnection *l_Conn =  m_Clients[fd];
         
+    if (l_Conn == NULL)
+    {
+    	ERRORPRINT("CLOCK_SERVER ERROR:\t No vaild connection\n");
+    	return -1;
+    }
+    
     //Receive from the socket into our buffer.
-	DEBUGPRINT("About to receive header\n");
-	if (l_Conn->recv(l_Buffer, l_Header.size) == -1)
+	DEBUGPRINT("CLOCK_SERVER STATUS:\t About to receive header\n");
+	
+	if (l_Conn->recv(l_Buffer, l_Header.size) < 0)
 	{
-		DEBUGPRINT("Could not receive\n");
+		ERRORPRINT("CLOCK_SERVER ERROR:\t Could not receive header\n");
 		return -1;
 	}
 
     unpack(l_Buffer, Msg_header_format, &l_Header.sender, &l_Header.message); 
-	DEBUGPRINT("Sender: %d Message: %d\n", l_Header.sender, l_Header.message);
+    
+	DEBUGPRINT("CLOCK_SERVER STATUS:\t Sender:%d Message:%d\n", l_Header.sender, l_Header.message);
+	
     switch(l_Header.sender)
     {
         //Message is from clock.
@@ -54,17 +64,20 @@ int Network::ClockServer::handler(int fd)
                 //Message is heart beat.
                 case(MSG_HEARTBEAT) :
                 {
-					DEBUGPRINT("Receiving heartbeat from robot client\n");
+					DEBUGPRINT("CLOCK_SERVER STATUS:\t Receiving heartbeat from robot client\n");
+					
 					if (l_Conn->recv(l_Buffer+l_Header.size, l_heartBeat.size) == -1)
 					{
-						DEBUGPRINT("Could not receive\n");
+						ERRORPRINT("CLOCK_SERVER ERROR:\t Could not receive heartbeat confirmation\n");
 						return -1;
 					}
 					
-					DEBUGPRINT("Unpack the heartbeat\n");
+					DEBUGPRINT("CLOCK_SERVER ERROR:\t Unpack the heartbeat\n");
+					
 					unpack(l_Buffer+l_Header.size, Msg_HB_format, &l_heartBeat.hb);
 					
-					DEBUGPRINT("Heartbeat character is %d\n", l_heartBeat.hb);
+					DEBUGPRINT("CLOCK_SERVER ERROR:\t Heartbeat character is %d\n", l_heartBeat.hb);
+					
                     if (m_beat == l_heartBeat.hb && m_clientMap[fd] == true)
 					{
 						m_responded++;
@@ -90,6 +103,11 @@ int Network::ClockServer::handler(int fd)
 				break;
 			}
 		}
+		break;
+		default:
+		{
+			
+		}
     }
 
 	
@@ -100,11 +118,11 @@ int Network::ClockServer::handleNewConnection(int fd)
 {
 	if (m_ready)
 	{
-		DEBUGPRINT("CLOCK_SERVER STATUS:\t Adding new ROBOT_Client: %i\n", fd);
+		LOGPRINT("CLOCK_SERVER STATUS:\t Adding new ROBOT_CLIENT: %i\n", fd);
 		m_clientMap[fd] = false;
 		m_clientList.push_back(fd);
 	} else {
-		DEBUGPRINT("CLOCK_SERVER STATUS:\t Controller Connected\n");
+		LOGPRINT("CLOCK_SERVER STATUS:\t Controller Connected\n");
 		m_clockConn = m_Clients[0];
 		m_ready = true;
 	}
@@ -114,22 +132,18 @@ int Network::ClockServer::handleNewConnection(int fd)
 int Network::ClockServer::allConnectionReadyHandler()
 {
 	
-	DEBUGPRINT("CLOCK_SERVER STATUS:\t Controller and all RobotClients connected\n");
+	LOGPRINT("CLOCK_SERVER STATUS:\t CONTROLLER_CLIENT + all ROBOT_CLIENTS connected\n");
 	return 0;
 	
 }
 
 int Network::ClockServer::SendHeartBeat()
 {
-    m_timesteps++;
-    DEBUGPRINT("TOTAL TIMESTEPS COMPLETED: %d\n", m_timesteps);
-	m_responded = 0;
-	DEBUGPRINT("All Clients ready\n");
+   	m_responded = 0;
+   	int fd;
+	DEBUGPRINT("CLOCK_SERVER STATUS:\t All ROBOT_CLIENTS ready\n");
 	
 	std::vector<int>::const_iterator l_End = m_clientList.end();
-	
-	int fd;
-	int i;
 	
 	TcpConnection * conn;
 	
@@ -147,33 +161,39 @@ int Network::ClockServer::SendHeartBeat()
 	} else {
 		m_beat = 1;
 	}
-	DEBUGPRINT("beat = %u\n", m_beat);
+	
+	DEBUGPRINT("CLOCK_SERVER STATUS:\t Going to send BEAT:%u\n", m_beat);
+	
 	l_heartBeat.hb = m_beat;
 	
-	DEBUGPRINT("Total Clients to send Hb: %zu\n",m_clientList.size());
+	DEBUGPRINT("CLOCK_SERVER STATUS:\t Total Clients to send BEAT: %zu\n",m_clientList.size());
 
 	for(std::vector<int>::const_iterator it = m_clientList.begin(); it != l_End; it++)
 	{
-		DEBUGPRINT("Prepairing heartbeat\n");
-		i = 0;
+		DEBUGPRINT("CLOCK_SERVER STATUS:\t Prepairing heartbeat\n");
+
 		fd = (*it);
 		conn = m_Clients[fd];
 		
 		if (conn == NULL) 
 		{
-			DEBUGPRINT("Conn = NULL\n");
+			ERRORPRINT("CLOCK_SERVER ERROR:\t Invalid Connection to ROBOT_CLIENT\n");
 			return -1;
 		}
 		int l_packed ;
+		
 		if ((l_packed = pack(msg, "hhh", l_header.sender, l_header.message, l_heartBeat.hb )) != l_header.size+l_heartBeat.size)
 		{
+			ERRORPRINT("CLOCK_SERVER ERROR:\t Failed to pack heart beat and message\n");
 			return -1; // didn't pack all bytes FAIL & ABORT!!
 		}
-		DEBUGPRINT("%i packed\n", l_packed);
 
-		if (conn->send(msg, l_header.size+l_heartBeat.size) == 0);
+		if (conn->send(msg, l_header.size+l_heartBeat.size) < 0)
+		{
+			ERRORPRINT("CLOCK_SERVER ERROR:\t Failed to send message to ROBOT_CLIENT\n");
+		}
 		
-		DEBUGPRINT("Sent heartbeat %hd\n", l_heartBeat.hb);
+		DEBUGPRINT("CLOCK_SERVER STATUS:\t Sent heartbeat %hd to ROBOT_CLIENT\n", l_heartBeat.hb);
 		m_clientMap[fd] = true;
 	}
 	

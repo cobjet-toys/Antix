@@ -37,7 +37,7 @@ int ControllerParser::handler(std::vector<std::string> commands, void *args)
 			const char * ipAddr = commands.at(1).c_str();
 			const char * port = commands.at(2).c_str();
 			printf("PARSED: Clock: IP=%s PORT=%s\n", ipAddr, port);
-			l_cntlClient->initClock(ipAddr, port);
+			if (l_cntlClient->initClock(ipAddr, port) < 0) return -1;
 			return (ipAddr != NULL && port != NULL)?0:-1;
 		}		
 		if ( command == "HOME_RADIUS" && commands.size() >= 2)

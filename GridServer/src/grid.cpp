@@ -12,7 +12,14 @@ int main(int argc, char ** argv)
     srand((unsigned)time(0));
     
     setbuf(stdout, NULL);
-	
+
+
+    Network::GridServer *l_grid = new Network::GridServer();
+
+    #ifdef GRIDTEST
+    l_grid->initGridGame();
+    #endif
+
 	if (argc < 5) 
 	{
 		printf("Usage: ./grid.bin -p <port> -f <init_file>\n");
@@ -57,7 +64,6 @@ int main(int argc, char ** argv)
 	
 	
 
-	Network::GridServer *l_grid = new Network::GridServer();
 	
 	GridParser l_parser;
 	

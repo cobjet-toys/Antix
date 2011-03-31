@@ -109,10 +109,11 @@ public:
 
 private:
 
-    bool outOfBoundsLeft(Msg_RobotInfo& robot);
-    bool outOfBoundsRight(Msg_RobotInfo& robot);
-    bool inLeftInnerBoundary(Msg_RobotInfo& robot);
-    bool inRightInnerBoundary(Msg_RobotInfo& robot);
+    bool outOfBoundsLeft(float x_pos);
+    bool outOfBoundsRight(float x_pos);
+    bool inLeftInnerBoundary(float x_pos);
+    bool inRightInnerBoundary(float x_pos);
+    bool inMidZone(float x_pos);
 
     /**
      * List and map of all available robots.
