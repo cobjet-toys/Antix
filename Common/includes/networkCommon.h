@@ -5,6 +5,7 @@
 
 class TcpConnection;
 
+
 namespace NetworkCommon
 {
 
