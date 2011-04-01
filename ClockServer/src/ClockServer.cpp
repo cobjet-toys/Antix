@@ -57,7 +57,7 @@ int Network::ClockServer::handler(int fd)
     switch(l_Header.sender)
     {
         //Message is from clock.
-        case(SENDER_CLIENT || SENDER_GRIDSERVER):
+        case(SENDER_CLIENT):
 		{
             switch(l_Header.message)
             {

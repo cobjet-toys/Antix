@@ -51,7 +51,7 @@ int GridParser::handler(std::vector<std::string> commands, void *args)
 		if (command == "CLOCK" && commands.size() >= 3)
 		{
 			const char * address = commands.at(1).c_str();
-			const char * port = commands.at(1).c_str();			
+			const char * port = commands.at(2).c_str();			
 			LOGPRINT("GRID_PARSER STATUS:\t PARSED: address:%s, port:%s\n", address, port);
 			
 			l_gridServer->initClock(address, port);
