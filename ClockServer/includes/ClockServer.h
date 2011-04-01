@@ -16,6 +16,7 @@ class ClockServer: public Server
 public:
     ClockServer();
     virtual ~ClockServer();
+    void setNumGrids(int grids);
     virtual int handler(int fd);
     virtual int handleNewConnection(int fd);
     virtual int allConnectionReadyHandler();
@@ -30,6 +31,8 @@ private:
     TcpConnection * m_clockConn;
     bool m_ready;
     uint32_t m_timesteps;
+    int m_numGrids;
+    int m_conGrids;
 };
 }
 

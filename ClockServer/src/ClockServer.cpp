@@ -16,11 +16,17 @@ Network::ClockServer::ClockServer()
 	m_clockConn = NULL;
 	m_ready = false;
 	m_timesteps = 0;
+	m_numGrids = 0;
 }
 
 Network::ClockServer::~ClockServer()
 {
 
+}
+
+void Network::ClockServer::setNumGrids(int grids)
+{
+	m_numGrids = grids;
 }
 
 int Network::ClockServer::handler(int fd)
@@ -116,9 +122,14 @@ int Network::ClockServer::handler(int fd)
 
 int Network::ClockServer::handleNewConnection(int fd)
 {
-	if (m_ready)
+	if (m_Clients.size() < m_numGrids)
 	{
-		LOGPRINT("CLOCK_SERVER STATUS:\t Adding new ROBOT_CLIENT or GRID_SERVER: %i\n", fd);
+		LOGPRINT("CLOCK_SERVER STATUS:\t Adding new GRID_SERVER: %i\n", fd);
+		m_clientMap[fd] = false;
+		m_clientList.push_back(fd);
+	} else if (m_ready)
+	{
+		LOGPRINT("CLOCK_SERVER STATUS:\t Adding new ROBOT_CLIENT %i\n", fd);
 		m_clientMap[fd] = false;
 		m_clientList.push_back(fd);
 	} else {
@@ -131,7 +142,6 @@ int Network::ClockServer::handleNewConnection(int fd)
 
 int Network::ClockServer::allConnectionReadyHandler()
 {
-	
 	LOGPRINT("CLOCK_SERVER STATUS:\t CONTROLLER_CLIENT + all ROBOT_CLIENTS and GRID_SERVERS connected\n");
 	return 0;
 	

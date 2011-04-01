@@ -16,10 +16,13 @@ int main(int argc, char ** argv)
 
 	char * l_port = NULL;
 	int l_numClients = 0;
+	int l_numGrids = 0;
 	int l_res = 0;
 	opterr = 0;
 	
-	while( (l_res = getopt(argc, argv, "p:c:") ) != -1)
+	Network::ClockServer *l_serv = new Network::ClockServer();
+	
+	while( (l_res = getopt(argc, argv, "p:c:g:") ) != -1)
 	{
 		switch(l_res)
 		{
@@ -34,7 +37,14 @@ int main(int argc, char ** argv)
 				l_numClients = atoi(optarg);
 				DEBUGPRINT("Prepairing to wait on %i clients\n", l_numClients);
 				break;
-			}			
+			}		
+			case('g'):
+			{
+				l_numClients = atoi(optarg);
+				DEBUGPRINT("Prepairing to wait on %i grids\n", l_numGrids);
+				l_serv->setNumGrids(l_numGrids);
+				break;
+			}					
 			case('?'):
 			{
 				printf("Usage: ./clock.bin -p <clock_port> -c <num_clients>\n");
@@ -47,7 +57,6 @@ int main(int argc, char ** argv)
 	
 	}	
 
-	Network::ClockServer *l_serv = new Network::ClockServer();
 
 	if (l_serv->init(l_port, l_numClients+1) < 0) // this +1 is magic for the controller client
 	{
