@@ -193,7 +193,6 @@ int DrawServer::sendGridConfig(int grid_fd)
     pack(l_Buffer+l_BufferOf, Msg_DrawerConfig_format, 
     	l_DrawerConfig.send_data, l_DrawerConfig.data_type, l_DrawerConfig.tl_x, l_DrawerConfig.tl_y, l_DrawerConfig.br_x, l_DrawerConfig.br_y);
     
-    
     return sendWrapper(l_curConn, l_Buffer, l_MessageSize);   
 }
 
@@ -274,7 +273,7 @@ int DrawServer::handler(int fd)
                     
                     Msg_MsgSize l_NumObjects;
 	                Msg_RobotInfo l_ObjInfo;
-	                unsigned char l_ObjInfoBuf[l_ObjInfo.size];
+	                unsigned char * l_ObjInfoBuf = new unsigned char[l_ObjInfo.size];
 	                
                     //Receive the total number of robots we are getting sens info for.
 					NetworkCommon::recvMessageSize(l_NumObjects, l_Conn);
@@ -296,6 +295,8 @@ int DrawServer::handler(int fd)
                         updateObject(l_ObjInfo);
                     }
                     
+                    delete l_ObjInfoBuf;
+                    
                     this->m_framestep++;
 					return 0;
                 }
@@ -310,7 +311,7 @@ int DrawServer::handler(int fd)
                 {
                     Msg_MsgSize l_NumObjects;
 	                Msg_TeamInit l_TeamInfo;
-	                unsigned char l_TeamInfoBuf[l_TeamInfo.size];
+	                unsigned char * l_TeamInfoBuf = new unsigned char[l_TeamInfo.size];
 	                
                 	//Receive the total number of teams we are getting info for.
 					NetworkCommon::recvMessageSize(l_NumObjects, l_Conn);
@@ -348,6 +349,7 @@ int DrawServer::handler(int fd)
 	    				}
     				}
     				
+    				delete l_TeamInfoBuf;
                     DEBUGPRINT("MSG_GRIDTEAMS: Finished.\n");
     				
 					return 0;
