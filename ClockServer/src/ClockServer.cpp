@@ -122,7 +122,8 @@ int Network::ClockServer::handler(int fd)
 
 int Network::ClockServer::handleNewConnection(int fd)
 {
-	if (m_Clients.size() < m_numGrids)
+    DEBUGPRINT("clients %d numgrids %d\n", m_Clients.size(), m_numGrids);
+	if (m_clientList.size() < m_numGrids)
 	{
 		LOGPRINT("CLOCK_SERVER STATUS:\t Adding new GRID_SERVER: %i\n", fd);
 		m_clientMap[fd] = false;
