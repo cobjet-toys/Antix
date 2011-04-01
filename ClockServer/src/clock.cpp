@@ -40,7 +40,7 @@ int main(int argc, char ** argv)
 			}		
 			case('g'):
 			{
-				l_numClients = atoi(optarg);
+				l_numGrids = atoi(optarg);
 				DEBUGPRINT("Prepairing to wait on %i grids\n", l_numGrids);
 				l_serv->setNumGrids(l_numGrids);
 				break;
@@ -58,7 +58,7 @@ int main(int argc, char ** argv)
 	}	
 
 
-	if (l_serv->init(l_port, l_numClients+1) < 0) // this +1 is magic for the controller client
+	if (l_serv->init(l_port, l_numClients+l_numGrids+1) < 0) // this +1 is magic for the controller client
 	{
 		ERRORPRINT("CLOCK_SERVER ERROR:\t Failed to init CLOCK\n");
 		return -1;
