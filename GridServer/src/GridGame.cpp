@@ -728,14 +728,6 @@ int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results)
     std::vector<GameObject*>::iterator endit = m_Population.end();
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != endit; it++)
     {   
-        // Computes robots altered position (Random)
-        //robotPosition[i][0] += float((rand()%200)-100)/50;
-        //robotPosition[i][1] += float((rand()%200)-100)/50;
-
-        //float posX = robotPosition[i][0];
-        //float posY = robotPosition[i][1];
-        //float orientation = 1.0;
-        DEBUGPRINT("GRIDGAME STATUS:\t Pushing a robot on drawer results\n");
         Msg_RobotInfo l_ObjInfo;
 
         // for each object being pushed
