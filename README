@@ -73,6 +73,27 @@ MANUAL RUN SEQUENCE
     RUN: ControllerClient
     ======================================================================
 
+      Description: ControllerClient
+
+	  The ControllerClient regulates the simulation
+
+      How to: 
+
+	  ./controller.bin -f {{config file}}
+
+      Configuration file:
+
+	  HOME_RADIUS {{float}} 
+	  WORLD_SIZE {{integer}} 
+	  NUM_GRIDS {{integer}} 
+	  PUCK_TOTAL {{integer}} 
+	  GRID {{IP Address}} {{port}}
+	  CLOCK {{IP Address}} {{port}}
+
+
+    RUN: RobotClient
+    ======================================================================
+
       Description: RobotClients
 
 	  The RobotClients are the clients who will take part in the simulation.
@@ -86,6 +107,7 @@ MANUAL RUN SEQUENCE
 	  GRID {{ID}} {{IP ADDRESS}} {{port}}
 	  CLOCK {{IP ADDRESS}} {{port}}
 	  INIT_GRID {{ID}} # will request a team from this grid
+
 
     RUN: Drawer
     ======================================================================
