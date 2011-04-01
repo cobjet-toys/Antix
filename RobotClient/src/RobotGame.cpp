@@ -37,7 +37,17 @@ int RobotGame::initTeam(Msg_TeamInit team)
 int RobotGame::setTeamRobot(int gridId, int teamId, Msg_InitRobot robot)
 {
     Math::Position* l_robotPosition = new Math::Position(robot.x,robot.y, 0.0); // initial angle is 0.0
+	if(l_robotPosition == NULL)
+	{
+		ERRORPRINT("ROBOTGAME ERROR:\t Failed to allocate memory for robotPosition in setTeamRobot()\n");
+		return -1;
+	}
     Game::Robot* l_Robot = new Robot(l_robotPosition, teamId, robot.id);
+	if(l_Robot == NULL)
+	{
+		ERRORPRINT("ROBOTGAME ERROR:\t Failed to allocate memory for robot in setTeamRobot()\n");
+		return -1;
+	}
     m_robotsByGrid[gridId].push_back(l_Robot);
     m_robotGrids[robot.id] = gridId;
     DEBUGPRINT("Initializing robo with id %d\n", robot.id);
@@ -77,12 +87,12 @@ int RobotGame::receiveSensorData(vector< std::pair<uid, std::vector<Msg_SensedOb
         DEBUGPRINT("robo id: %d\n", (*iter).first);
         uid robotId = (*iter).first;
         Robot* l_robotp = m_robots[robotId];
-        if(l_robotp == NULL)
-        {
-            DEBUGPRINT("Error: Invalid robotId %d\n", robotId);
-            return -1;
-        }
-        
+		if(l_robotp == NULL)
+		{
+			ERRORPRINT("ROBOTGAME ERROR:\t Invalid robotID %d in requestSensorData()\n", robotId);
+			return -1;
+		}
+
         DEBUGPRINT("Updating sensors for robo %d\n", robotId);       
         l_robotp->updateSensors( (*iter).second );
     }
@@ -130,7 +140,7 @@ int RobotGame::actionResult(vector<Msg_RobotInfo>* results)
         Robot* l_robotp = m_robots[robotId];
         if(l_robotp == NULL)
         {
-            DEBUGPRINT("Error: Invalid robotId %d for this grid", robotId);
+			ERRORPRINT("ROBOTGAME ERROR:\t Invalid robotID %d for this grid, in actionResult()\n", robotId);
             return -1;
         }
         

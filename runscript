@@ -1,5 +1,5 @@
-nohup gnome-terminal --title GridServer --execute ./GridServer/build/debug/grid.bin 12345 GridServer/build/GRID_CONFIG
-nohup gnome-terminal --title ClockServer --execute ./ClockServer/build/debug/clock.bin 12346 1 ClockServer/build/CLOCK_CONFIG
-nohup gnome-terminal --title Controller --execute ./ControllerClient/build/debug/controller.bin controllerClient.txt
-nohup gnome-terminal --title RobotClient --execute ./RobotClient/build/debug/robot.bin RobotClient/build/ROBOT_CONFIG
-nohup gnome-terminal --title Drawer --execute ./Drawer/build/debug/drawer.bin 12345 notused
+nohup gnome-terminal --tab --title="Make GridServer" --working-directory="$PWD/GridServer/" --tab --title="Run GridServer" --working-directory="$PWD/GridServer/build/debug/"
+nohup gnome-terminal --tab --title="Make Clock" --working-directory="$PWD/ClockServer/" --tab --title="Run Clock" --working-directory="$PWD/ClockServer/build/debug/"
+nohup gnome-terminal --tab --title="Make Controller" --working-directory="$PWD/ControllerClient/" --tab --title="Run Controller" --working-directory="$PWD/ControllerClient/build/debug/"
+nohup gnome-terminal --tab --title="Make RobotClient" --working-directory="$PWD/RobotClient/" --tab --title="Run RobotClient" --working-directory="$PWD/RobotClient/build/debug/"
+nohup gnome-terminal --tab --title="Make Drawer" --working-directory="$PWD/Drawer/" --tab --title="Run Drawer" --working-directory="$PWD/Drawer/build/debug/"

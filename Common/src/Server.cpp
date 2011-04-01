@@ -152,7 +152,7 @@ int Network::Server::initConnection(const char* host, const char* port)
 		DEBUGPRINT("SERVER ERROR:\t Invalid arguments to init\n");
 	} 
 	
-	DEBUGPRINT("SERVER STATUS:\t Connection to host:%s:%s\n", host, port);
+	LOGPRINT("SERVER STATUS:\t Connection to host:%s:%s\n", host, port);
 	
 	addrinfo l_hints, *l_result, *l_p;
 	int l_resvalue = -1;

@@ -34,7 +34,7 @@ void displayFunc()
     drawTeams();
     drawPucks();
     drawRobots(20);
-    drawTest(50, 16, 45.0, 6);
+    //drawTest(50, 16, 45.0, 6);
     
     // ----- Draws framerate ----- //
     prevT = currT;

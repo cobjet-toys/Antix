@@ -74,9 +74,14 @@ public:
     int updateRobots(std::vector<Msg_RobotInfo>& robots_to_update);
 
     /**
-     * Interface function to Network layer for processing actions for each robot.
+     * Interface function to Network layer for processing actions for each robot and puck.
      */
     int getPopulation(std::vector< Msg_RobotInfo >* results);
+    
+    /**
+     * Interface function to Network layer for sending teams.
+     */
+    int getTeams(std::vector< Msg_TeamInit >* results);
 
     /**
      * Return the max world size.
@@ -109,10 +114,11 @@ public:
 
 private:
 
-    /**
-     * List of pucks.
-     */
-    //std::vector<Game::Puck*> m_Pucks;
+    bool outOfBoundsLeft(float x_pos);
+    bool outOfBoundsRight(float x_pos);
+    bool inLeftInnerBoundary(float x_pos);
+    bool inRightInnerBoundary(float x_pos);
+    bool inMidZone(float x_pos);
 
     /**
      * List and map of all available robots.

@@ -13,19 +13,21 @@ DrawerParser::~DrawerParser()
 int DrawerParser::handler(std::vector<std::string> commands, void *args)
 {
 	Network::DrawServer * l_drawer = (Network::DrawServer *)args;
-	
-	if (l_drawer == NULL) return -2;
-		
+	if(l_drawer == NULL)
+	{
+		ERRORPRINT("DRAWERPARSER ERROR:\t Failed to allocate memory in handler()\n");
+		return -1;
+	}		
 	if (!commands.empty())
 	{
 		std::string command = commands.at(0);
-		if ( command == "GRID" && commands.size() >= 4)
+		if ( command == "GRID" && commands.size() >= 3)
 		{
 			int id = atoi(commands.at(1).c_str());
 			const char * host = commands.at(2).c_str();
 			const char * port = commands.at(3).c_str();
 			DEBUGPRINT("PARSED: GRID ID %i with IP %s and PORT %s\n", id, host, port);
-			return l_drawer->initGrid(host, port, id);
+			return l_drawer->initGrid(host, port);
 		}
 		else if (command == "WINDOW_SIZE")
 		{
@@ -60,7 +62,12 @@ int DrawerParser::handler(std::vector<std::string> commands, void *args)
 			int size = atoi(commands.at(1).c_str());
 			DEBUGPRINT("PARSED: TOTAL_NUM_ROBOTS %i\n", size);
 			
-			Math::Position *pos = new Math::Position(0.0, 0.0, 0.0);		
+			Math::Position *pos = new Math::Position(0.0, 0.0, 0.0);
+			if(pos == NULL)
+			{
+				ERRORPRINT("DRAWERPARSER ERROR:\t Failed to allocate memory for position in handler()\n");
+				return -1;
+			}		
 			return l_drawer->initRobots(size) == size;
 		}
 		else if (command == "TOTAL_NUM_PUCKS")
@@ -69,6 +76,11 @@ int DrawerParser::handler(std::vector<std::string> commands, void *args)
 			DEBUGPRINT("PARSED: TOTAL_NUM_PUCKS %i\n", size);
 			
 			Math::Position *pos = new Math::Position(0.0, 0.0, 0.0);
+			if(pos == NULL)
+			{
+				ERRORPRINT("DRAWERPARSER ERROR:\t Failed to allocate memory for position in handler()\n");
+				return -1;
+			}	
 			return l_drawer->initPucks(size) == size;
 		}
 		else if (command == "ENABLE_FOV")

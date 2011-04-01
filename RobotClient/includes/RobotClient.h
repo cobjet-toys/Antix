@@ -15,6 +15,7 @@ class RobotClient: public Client
 {
 public:
     RobotClient();
+    ~RobotClient();
     virtual int handler(int fd);
     int handleNewGrid(int id); 
     int initGrid(const char * host, const char * port, const int id);
@@ -22,8 +23,6 @@ public:
 private:
 
     int packHeaderMessage(unsigned char* buffer, uint16_t sender, uint16_t message);
-    int recvWrapper(TcpConnection* conn, unsigned char* buffer, int msgSize);
-    int sendWrapper(TcpConnection* conn, unsigned char* buffer, int msgSize);
     int sendRobotRequests();
 
 	std::vector<int> m_Grids;
