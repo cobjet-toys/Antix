@@ -524,7 +524,7 @@ int RobotClient::handler(int fd)
             break;
     }
 
-    delete l_HeaderBuffer;
+    delete[] l_HeaderBuffer;
 
     return 0;
 }
