@@ -27,7 +27,7 @@ Math::Position* GameObject::getPosition()
 void GameObject::printInfo()
 {
 
-	DEBUGPRINT("Position: %f, %f - id:%d\n", (*getPosition()).getX(), (*getPosition()).getY(), m_id);
+	DEBUGPRINT("GAMEOBJECT STATUS:\t ID:%d Xpos:%f, Ypos:%f\n",  m_id, (*getPosition()).getX(), (*getPosition()).getY());
 
 }
 
