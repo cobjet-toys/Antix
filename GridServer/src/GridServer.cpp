@@ -944,7 +944,7 @@ int GridServer::handler(int fd)
                     //DEBUGPRINT("Recieved Drawer Instruction\n");
 
                     Msg_DrawerConfig configData;
-                    unsigned char configDataBuf[configData.size];
+                    unsigned char * configDataBuf = new unsigned char[configData.size];
 
                     if (l_curConnection->recv(configDataBuf, configData.size) == -1)
 					{
@@ -952,6 +952,7 @@ int GridServer::handler(int fd)
 						return -1;
 					}
 					unpack(configDataBuf, Msg_DrawerConfig_format, &configData.send_data, &configData.data_type, &configData.tl_x, &configData.tl_y, &configData.br_x, &configData.br_y);
+					delete configDataBuf;
 
                     //DEBUGPRINT("Config: send_data=%c, data_type=%c, tl_x=%f, tl_y=%f, br_x=%f, br_y=%f\n",
                            //configData.send_data, configData.data_type, configData.tl_x, configData.tl_y, configData.br_x, configData.br_y);
@@ -973,7 +974,7 @@ int GridServer::handler(int fd)
 						l_responseMsgSize += l_msgSize.size;					// append msgSize size
 						l_responseMsgSize += (l_msgSize.msgSize * l_TeamInfo.size); // append the total size for number of team info
 
-						unsigned char msgBuffer[l_responseMsgSize];
+						unsigned char * msgBuffer = new unsigned char[l_responseMsgSize];
 
 						if (pack(msgBuffer, Msg_header_format, l_header.sender, l_header.message) != l_header.size)
 						{
@@ -1007,6 +1008,7 @@ int GridServer::handler(int fd)
 						{
 							DEBUGPRINT("Failed to send\n");
 						}
+						delete msgBuffer;
 						DEBUGPRINT("Sent %d teams.\n", l_msgSize.msgSize);
 						
                         m_drawerConn = l_curConnection;
@@ -1062,8 +1064,8 @@ int GridServer::updateDrawer(uint32_t framestep)
     l_Size.msgSize = objects.size();
 
     unsigned int l_Offset = 0;
-    unsigned int l_MessageSize = l_Header.size+l_Size.size+(l_RoboInfo.size*l_Size.msgSize);
-    unsigned char l_Buffer[l_MessageSize];
+    unsigned int l_MessageSize = l_Header.size + l_Size.size + (l_RoboInfo.size*l_Size.msgSize);
+    unsigned char *l_Buffer = new unsigned char[l_MessageSize];
 
     NetworkCommon::packHeader(l_Buffer+l_Offset, SENDER_GRIDSERVER, MSG_GRIDDATAFULL);
     l_Offset += l_Header.size;
@@ -1089,6 +1091,7 @@ int GridServer::updateDrawer(uint32_t framestep)
         return -1;
     }   
     
+    delete l_Buffer;
     return 0;
 }
 
