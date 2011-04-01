@@ -129,7 +129,7 @@ int TcpConnection::send(unsigned char * message, int messageSize)
         //Check for error.
         if (l_Sent == -1)
 		{
-            printf("Error: %s\n", strerror(errno));
+            DEBUGPRINT("Error: %s\n", strerror(errno));
             continue;
 		}
         l_Total += l_Sent;

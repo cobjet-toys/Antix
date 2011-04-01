@@ -192,7 +192,7 @@ int RobotClient::handler(int fd)
                     time_t curr_sec = time(NULL); 
                     if (curr_sec > init_sec)
                     {
-                        LOGPRINT("Number of timesteps: %d\n", Timesteps);
+                        ERRORPRINT("Number of timesteps: %d\n", Timesteps);
                         init_sec = time(NULL);
                         Timesteps = 0;
                    }

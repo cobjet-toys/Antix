@@ -250,7 +250,6 @@ int GridServer::handler(int fd)
 
                    //Unpack heartbeat message from our buffer.
                    unpack(l_hbBuffer, Msg_HB_format, &l_HB.hb);
-                   ERRORPRINT("Hearbeat character: %hd\n", l_HB.hb);
 
                    m_Hb = l_HB.hb; 
 
