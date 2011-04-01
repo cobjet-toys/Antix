@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 {
 	if (argc < 2) 
 	{
-		perror("Please specify a config file for the Drawer");
+		perror("Usage: ./drawer -f <init_file>");
 		return (EXIT_FAILURE);
 	}
     
