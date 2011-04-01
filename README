@@ -28,11 +28,28 @@ SCRIPT RUN SEQUENCE
 MANUAL RUN SEQUENCE
 ======================================================================
 
-  1.) Grid Servers
-  2.) Clock
+  1.) Clock
+  2.) Grid Servers
   3.) ControllerClient
   4.) RobotClients
   5.) Drawer
+
+
+
+    RUN: Clock
+    ======================================================================
+
+      Description: 
+
+	  The clock helps keep the simulation in sync.
+
+      How to: 
+
+	  ./clock.bin -p {{port}} -c {{# of robot clients}} -g {{# of grid servers}}
+
+      Configuration file:
+
+	  None.
 
 
     RUN: Grid Servers
@@ -50,22 +67,8 @@ MANUAL RUN SEQUENCE
 
 	  NUMBER_OF_TEAMS {{integer}} # Required: specifies the number of teams on the grid
 	  ROBOTS_PER_TEAM {{integer}} # Required: specified the number of robots per team
+	  CLOCK {{IP ADDRESS}} {{port}}
 
-
-    RUN: Clock
-    ======================================================================
-
-      Description: 
-
-	  The clock helps keep the simulation in sync.
-
-      How to: 
-
-	  ./clock.bin -p {{port}} -c {{# of robot clients}}
-
-      Configuration file:
-
-	  None.
 
     RUN: ControllerClient
     ======================================================================
