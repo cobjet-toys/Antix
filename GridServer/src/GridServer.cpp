@@ -960,11 +960,13 @@ int GridServer::handler(int fd)
 					if (!m_drawerConn)
 					{
 						//Send team data
+						std::vector<Msg_TeamInit> objects;
+						gridGameInstance->getTeams(&objects);
+						
 						Msg_header l_header = {SENDER_GRIDSERVER, MSG_GRIDTEAMS}; // header for response
 						Msg_MsgSize l_msgSize;	
-						l_msgSize.msgSize = 1; //number of teams with homes on grid
-
-						Msg_TeamInit l_TeamInfo;	//for each object
+						Msg_TeamInit l_TeamInfo;
+						l_msgSize.msgSize = objects.size(); //number of teams with homes on grid
 
 						unsigned int l_responseMsgSize = 0;	
 						l_responseMsgSize += l_header.size; 					// append header size	
@@ -988,16 +990,11 @@ int GridServer::handler(int fd)
 						}
 
 						l_position += l_msgSize.size; // shift by robot size header
-
-						for(int i = 0; i < l_msgSize.msgSize; i++)
-						{
-							// for each team being pushed
-							l_TeamInfo.id = i;
-							l_TeamInfo.x = float((rand()%600));		//fake data
-							l_TeamInfo.y = float((rand()%600));		//fake data
-										   
+	
+						for(std::vector<Msg_TeamInit>::iterator it = objects.begin(); it != objects.end(); it++)
+						{										   
 							if (pack(msgBuffer+l_position, Msg_TeamInit_format,
-									 l_TeamInfo.id, l_TeamInfo.x, l_TeamInfo.y ) != l_TeamInfo.size)
+									 (*it).id, (*it).x, (*it).y ) != l_TeamInfo.size)
 							{
 								DEBUGPRINT("Could not pack robot header\n");
 								return -1;
@@ -1077,13 +1074,12 @@ int GridServer::updateDrawer(uint32_t framestep)
     for (int i = 0; i < l_Size.msgSize; i++)
     {
         pack(l_Buffer+l_Offset, Msg_RobotInfo_format, objects[i].robotid, objects[i].x_pos, objects[i].y_pos, 0, 0, 0 ); 
-        unpack(l_Buffer+l_Offset, Msg_RobotInfo_format,
-                                &l_RoboInfo.robotid, &l_RoboInfo.x_pos, &l_RoboInfo.y_pos, &l_RoboInfo.speed, &l_RoboInfo.angle, &l_RoboInfo.puckid, &l_RoboInfo.gridid );
-
-        DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\tgrid=%d\n",
-                        	        l_RoboInfo.robotid, l_RoboInfo.x_pos, l_RoboInfo.y_pos, l_RoboInfo.angle, l_RoboInfo.puckid, l_RoboInfo.gridid );
+        
+        //unpack(l_Buffer+l_Offset, Msg_RobotInfo_format,
+                                //&l_RoboInfo.robotid, &l_RoboInfo.x_pos, &l_RoboInfo.y_pos, &l_RoboInfo.speed, &l_RoboInfo.angle, &l_RoboInfo.puckid, &l_RoboInfo.gridid );
+        //DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\n",
+                        	        //l_RoboInfo.robotid, l_RoboInfo.x_pos, l_RoboInfo.y_pos, l_RoboInfo.angle, l_RoboInfo.puckid );
                          
-       // DEBUGPRINT("id: %d xpos: %f ypos: %f\n", objects[i].robotid, objects[i].x_pos, objects[i].y_pos);
         l_Offset += l_RoboInfo.size;
     }
 
