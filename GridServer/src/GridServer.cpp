@@ -178,6 +178,7 @@ int GridServer::allConnectionReadyHandler()
 void * drawer_function(void* gridPtr)
 {
     Network::GridServer * grid = (Network::GridServer *)gridPtr;
+    uint32_t objsUpdated = 0;
 
     for(uint32_t frame = 0; true; frame++)
     {
@@ -185,7 +186,9 @@ void * drawer_function(void* gridPtr)
 
         try
         {
-            DEBUGPRINT("UpdateDrawer return[%d]: %d\n", frame, grid->updateDrawer(frame));
+        	objsUpdated = grid->updateDrawer(frame);
+        	if (objsUpdated > 0)
+            	DEBUGPRINT("UpdateDrawer return[%d]: %d\n", frame, objsUpdated);
         }
         catch(std::exception & e)
         {
@@ -1109,8 +1112,8 @@ int GridServer::handler(int fd)
                     //change send-to-drawer status accordingly
                     float l_gridLeft = gridGameInstance->getLeftBoundary();
                     float l_gridRight = gridGameInstance->getRightBoundary();
-                    updateDrawerFlag = (l_gridLeft >= configData.tl_x && l_gridRight <= configData.br_x);
-            
+                    updateDrawerFlag = !(l_gridLeft > configData.br_x || l_gridRight < configData.tl_x);
+            		
                     return 0;
                 }
 
@@ -1145,6 +1148,7 @@ int GridServer::updateDrawer(uint32_t framestep)
     gridGameInstance->getPopulation(&objects);
 
     l_Size.msgSize = objects.size();
+    DEBUGPRINT("updateDrawer: Sending %d objects.\n", l_Size.msgSize);
 
     unsigned int l_Offset = 0;
     unsigned int l_MessageSize = l_Header.size + l_Size.size + (l_RoboInfo.size*l_Size.msgSize);

@@ -33,7 +33,7 @@ void displayFunc()
 
     drawTeams();
     drawPucks();
-    drawRobots(20);
+    drawRobots(10);
     //drawTest(50, 16, 45.0, 6);
     
     // ----- Draws framerate ----- //
@@ -172,9 +172,9 @@ void drawRobots(int edgePoints)
             //colors[3*i + 1] = 255;
             //colors[3*i + 2] = 255;
 
-            char tmpBuf[40];
-            sprintf(tmpBuf, "Robots[%d]: [%f, %f]", i, robotPos->getX(), robotPos->getY());
-            drawText(tmpBuf, 5, 540 - (15*i), false);
+            //char tmpBuf[40];
+            //sprintf(tmpBuf, "Robots[%d]: [%f, %f]", i, robotPos->getX(), robotPos->getY());
+            //drawText(tmpBuf, 5, 540 - (15*i), false);
 
             i++;
         }
