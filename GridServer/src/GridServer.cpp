@@ -150,7 +150,7 @@ int GridServer::initGridGame()
 	return 0;
 }
 
-int GridServer::initClock(char* host, char* ip)
+int GridServer::initClock(const char* host, const char* ip)
 {
     int l_ClockFd = initConnection(host,ip);
 

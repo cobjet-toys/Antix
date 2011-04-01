@@ -21,7 +21,7 @@ public:
     virtual int handler(int fd);
     virtual int handleNewConnection(int fd);
 	virtual int allConnectionReadyHandler();
-    int initClock(char* host, char* ip);
+    int initClock(const char* host, const char* ip);
 	void setTeams(int amount);
 	void setIdRange(int from, int to);
 	void setRobotsPerTeam(int amount);
