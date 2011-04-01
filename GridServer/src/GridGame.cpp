@@ -34,7 +34,7 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
 
     #ifdef DEBUG
 
-    printf("=====initial values\nGridid: %d, Num of teams: %d, robots per team: %d, idfrom: %d, idto: %d\n", gridid, num_of_teams, robots_per_team, id_from, id_to);
+    LOGPRINT("GRIDGAME STATUS:\t INIT Grid Id: %d, Num of teams: %d, robots per team: %d, idfrom: %d, idto: %d\n", gridid, num_of_teams, robots_per_team, id_from, id_to);
 
     #endif
 
@@ -48,7 +48,7 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     robot_SensorRange = 0.2;
     robot_PickupRange = robot_SensorRange/5.0;
 
-    DEBUGPRINT("Robot FOV: \n%f\n", robot_FOV);
+    LOGPRINT("GRIDGAME STATUS:\t Robot FOV: \n%f\n", robot_FOV);
 
 
     //TODO: These values either will be read from config, or passed into constructor
@@ -57,7 +57,7 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
 	m_NumGrids = numGrids;
     m_PuckTotal = puckTotal;
     
-    DEBUGPRINT("World info %f %f %i %i\n", home_Radius, m_WorldSize, m_NumGrids, m_PuckTotal);
+    LOGPRINT("GRIDGAME STATUS:\t INIT World info Home Radius:%f World Size:%f Numer of Grids:%i Puck Total%i\n", home_Radius, m_WorldSize, m_NumGrids, m_PuckTotal);
 
     // calculate boundary zones
     float max_grid_size = m_WorldSize/m_NumGrids;
@@ -70,9 +70,9 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     m_LeftGrid = (m_GridId - 1 == 0) ? m_NumGrids : m_GridId - 1;
     m_RightGrid = (m_GridId + 1 > m_NumGrids) ? 1 : m_GridId + 1;
 
-    DEBUGPRINT("Left grid: %d Right grid: %d\n", m_LeftGrid, m_RightGrid);
-    DEBUGPRINT("Left boundary: %f Left inner boundary: %f\n", m_leftBoundary, m_leftInnerBoundary);
-    DEBUGPRINT("Right boundary: %f Right inner boundary: %f\n", m_rightBoundary, m_rightInnerBoundary);
+    LOGPRINT("GRIDGAME STATUS:\t INIT Left grid: %d Right grid: %d\n", m_LeftGrid, m_RightGrid);
+    LOGPRINT("GRIDGAME STATUS:\t INIT Left boundary: %f Left inner boundary: %f\n", m_leftBoundary, m_leftInnerBoundary);
+    LOGPRINT("GRIDGAME STATUS:\t INIT Right boundary: %f Right inner boundary: %f\n", m_rightBoundary, m_rightInnerBoundary);
 
     // Safety
     m_Population.clear();
@@ -111,7 +111,19 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
         Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, 
                                                                          m_leftBoundary,
                                                                          m_rightBoundary);
+                                                                         
+        if (l_RobotPosition == NULL)
+        {
+        	ERRORPRINT("GRIDGAME ERROR:\t INIT Failed to get random position\n");
+        }                                                                 
+                                                                         
         Game::Robot* l_Robot = new Robot(l_RobotPosition, i );
+        
+        if (l_Robot == NULL)
+        {
+        	ERRORPRINT("GRIDGAME ERROR:\t INIT Failed to create robot with posistion\n");
+        }
+        
         addObjectToPop(l_Robot);
     }
 
@@ -119,7 +131,7 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     high_puck_range = high_puck_range + 1000000;
     low_puck_range = low_puck_range + 1000000;
 
-    printf("high:%d - low:%d", high_puck_range, low_puck_range);
+    LOGPRINT("GRIDGAME STATUS:\t INIT PUCK Range high:%d low:%d", high_puck_range, low_puck_range);
 
 
     //Generate pucks at random locations.
@@ -142,7 +154,7 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     for(std::vector<Team*>::iterator it = m_Teams.begin(); it != m_Teams.end(); it++)
     {
     
-        std::cout << "Id:" << (*it)->getId() << "Team X: " << (*it)->getX() << "Team Y:" << (*it)->getY() << std::endl;
+        LOGPRINT("GRIDGAME STATUS:\t INIT TEAM ID: %u Xpos:%f, Ypos:%f\n"(*it)->getId(), (*it)->getX(), (*it)->getY());
 
     }
 
@@ -173,7 +185,7 @@ GridGame::~GridGame()
 
 void GridGame::sortPopulation()
 {
-    DEBUGPRINT("***Sort Population executing**\n");
+    DEBUGPRINT("GRIDGAME STATUS:\t Sort Population execution started\n");
     //Sort on the y axis.
     int i;
     GameObject* l_Key;
@@ -191,87 +203,47 @@ void GridGame::sortPopulation()
         m_Population[i+1] = l_Key;
         m_YObjects[l_Key] = i+1;
     }
-
+    DEBUGPRINT("GRIDGAME STATUS:\t Sort Population execution finished\n");
 }
-
-
-/*
-int GridGame::initializeTeam(std::vector<int> teams, std::vector<robot_info>* robot_info_vector)
-{
-
-        //TODO: Will load team_size from the config
-        int team_size = 1000;
-        std::vector<int>::iterator end = teams.end();
-
-        std::vector<robot_info> l_robot_info_vector;
-
-        for(std::vector<int>::iterator it = teams.begin(); it != end; it++){
-            // get range of robot ids based on team id and team size
-            int firstid = (*it)*team_size;
-            int lastid = firstid + team_size - 1;
-
-            std::cout << "from: " << firstid << "to: " << lastid << std::endl;
-
-            for (int i = firstid; i <= lastid; i++)
-            {
-                Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
-                Game::Robot* l_Robot = new Robot(l_RobotPosition, i, robot_FOV, robot_Radius, robot_PickupRange, robot_SensorRange);
-                addObjectToPop(l_Robot);
-
-                robot_info temp;
-                temp.id = i;
-                temp.x_pos = l_RobotPosition->getX();
-                temp.y_pos = l_RobotPosition->getY();
-
-                l_robot_info_vector.push_back(temp);
-            }
-        }
-        robot_info_vector = &l_robot_info_vector;
-
-        return 1;
-}
-
- */
-
 
 int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
 {
 
-    DEBUGPRINT("===Executing getRobots\nTeam Counter: %d\n", teamcounter);
+    DEBUGPRINT("GRIDGAME STATUS:\t Executing GETROBOTS() Team Counter: %d\n", teamcounter);
     Team* l_Team = m_Teams[teamcounter];
     team.id = l_Team->getId();
     team.x = l_Team->getX();
     team.y = l_Team->getY();
 
-    DEBUGPRINT("Team id: %d - Team x: %f - Team y: %f\n", team.id, team.x, team.y);
+    DEBUGPRINT("GRIDGAME STATUS:\t Team id: %d, Team x: %f, Team y: %f\n", team.id, team.x, team.y);
 
     //std::vector<robot_info> l_robot_info_vector = new std::vector<robot_info>();
 
     int i;
-	printf("robo counter: %d, robotconter+m_Robos/team: %d\n", robotcounter, robotcounter+m_Robots_Per_Team);
+	DEBUGPRINT("GRIDGAME STATUS:\t Robo Counter Min:%d, Robot Counter Max: %d\n", robotcounter, robotcounter+m_Robots_Per_Team);
     for (i = robotcounter; i < robotcounter+m_Robots_Per_Team; i++)
     {
         GameObject* l_Robot = m_Population[i];
-        if (l_Robot == NULL) exit(1);
+        
+        if (l_Robot == NULL) return -1;
+        
         Msg_InitRobot temp;
         temp.id = l_Robot->getId();
         temp.x = l_Robot->getX();
         temp.y = l_Robot->getY();
-		//DEBUGPRINT("ID: %d, X: %f, F: %f \n", temp.id, temp.x, temp.y);
-
+		DEBUGPRINT("GRIDGAME STATUS:\t GETROBOTS() ID:%d, Xpos:%f, Ypos:%f\n", temp.id, temp.x, temp.y);
         robots->push_back(temp);
     }
 
-
-    // increment our countes
+    // increment our counts
     teamcounter++;
     robotcounter += m_Robots_Per_Team;
 
 
     // If we are finished distributing all of the robots to the clients, sort the population
     int total_robots = m_Robots_Per_Team*m_Num_Of_Teams;
-    DEBUGPRINT("Total robots: %d\n", total_robots);
-    DEBUGPRINT("Robot counter: %d\n", robotcounter);
+    DEBUGPRINT("GRIDGAME STATUS:\t Total robots: %d\n", total_robots);
+    DEBUGPRINT("GRIDGAME STATUS:\t Robot counter: %d\n", robotcounter);
     if (robotcounter == total_robots)
     {
         sortPopulation();
@@ -294,8 +266,21 @@ int GridGame::registerRobot(Msg_RobotInfo robot)
     // create a new position object for the new robot
     Math::Position* l_RobotPosition = new Position(robot.x_pos, robot.y_pos, robot.angle);
 
+	if (l_RobotPosition == NULL)
+	{
+		ERRORPRINT("GRIDGAME ERROR:\t Failed to allocate memory in registerRobot()\n");
+		return -1;
+	}
+
     // create new robot based on info from robot_info struct
     Game::Robot* l_Robot = new Robot(l_RobotPosition, robot.robotid);
+    
+    if (l_Robot == NULL)
+    {
+    	ERRORPRINT("GRIDGAME ERROR:\t Failed to allocate memory for robot in registerRobot()\n");
+    	return -1;
+    }
+    
     (*l_Robot).m_PuckHeld = robot.puckid;
 			
     // add robot to the population
@@ -304,7 +289,7 @@ int GridGame::registerRobot(Msg_RobotInfo robot)
     //Sort robots at this point
     sortPopulation();
 
-    return 1;
+    return 0;
     
 }
 
@@ -313,10 +298,7 @@ int GridGame::unregisterRobot(unsigned int robotid)
 
     int removeResult = removeObjectFromPop(robotid);    
 
-
     return removeResult;
-
-
 
 }
 
@@ -324,7 +306,7 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
                                std::vector< RobotSensedObjectsPair >* sensor_data,
                                int& totalSensed)
 {
-    DEBUGPRINT("====Entering returnSensorData method\n");
+    DEBUGPRINT("GRIDGAME STATUS:\t Entering returnSensorData()\n");
     /*
     #ifdef DEBUG
     for(std::map<GameObject*, int>::iterator it = m_YObjects.begin(); it != m_YObjects.end(); it++)
@@ -340,13 +322,13 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
     for(std::vector<uid>::iterator it = robot_ids_from_client.begin(); it != clientend; it++)
     {
         uid robotId = (*it);
-        DEBUGPRINT("Getting sensor data for robotid: %d\n", robotId);
+        DEBUGPRINT("GRIDGAME STATUS:\t Getting sensor data for RobotId:%d\n", robotId);
         // grab GameObject from int id
         GameObject* tempobj = m_MapPopulation[robotId];
         
         if(tempobj == NULL)
         {
-            DEBUGPRINT("RobotID %d not found in population, exiting.\n", robotId);
+            ERRORPRINT("GRIDGAME ERROR:\t RobotID %d not found in population, exiting.\n", robotId);
             return -1;
         }
 
@@ -356,6 +338,12 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
         //printf("position for gameobject id %d: %d\n", (*tempobj).m_id, position); 
 
         GameObject* position_obj = m_Population[position];
+
+		if (position_obj == NULL)
+		{
+			ERRORPRINT("GRIDGAME ERROR:\t Failed to find position data\t");
+			return -1;
+		}
 
         std::vector<Msg_SensedObjectGroupItem> temp_vector;
 
@@ -446,16 +434,15 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
     //sensed_items_map = &l_sensed_items_map;
 
     
-    #ifndef RELEASE
+    #ifdef DEBUG
     //for( std::map<int, std::vector<sensed_item> >::iterator it = l_sensed_items_map.begin(); it != l_sensed_items_map.end(); it++){
     for( std::vector< RobotSensedObjectsPair >::iterator it = sensor_data->begin(); it != sensor_data->end(); it++){
 
-        std::cout << "robot id:" << it->first << " => "; 
+        DEBUGPRINT("GRIDGAME STATUS:\t RobotId:%d with Sensed Information\n", it->first); 
         
         for( std::vector<Msg_SensedObjectGroupItem>::iterator iit = (it->second).begin(); iit != (it->second).end(); iit++){
-            std::cout << (*iit).id << ",";
+            DEBUGPRINT("GRIDGAME STATUS:\t RobotId:%d sensed object %d\n" , it->first ,(*iit).id);
         }
-        std::cout << std::endl;
 
     }
     #endif
@@ -474,7 +461,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
 
     if(robots_to_pass->size() == 0)
     {
-        DEBUGPRINT("Size 0");
+        DEBUGPRINT("GRIDGAME STATUS:\t No robots to pass\n");
         RobotInfoList left_robots;
         RobotInfoList right_robots;
         std::pair<int, RobotInfoList > left_robots_pair = std::make_pair(0, left_robots);
@@ -493,7 +480,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
     for(std::vector<Msg_Action>::iterator it = robot_actions.begin(); it != robot_actions.end(); it++)
     {
         // grab the robots and update their positions
-        DEBUGPRINT("Looking for robot: %d\n", (*it).robotid);
+        DEBUGPRINT("GRIDGAME STATUS:\t Looking for robot: %d\n", (*it).robotid);
         std::map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
         if (robot_find != m_MapPopulation.end())
         {
@@ -501,7 +488,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             Msg_RobotInfo temp;
             temp.robotid = l_Robot->getId();
             temp.x_pos = l_Robot->getX();
-            DEBUGPRINT("Previous x: %f y: %f\n", l_Robot->getX(), l_Robot->getY());
+            DEBUGPRINT("GRIDGAME STATUS:\t Previous Xpos: %f Ypos: %f\n", l_Robot->getX(), l_Robot->getY());
             
             // TODO: Need to handle robots wrapping around both left and right, up and down
             float old_ypos = l_Robot->getY();
@@ -522,7 +509,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             temp.speed = (*it).speed;
             temp.angle = (*it).angle;
             temp.puckid = 0;
-            DEBUGPRINT("New position x: %f y: %f\n", temp.x_pos, temp.y_pos);
+            DEBUGPRINT("GRIDGAME STATUS:\t New position Xpos: %f Ypos: %f\n", temp.x_pos, temp.y_pos);
 
             // set the new position of the robot
             l_Robot->setPosition(temp.x_pos, temp.y_pos, temp.angle);
@@ -537,7 +524,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
                 // remove robot from population
                 removeObjectFromPop(temp.robotid);
 
-                DEBUGPRINT("Robot has left this grid on the right side! Removing it from population\n");
+                DEBUGPRINT("GRIDGAME STATUS:\t Robot has left this grid on the right side! Removing it from population\n");
 
             } //&& !(temp.x_pos < (0.0f + robot_SensorRange)) 
             else if( outOfBoundsLeft(new_xpos) )
@@ -547,7 +534,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
                 //remove robot from population
                 removeObjectFromPop(temp.robotid);
 
-                DEBUGPRINT("Robot has left this grid on the left side! Removing it from population\n");
+                DEBUGPRINT("GRIDGAME STATUS:\t Robot has left this grid on the left side! Removing it from population\n");
             }
             else
             {
@@ -561,12 +548,12 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             if( inRightInnerBoundary(new_xpos) || outOfBoundsRight(new_xpos) )
             {
                 right_robots->push_back(temp);
-                DEBUGPRINT("Adding this robotid %d to the \"right_robots\"vector because it is in the boundary\n or leaving our grid\n", temp.robotid);
+                DEBUGPRINT("GRIDGAME STATUS:\t Adding this robotid %d to the \"right_robots\"vector because it is in the boundary\n or leaving our grid\n", temp.robotid);
             }
             else if( inLeftInnerBoundary(new_xpos) || outOfBoundsLeft(new_xpos) )
             {
                 left_robots->push_back(temp);
-                DEBUGPRINT("Adding this robotid %d to the \"left_robots\"vector because it is in the boundary\n or leaving our grid\n", temp.robotid);
+                DEBUGPRINT("GRIDGAME STATUS:\t Adding this robotid %d to the \"left_robots\"vector because it is in the boundary\n or leaving our grid\n", temp.robotid);
             }
             
             // Check to see if robot was in boundary zone, and then left. If so, tell neighbor that robot
@@ -584,7 +571,9 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
         }
         else
         {
-            DEBUGPRINT("****Robot is not in the population");
+            DEBUGPRINT("GRIDGAME ERROR:\t Robot is not in the population");
+            return -1;
+            
         }
     }
 
@@ -649,34 +638,34 @@ bool GridGame::inMidZone(float x_pos)
 
 int GridGame::updateRobots(RobotInfoList& robots)
 {
-    DEBUGPRINT("Entering updateRobot function\n");
+    DEBUGPRINT("GRIDGAME STATUS:\t Entering updateRobot function\n");
 
     // iterate through each robot recieved by grabbing that robot from our population array
     for(std::vector<Msg_RobotInfo>::iterator it = robots.begin(); it != robots.end(); it++)
     {
-        DEBUGPRINT("Entering updateRobot function for loop\n");
+        DEBUGPRINT("GRIDGAME STATUS:\t Entering updateRobot function for loop\n");
         // grab the robots and update their positions
         std::map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
         if (robot_find == m_MapPopulation.end())
         {
-            DEBUGPRINT("***NEW ROBOT\n");
+            DEBUGPRINT("GRIDGAME STATUS:\t NEW ROBOT\n");
             registerRobot(*it);
         }
         else
         {
             if((*it).gridid == 0)
             {
-                DEBUGPRINT("***REMOVE ROBOT %d\n", (*it).robotid);
+                DEBUGPRINT("GRIDGAME STATUS:\t REMOVE ROBOT ID:%d\n", (*it).robotid);
                 removeObjectFromPop((*it).robotid);
             }
             else
             {
-                DEBUGPRINT("***UPDATE ROBOT %d\n", (*it).robotid);
+                DEBUGPRINT("GRIDGAME STATUS:\t UPDATE ROBOT ID:%d\n", (*it).robotid);
                 Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
                 l_Robot->updatePosition((*it).x_pos, (*it).y_pos);
                 l_Robot->m_PuckHeld = (*it).puckid;
                 l_Robot->getPosition()->setOrient((*it).angle);
-                DEBUGPRINT("MOVED TO: %f\n", l_Robot->getPosition()->getX());
+                DEBUGPRINT("GRIDGAME STATUS:\t MOVED TO: %f\n", l_Robot->getPosition()->getX());
             }
         }
     }
@@ -714,7 +703,7 @@ int GridGame::removeObjectFromPop(int objectid)
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != end; it++)
     {
         if ((**it).m_id == objectid){
-            DEBUGPRINT("Removing robot %d from the population!\n", objectid);
+            DEBUGPRINT("GRIDGAME STATUS:\t Removing robot ID:%d from the population\n", objectid);
             this->m_Population.erase(it);
             break;
         }
@@ -746,7 +735,7 @@ int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results)
         //float posX = robotPosition[i][0];
         //float posY = robotPosition[i][1];
         //float orientation = 1.0;
-        DEBUGPRINT("Pushing a robot on drawer results\n");
+        DEBUGPRINT("GRIDGAME STATUS:\t Pushing a robot on drawer results\n");
         Msg_RobotInfo l_ObjInfo;
 
         // for each object being pushed
@@ -759,7 +748,7 @@ int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results)
 
         results->push_back(l_ObjInfo);
     }
-    DEBUGPRINT("Done pushing robots to drawer\n");
+    DEBUGPRINT("GRIDGAME STATUS:\t Done pushing robots to drawer\n");
     return 0;
 }
 
@@ -780,9 +769,8 @@ const float& GridGame::getRightBoundary() const
 
 void GridGame::printPopulation()
 {
-	for (int i = 0; i < m_Population.size(); i++){
-	
-        DEBUGPRINT("%d - ", i);
+    DEBUGPRINT("GRIDGAME STATUS:\t Population size:%d\n", m_Population.size());
+	for (int i = 0; i < m_Population.size(); i++){	
 		m_Population[i]->printInfo();
 	}
 	return;
