@@ -60,9 +60,12 @@ int main(int argc, char ** argv)
 		}
 	}
 	
-	
+	if (l_grid->init(l_bindPort) < 0) 
+	{
+		LOGPRINT("GRID FAIL:\t Cannot init port\n");
+		return -1;
+	}
 
-	
 	GridParser l_parser;
 	
 	l_res = 0;
@@ -89,13 +92,7 @@ int main(int argc, char ** argv)
 		return -1;
 	} 
 	
-	
-	if (l_grid->init(l_bindPort) < 0) 
-	{
-		LOGPRINT("GRID FAIL:\t Cannot init port\n");
-		return -1;
-	}
-	
+
 	if (l_grid->start() < 0 )
 	{
 		LOGPRINT("GRID FAIL:\t Server failed, did not exit cleanly.\n");

@@ -250,7 +250,7 @@ int GridServer::handler(int fd)
 
                    //Unpack heartbeat message from our buffer.
                    unpack(l_hbBuffer, Msg_HB_format, &l_HB.hb);
-                   DEBUGPRINT("Hearbeat character: %hd\n", l_HB.hb);
+                   ERRORPRINT("Hearbeat character: %hd\n", l_HB.hb);
 
                    m_Hb = l_HB.hb; 
 
@@ -346,7 +346,7 @@ int GridServer::handler(int fd)
 
                         TcpConnection *l_ClockConn = m_Clients[m_ClockFd];
                         NetworkCommon::sendWrapper(l_ClockConn, l_HBBuffer, l_MessageSize);
-                        DEBUGPRINT("Sent heartbeat.\n");
+                        DEBUGPRINT("Sent heartbeat. %hd\n", m_Hb);
                         m_ReadyPartners = 0;
 
                         delete[]l_HBBuffer;
