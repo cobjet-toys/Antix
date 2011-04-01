@@ -37,13 +37,13 @@ int RobotGame::initTeam(Msg_TeamInit team)
 int RobotGame::setTeamRobot(int gridId, int teamId, Msg_InitRobot robot)
 {
     Math::Position* l_robotPosition = new Math::Position(robot.x,robot.y, 0.0); // initial angle is 0.0
-	if(l_robotPosition = NULL)
+	if(l_robotPosition == NULL)
 	{
 		ERRORPRINT("ROBOTGAME ERROR:\t Failed to allocate memory for robotPosition in setTeamRobot()\n");
 		return -1;
 	}
     Game::Robot* l_Robot = new Robot(l_robotPosition, teamId, robot.id);
-	if(l_Robot = NULL)
+	if(l_Robot == NULL)
 	{
 		ERRORPRINT("ROBOTGAME ERROR:\t Failed to allocate memory for robot in setTeamRobot()\n");
 		return -1;
@@ -87,7 +87,7 @@ int RobotGame::receiveSensorData(vector< std::pair<uid, std::vector<Msg_SensedOb
         DEBUGPRINT("robo id: %d\n", (*iter).first);
         uid robotId = (*iter).first;
         Robot* l_robotp = m_robots[robotId];
-		if(l_robotp = NULL)
+		if(l_robotp == NULL)
 		{
 			ERRORPRINT("ROBOTGAME ERROR:\t Invalid robotID %d in requestSensorData()\n", robotId);
 			return -1;

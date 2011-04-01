@@ -89,6 +89,12 @@ size_t DrawServer::initRobots(int size)
 {	
 	int teamId = 0;
     Math::Position *pos = new Math::Position(-1.0, -1.0, 0.0);
+ DEBUGPRINT("1\n");
+	if(pos == NULL)
+	{
+		ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initRobots()\n");
+		return -1;
+	}
     this->m_robots.clear();
     
     for (int i=0; i<size; i++)
@@ -105,6 +111,12 @@ size_t DrawServer::initRobots(int size)
 size_t DrawServer::initPucks(int size)
 {	
     Math::Position *pos = new Math::Position(-1.0, -1.0, 0.0);
+ DEBUGPRINT("1\n");
+	if(pos == NULL)
+	{
+		ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initPucks()\n");
+		return -1;
+	}
     this->m_pucks.clear();
     
     for (int i=0; i<size; i++)
@@ -134,6 +146,12 @@ int DrawServer::sendGridConfig(int grid_fd)
 {
 	//send config to grid
     TcpConnection * l_curConn = m_serverList[grid_fd];
+ DEBUGPRINT("2\n");
+	if(l_curConn == NULL)
+	{
+		ERRORPRINT("DRAWSERVER ERROR:\t Failed to create connection in sendGridConfig()\n");
+		return -1;
+	}
     if (l_curConn == 0)
     	return -1;
     
@@ -171,6 +189,11 @@ void DrawServer::initTeams()
     if (this->m_teams.size() == 0)
     {
     	Math::Position *homePos = new Math::Position(55.0, 150.0, 0.0);
+ DEBUGPRINT("3\n");
+		if(homePos == NULL)
+		{
+			ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initTeams()\n");
+		}
         this->m_teams[1] = new Game::Team(homePos, 1);
     }
 
@@ -213,11 +236,13 @@ int DrawServer::handler(int fd)
     //DEBUGPRINT("Handling file descriptor: %i\n", fd);
 
     //Get our TCPConnection for this socket.    
-    TcpConnection * l_Conn = this->m_serverList[fd];	
-	if (l_Conn == NULL)
-    {
-		return -1; // no such socket descriptor
-	}	
+    TcpConnection * l_Conn = this->m_serverList[fd];
+ DEBUGPRINT("4\n");
+	if(l_Conn == NULL)
+	{
+		ERRORPRINT("DRAWSERVER ERROR:\t Failed to create connection in handler()\n");
+		return -1;
+	}
 	
 	//Get message header
 	uint16_t l_sender=-1, l_senderMsg =-1;	
@@ -295,7 +320,19 @@ int DrawServer::handler(int fd)
 						//TODO: check to make sure team doesn't already exist
 						{
 							Math::Position *homePos = new Math::Position(l_TeamInfo.x, l_TeamInfo.y, 0.0);
+ DEBUGPRINT("5\n");
+							if(homePos == NULL)
+							{
+								ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for home position for team %d in handler()\n", l_TeamInfo.id);
+								return -1;
+							}
 		    				Game::Team *newTeam = new Game::Team(homePos, l_TeamInfo.id);
+ DEBUGPRINT("6\n");
+							if(newTeam == NULL)
+							{
+								ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for new team %d in handler()\n", l_TeamInfo.id);
+								return -1;
+							}
 		    				this->m_teams.push_back(newTeam);
 	    				}
     				}

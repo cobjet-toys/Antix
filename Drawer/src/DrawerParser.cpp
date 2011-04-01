@@ -13,9 +13,12 @@ DrawerParser::~DrawerParser()
 int DrawerParser::handler(std::vector<std::string> commands, void *args)
 {
 	Network::DrawServer * l_drawer = (Network::DrawServer *)args;
-	
-	if (l_drawer == NULL) return -2;
-		
+ DEBUGPRINT("a\n");
+	if(l_drawer == NULL)
+	{
+		ERRORPRINT("DRAWERPARSER ERROR:\t Failed to allocate memory in handler()\n");
+		return -1;
+	}		
 	if (!commands.empty())
 	{
 		std::string command = commands.at(0);
@@ -60,7 +63,13 @@ int DrawerParser::handler(std::vector<std::string> commands, void *args)
 			int size = atoi(commands.at(1).c_str());
 			DEBUGPRINT("PARSED: TOTAL_NUM_ROBOTS %i\n", size);
 			
-			Math::Position *pos = new Math::Position(0.0, 0.0, 0.0);		
+			Math::Position *pos = new Math::Position(0.0, 0.0, 0.0);
+ DEBUGPRINT("b\n");
+			if(pos == NULL)
+			{
+				ERRORPRINT("DRAWERPARSER ERROR:\t Failed to allocate memory for position in handler()\n");
+				return -1;
+			}		
 			return l_drawer->initRobots(size) == size;
 		}
 		else if (command == "TOTAL_NUM_PUCKS")
@@ -69,6 +78,12 @@ int DrawerParser::handler(std::vector<std::string> commands, void *args)
 			DEBUGPRINT("PARSED: TOTAL_NUM_PUCKS %i\n", size);
 			
 			Math::Position *pos = new Math::Position(0.0, 0.0, 0.0);
+ DEBUGPRINT("c\n");
+			if(pos == NULL)
+			{
+				ERRORPRINT("DRAWERPARSER ERROR:\t Failed to allocate memory for position in handler()\n");
+				return -1;
+			}	
 			return l_drawer->initPucks(size) == size;
 		}
 		else if (command == "ENABLE_FOV")
