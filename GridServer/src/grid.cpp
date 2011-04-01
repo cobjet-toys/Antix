@@ -8,11 +8,9 @@
 int main(int argc, char ** argv)
 {
     //Seed random number generator
-    // TODO RE-Enable this
     srand((unsigned)time(0));
     
     setbuf(stdout, NULL);
-
 
     Network::GridServer *l_grid = new Network::GridServer();
 
@@ -20,7 +18,7 @@ int main(int argc, char ** argv)
     l_grid->initGridGame();
     #endif
 
-	if (argc < 5) 
+	if (argc < 5)
 	{
 		printf("Usage: ./grid.bin -p <port> -f <init_file>\n");
 		return -1;

@@ -139,9 +139,9 @@ int GridServer::initGridGame()
     }
 
     #else
-
-	gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam, m_idRangeFrom, m_idRangeTo, m_homeRadius, m_worldSize, m_numGrids, m_puckTotal); // needs to not do this in grid game constructor!
-
+    // needs to not do this in grid game constructor!
+	gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam,
+	    m_idRangeFrom, m_idRangeTo, m_homeRadius, m_worldSize, m_numGrids, m_puckTotal);
     #endif
 
 	return 0;
