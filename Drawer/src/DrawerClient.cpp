@@ -88,17 +88,25 @@ int DrawServer::initGrid(const char* host, const char* port)
 size_t DrawServer::initRobots(int size)
 {	
 	int teamId = 0;
-    Math::Position *pos = new Math::Position(-1.0, -1.0, 0.0);
-	if(pos == NULL)
-	{
-		ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initRobots()\n");
-		return -1;
-	}
+	Math::Position *pos = 0;
+	Game::Robot *robot = 0;
     this->m_robots.clear();
     
     for (int i=0; i<size; i++)
     {
-    	this->m_robots.push_back( new Game::Robot(pos, teamId, i) );
+		pos = new Math::Position(-1.0, -1.0, 0.0);
+		if(pos == NULL)
+		{
+			ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initRobots()\n");
+			return -1;
+		}
+		robot = new Game::Robot(pos, teamId, i);
+		if(robot == NULL)
+		{
+			ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for robot in initRobots()\n");
+			return -1;
+		}
+    	this->m_robots.push_back( robot );
     	
     	if (i % this->m_totalNumTeams == 0) teamId++;
     }
@@ -109,17 +117,25 @@ size_t DrawServer::initRobots(int size)
 // starting off view (-1,-1)
 size_t DrawServer::initPucks(int size)
 {	
-    Math::Position *pos = new Math::Position(-1.0, -1.0, 0.0);
-	if(pos == NULL)
-	{
-		ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initPucks()\n");
-		return -1;
-	}
+    Math::Position *pos = 0;
+    Game::Puck *puck = 0;
     this->m_pucks.clear();
     
     for (int i=0; i<size; i++)
-    {
-    	this->m_pucks.push_back( new Game::Puck(pos) );
+    {    	
+		pos = new Math::Position(-1.0, -1.0, 0.0);
+		if(pos == NULL)
+		{
+			ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initPucks()\n");
+			return -1;
+		}
+		puck = new Game::Puck(pos);
+		if(puck == NULL)
+		{
+			ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for puck in initPucks()\n");
+			return -1;
+		}
+    	this->m_pucks.push_back( puck );
     }
     
     return this->m_pucks.size();
@@ -280,8 +296,7 @@ int DrawServer::handler(int fd)
                         updateObject(l_ObjInfo);
                     }
                     
-                    DEBUGPRINT("%d:\trobots=%zu\tpucks=%zu.\n", this->m_framestep, this->m_robots.size(), this->m_pucks.size() );
-					this->m_framestep++;
+                    this->m_framestep++;
 					return 0;
                 }
                 
