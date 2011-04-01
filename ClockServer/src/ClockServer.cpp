@@ -57,14 +57,14 @@ int Network::ClockServer::handler(int fd)
     switch(l_Header.sender)
     {
         //Message is from clock.
-        case(SENDER_CLIENT):
+        case(SENDER_CLIENT || SENDER_GRIDSERVER):
 		{
             switch(l_Header.message)
             {
                 //Message is heart beat.
                 case(MSG_HEARTBEAT) :
                 {
-					DEBUGPRINT("CLOCK_SERVER STATUS:\t Receiving heartbeat from robot client\n");
+					DEBUGPRINT("CLOCK_SERVER STATUS:\t Receiving heartbeat from robot client or grid server\n");
 					
 					if (l_Conn->recv(l_Buffer+l_Header.size, l_heartBeat.size) == -1)
 					{
@@ -118,7 +118,7 @@ int Network::ClockServer::handleNewConnection(int fd)
 {
 	if (m_ready)
 	{
-		LOGPRINT("CLOCK_SERVER STATUS:\t Adding new ROBOT_CLIENT: %i\n", fd);
+		LOGPRINT("CLOCK_SERVER STATUS:\t Adding new ROBOT_CLIENT or GRID_SERVER: %i\n", fd);
 		m_clientMap[fd] = false;
 		m_clientList.push_back(fd);
 	} else {
@@ -132,7 +132,7 @@ int Network::ClockServer::handleNewConnection(int fd)
 int Network::ClockServer::allConnectionReadyHandler()
 {
 	
-	LOGPRINT("CLOCK_SERVER STATUS:\t CONTROLLER_CLIENT + all ROBOT_CLIENTS connected\n");
+	LOGPRINT("CLOCK_SERVER STATUS:\t CONTROLLER_CLIENT + all ROBOT_CLIENTS and GRID_SERVERS connected\n");
 	return 0;
 	
 }
@@ -141,7 +141,7 @@ int Network::ClockServer::SendHeartBeat()
 {
    	m_responded = 0;
    	int fd;
-	DEBUGPRINT("CLOCK_SERVER STATUS:\t All ROBOT_CLIENTS ready\n");
+	DEBUGPRINT("CLOCK_SERVER STATUS:\t All ROBOT_CLIENTS and GRID_SERVERS ready\n");
 	
 	std::vector<int>::const_iterator l_End = m_clientList.end();
 	
@@ -166,7 +166,7 @@ int Network::ClockServer::SendHeartBeat()
 	
 	l_heartBeat.hb = m_beat;
 	
-	DEBUGPRINT("CLOCK_SERVER STATUS:\t Total Clients to send BEAT: %zu\n",m_clientList.size());
+	DEBUGPRINT("CLOCK_SERVER STATUS:\t Total Clients + Grid Servers to send BEAT: %zu\n",m_clientList.size());
 
 	for(std::vector<int>::const_iterator it = m_clientList.begin(); it != l_End; it++)
 	{
@@ -177,7 +177,7 @@ int Network::ClockServer::SendHeartBeat()
 		
 		if (conn == NULL) 
 		{
-			ERRORPRINT("CLOCK_SERVER ERROR:\t Invalid Connection to ROBOT_CLIENT\n");
+			ERRORPRINT("CLOCK_SERVER ERROR:\t Invalid Connection to ROBOT_CLIENT or GRID_SERVER\n");
 			return -1;
 		}
 		int l_packed ;
@@ -190,10 +190,10 @@ int Network::ClockServer::SendHeartBeat()
 
 		if (conn->send(msg, l_header.size+l_heartBeat.size) < 0)
 		{
-			ERRORPRINT("CLOCK_SERVER ERROR:\t Failed to send message to ROBOT_CLIENT\n");
+			ERRORPRINT("CLOCK_SERVER ERROR:\t Failed to send message to ROBOT_CLIENT or GRID_SERVER\n");
 		}
 		
-		DEBUGPRINT("CLOCK_SERVER STATUS:\t Sent heartbeat %hd to ROBOT_CLIENT\n", l_heartBeat.hb);
+		DEBUGPRINT("CLOCK_SERVER STATUS:\t Sent heartbeat %hd to ROBOT_CLIENT or GRID_SERVER\n", l_heartBeat.hb);
 		m_clientMap[fd] = true;
 	}
 	
