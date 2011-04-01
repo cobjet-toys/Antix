@@ -16,6 +16,7 @@ private:
 	bool m_hasNumTeams;
 	bool m_hasRobotsPerTeam;
 	bool m_hasIdRange;
+	bool m_clock;
 	
 };
 
