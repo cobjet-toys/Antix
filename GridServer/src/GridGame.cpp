@@ -137,13 +137,10 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
 
     //exit(1);
     
-   #ifdef DEBUG 
-    
+   #ifdef DEBUG
     for(std::vector<Team*>::iterator it = m_Teams.begin(); it != m_Teams.end(); it++)
     {
-    
-        std::cout << "Id:" << (*it)->getId() << "Team X: " << (*it)->getX() << "Team Y:" << (*it)->getY() << std::endl;
-
+        //std::cout << "Id:" << (*it)->getId() << "Team X: " << (*it)->getX() << "Team Y:" << (*it)->getY() << std::endl;
     }
 
     #endif
@@ -193,45 +190,6 @@ void GridGame::sortPopulation()
 
     DEBUGPRINT("***Sort Population executing**\n");
 }
-
-
-/*
-int GridGame::initializeTeam(std::vector<int> teams, std::vector<robot_info>* robot_info_vector)
-{
-
-        //TODO: Will load team_size from the config
-        int team_size = 1000;
-        std::vector<int>::iterator end = teams.end();
-
-        std::vector<robot_info> l_robot_info_vector;
-
-        for(std::vector<int>::iterator it = teams.begin(); it != end; it++){
-            // get range of robot ids based on team id and team size
-            int firstid = (*it)*team_size;
-            int lastid = firstid + team_size - 1;
-
-            std::cout << "from: " << firstid << "to: " << lastid << std::endl;
-
-            for (int i = firstid; i <= lastid; i++)
-            {
-                Math::Position* l_RobotPosition = Math::Position::randomPosition(m_WorldSize, m_NumGrids, m_GridId);
-                Game::Robot* l_Robot = new Robot(l_RobotPosition, i, robot_FOV, robot_Radius, robot_PickupRange, robot_SensorRange);
-                addObjectToPop(l_Robot);
-
-                robot_info temp;
-                temp.id = i;
-                temp.x_pos = l_RobotPosition->getX();
-                temp.y_pos = l_RobotPosition->getY();
-
-                l_robot_info_vector.push_back(temp);
-            }
-        }
-        robot_info_vector = &l_robot_info_vector;
-
-        return 1;
-}
-
- */
 
 
 int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
@@ -310,14 +268,8 @@ int GridGame::registerRobot(Msg_RobotInfo robot)
 
 int GridGame::unregisterRobot(unsigned int robotid)
 {
-
     int removeResult = removeObjectFromPop(robotid);    
-
-
     return removeResult;
-
-
-
 }
 
 int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
@@ -411,45 +363,21 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
                 break;
             }
         }
-
-        //l_sensed_items_map[(*it)] = temp_vector;
-        //sensed_items.push_back(RobotSensedObjectsPair<(*it), temp_vector>);
-        sensor_data->push_back(RobotSensedObjectsPair((*it), temp_vector));
-       
-        /*
-        #ifdef DEBUG
-        int total = 0;
-
-        for( std::vector<sensed_item>::iterator someit = temp_vector.begin(); someit != temp_vector.end(); someit++ ){
-            std::cout << (*someit).id << ",";
-            total++;
-        }
-        std::cout << "Total:" <<total << std::endl;
-        #endif
-        */
-
-    }
-
-    //sensed_items_map = &l_sensed_items_map;
-
-    
-    #ifdef DEBUG
-    //for( std::map<int, std::vector<sensed_item> >::iterator it = l_sensed_items_map.begin(); it != l_sensed_items_map.end(); it++){
-    for( std::vector< RobotSensedObjectsPair >::iterator it = sensor_data->begin(); it != sensor_data->end(); it++){
-
-        std::cout << "robot id:" << it->first << " => "; 
         
-        for( std::vector<Msg_SensedObjectGroupItem>::iterator iit = (it->second).begin(); iit != (it->second).end(); iit++){
-            std::cout << (*iit).id << ",";
-        }
-        std::cout << std::endl;
-
+        sensor_data->push_back(RobotSensedObjectsPair((*it), temp_vector));
     }
-    #endif
     
+    for( std::vector< RobotSensedObjectsPair >::iterator it = sensor_data->begin(); it != sensor_data->end(); it++)
+    {
+        DEBUGPRINT("robot id: %d =>", it->first);
+        for( std::vector<Msg_SensedObjectGroupItem>::iterator iit = (it->second).begin(); iit != (it->second).end(); iit++)
+        {
+            DEBUGPRINT("%d,", (*iit).id);
+        }
+        DEBUGPRINT("\n");
+    }   
 
     return 0;
-
 }
 
 int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector< Msg_RobotInfo >* results, std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >* robots_to_pass)
@@ -457,21 +385,8 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
 
     // basic movement, not checking collisons
     // not even checking the angle sent by the client.
-
     // check to see if the robot is in the boundary zone, if they are add them to robots_to_pass
-    // TODO: Should I be using the "new" keyword? I imagine I want to allocate to the heap, not the stack
-    // I think this could have been less complicated in terms of datastructures if we just used a map,
-    // but I didn't want to waste time communicating that change. This could be a bitch to change if we have squares
-    /* 
 
-    // set the grid ids to the left and right
-    //left_robots_pair->first = m_LeftGrid;
-    //right_robots_pair->first = m_RightGrid;
-
-    // set the pairs to the correct vector of robots
-    //left_robots_pair->second = left_robots;
-    //left_robots_pair->second = right_robots;
-    */
     if(robots_to_pass->size() == 0)
     {
         DEBUGPRINT("Size 0");
