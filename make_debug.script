@@ -1,0 +1,24 @@
+cd $PWD/GridServer/
+make grid_clean
+make
+cd ../
+
+cd $PWD/ClockServer/
+make clock_clean
+make
+cd ../
+
+cd $PWD/ControllerClient/
+make controller_clean
+make
+cd ../
+
+cd $PWD/RobotClient/
+make robot_clean
+make
+cd ../
+
+cd $PWD/Drawer/
+make drawer_clean
+make
+cd ../
