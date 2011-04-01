@@ -33,7 +33,7 @@ void displayFunc()
 
     drawTeams();
     drawPucks();
-    drawRobots(20);
+    drawRobots(10);
     //drawTest(50, 16, 45.0, 6);
     
     // ----- Draws framerate ----- //
@@ -131,17 +131,17 @@ void drawRobots(int edgePoints)
     	
         // keep this buffer around between calls for speed
         static std::vector<GLfloat> pts, sPts, lPts;
-        static std::vector<GLfloat> colors;
+        //static std::vector<GLfloat> colors;
         pts.resize(len * 2);
         sPts.resize(len * edgePoints * 2);
         lPts.resize(len * 4);
-        colors.resize(len * 3);
+        //colors.resize(len * 3);
 
-        glEnableClientState(GL_COLOR_ARRAY);
-        glColorPointer(3, GL_FLOAT, 0, &colors[0]);
+        //glEnableClientState(GL_COLOR_ARRAY);
+        //glColorPointer(3, GL_FLOAT, 0, &colors[0]);
 
         int i = 0;
-        for (Network::RobotIter it = drawServerRef->getFirstRobot(); it != drawServerRef->getLastRobot();it++)
+        for (Network::RobotIter it = drawServerRef->getFirstRobot(); it != drawServerRef->getLastRobot(); it++)
         {
            	if(!(*it))
           	{
@@ -158,7 +158,7 @@ void drawRobots(int edgePoints)
             for(size_t a = 0; a < edgePoints; a++)
             {
                 sPts[(edgePoints*2*i) + (2*a)]     = robotPos->getX() + xRobotVals[(int)(a*360/edgePoints)];
-                sPts[(edgePoints*2*i) + (2*a) + 1] = robotPos->getX() + yRobotVals[(int)(a*360/edgePoints)];
+                sPts[(edgePoints*2*i) + (2*a) + 1] = robotPos->getY() + yRobotVals[(int)(a*360/edgePoints)];
             }
     
             // --- NEEDS A HEADING VALUE FOR PASSED IN ROBOTS -- //
@@ -168,9 +168,13 @@ void drawRobots(int edgePoints)
             //lPts[(4*i) + 2] = values[i] + xRobotVals[(int)(*it).second->getHeading()];
             //lPts[(4*i) + 3] = values[i] + yRobotVals[(int)(*it).second->getHeading()];
 
-            colors[3*i + 0] = 255;
-            colors[3*i + 1] = 255;
-            colors[3*i + 2] = 255;
+            //colors[3*i + 0] = 255;
+            //colors[3*i + 1] = 255;
+            //colors[3*i + 2] = 255;
+
+            //char tmpBuf[40];
+            //sprintf(tmpBuf, "Robots[%d]: [%f, %f]", i, robotPos->getX(), robotPos->getY());
+            //drawText(tmpBuf, 5, 540 - (15*i), false);
 
             i++;
         }
@@ -197,7 +201,7 @@ void drawRobots(int edgePoints)
         //}
 
         // Deactivate vertex arrays after drawing
-        glDisableClientState(GL_COLOR_ARRAY);
+        //glDisableClientState(GL_COLOR_ARRAY);
         glDisableClientState(GL_VERTEX_ARRAY);
 
         char tmpBuf[16];
@@ -378,73 +382,6 @@ void drawTest(int robotCount, int edgePoints, float viewAngle, int viewEdgePoint
     //printf("Draw func #1: %fms\n", elapsed);
 }
 
-/*
-void drawRobot(Game::Robot* robot, const GUI::Color* color )
-{
-    glPushMatrix();
-    Position* lPos = robot->getPosition();
-
-    glTranslatef(lPos->getX(), lPos->getY(), 0.0);
-    glRotatef(Math::rtod(lPos->getOrient()), 0, 0, 1);
-
-    glColor3f(color->getR(), color->getG(), color->getB());
-
-    float lRadius = Game::Robot::getRadius();
-    float lWinSize = Game::Robotix::getInstance()->getWindowSize();
-    float lWorldSize = Game::Robotix::getInstance()->getWorldSize();
-
-    if (lRadius * lWinSize / lWorldSize < 2.0)
-    {
-        glBegin(GL_POINTS);
-        glVertex2f(0,0);
-        glEnd();
-    }
-    else
-    {
-        //Draw the robot body.
-        glBegin(GL_LINE_LOOP);
-        for (float a = 0.0; a < (M_PI*2.0); a+=M_PI/16)
-        glVertex2f( sin(a) * lRadius, cos(a) * lRadius);
-        glEnd();
-        //Draw the robot orientation.
-        glBegin(GL_LINES);
-        glVertex2f(0,0);
-        glVertex2f(Game::Robot::getRadius(), 0);
-        glEnd();
-
-        //Draw the robot FOV:
-        glBegin(GL_LINE_LOOP);
-        glVertex2f(0,0);
-        float l_FOV = Game::Robot::getFOV();
-        float l_Right = -l_FOV/2.0;
-        float l_Left = +l_FOV/2.0;
-        float l_Incr = l_FOV/32.0;
-
-        float l_SensRange = Game::Robot::getSensRange();
-        for(float i = l_Right; i < l_Left; i+=l_Incr)
-          glVertex2f(cos(i)* l_SensRange, sin(i)*l_SensRange);
-        glVertex2f(cos(l_Left)* l_SensRange, sin(l_Left)*l_SensRange);
-        glEnd();
-
-        //Draw bounding box.
-        glBegin(GL_LINE_LOOP);
-        glVertex2f(0.0, sin(l_Left)*l_SensRange);
-        glVertex2f(l_SensRange, sin(l_Left)*l_SensRange);
-        glVertex2f(l_SensRange, sin(l_Right)*l_SensRange);
-        glVertex2f(0.0, sin(l_Right)*l_SensRange);
-        glEnd();
-
-        glBegin(GL_LINE_LOOP);
-        glVertex2f(-l_SensRange, -l_SensRange);
-        glVertex2f(-l_SensRange, l_SensRange);
-        glVertex2f(l_SensRange, l_SensRange);  
-        glVertex2f(l_SensRange, -l_SensRange);
-        glEnd();
-    }
-    glPopMatrix();
-}
-*/
-
 // utility
 void GlDrawCircle(double x, double y, double r, double count)
 {
@@ -613,8 +550,8 @@ void initGraphics(int argc, char **argv)
     glScalef(1.0/lWorldSize, 1.0/lWorldSize, 1);
 
     // Initialize look up arrays
-    initializePositionLookupArrays(5.0, 360, xRobotVals, yRobotVals);
-    initializePositionLookupArrays(20.0, 360, xSensVals, ySensVals);
+    initializePositionLookupArrays(5, 360, xRobotVals, yRobotVals);
+    initializePositionLookupArrays(20, 360, xSensVals, ySensVals);
 
     pthread_t thread1;  
 	int ret = pthread_create(&thread1, NULL, listener_function, NULL);

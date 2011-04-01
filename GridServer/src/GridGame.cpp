@@ -435,7 +435,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
     {
         // grab the robots and update their positions
         DEBUGPRINT("GRIDGAME STATUS:\t Looking for robot: %d\n", (*it).robotid);
-        std::map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
+        std::tr1::unordered_map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
         if (robot_find != m_MapPopulation.end())
         {
             Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
@@ -601,7 +601,7 @@ int GridGame::updateRobots(RobotInfoList& robots)
     {
         DEBUGPRINT("GRIDGAME STATUS:\t Entering updateRobot function for loop\n");
         // grab the robots and update their positions
-        std::map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
+        std::tr1::unordered_map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
         if (robot_find == m_MapPopulation.end())
         {
             DEBUGPRINT("GRIDGAME STATUS:\t NEW ROBOT\n");

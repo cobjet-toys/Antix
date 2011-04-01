@@ -225,7 +225,7 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
 			objIndex -= 1000000;
 		    this->m_pucks.at(objIndex)->getPosition()->setX(newInfo.x_pos);
 			this->m_pucks.at(objIndex)->getPosition()->setY(newInfo.y_pos);      
-			DEBUGPRINT("Puck[%d]: x=%f, y=%f\n", objIndex, this->m_pucks.at(objIndex)->getPosition()->getX(), this->m_pucks.at(objIndex)->getPosition()->getY() );  		
+			//DEBUGPRINT("Puck[%d]: x=%f, y=%f\n", objIndex, this->m_pucks.at(objIndex)->getPosition()->getX(), this->m_pucks.at(objIndex)->getPosition()->getY() );  		
 		}
 		else
 		{    
@@ -233,7 +233,7 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
 			this->m_robots.at(objIndex)->getPosition()->setX(newInfo.x_pos);
 			this->m_robots.at(objIndex)->getPosition()->setY(newInfo.y_pos);       		    
 		    //this->m_robots[newInfo.id]->m_PuckHeld = this->m_pucks[newInfo.puck_id];
-		    DEBUGPRINT("Robot[%d]: x=%f, y=%f\n", objIndex, this->m_robots.at(objIndex)->getPosition()->getX(), this->m_robots.at(objIndex)->getPosition()->getY() );  		
+		    //DEBUGPRINT("Robot[%d]: x=%f, y=%f\n", objIndex, this->m_robots.at(objIndex)->getPosition()->getX(), this->m_robots.at(objIndex)->getPosition()->getY() );  		
 		}
 	}
 	catch (std::exception &e)
