@@ -48,6 +48,21 @@ int GridParser::handler(std::vector<std::string> commands, void *args)
 			}
 			return -1;
 		}
+		if (command == "CLOCK" && commands.size() >= 3)
+		{
+			const char * address = commands.at(1).c_str();
+			const char * port = commands.at(1).c_str();			
+			LOGPRINT("GRID_PARSER STATUS:\t PARSED: address:%s, port:%s\n", address, port);
+			
+			l_gridServer->initClock(address, port);
+			
+			if (address != NULL && port != NULL )
+			{
+				m_clock = true;
+				return 0;
+			}
+			return -1;
+		}		
 		if (command == "#")
 		{
 			DEBUGPRINT("GRID_PARSER STATUS:\t Skipped Comment\n");
@@ -62,5 +77,5 @@ int GridParser::handler(std::vector<std::string> commands, void *args)
 int GridParser::verify()
 {
 	DEBUGPRINT("GRID_PARSER STATUS:\tVERIFY hasnumteams=%i hasperteam=%i\n", (int)m_hasNumTeams, (int)m_hasRobotsPerTeam);
-	return (m_hasNumTeams && m_hasRobotsPerTeam)?0:-1;
+	return (m_hasNumTeams && m_hasRobotsPerTeam && m_clock)?0:-1;
 }
