@@ -89,7 +89,6 @@ size_t DrawServer::initRobots(int size)
 {	
 	int teamId = 0;
     Math::Position *pos = new Math::Position(-1.0, -1.0, 0.0);
- DEBUGPRINT("1\n");
 	if(pos == NULL)
 	{
 		ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initRobots()\n");
@@ -111,7 +110,6 @@ size_t DrawServer::initRobots(int size)
 size_t DrawServer::initPucks(int size)
 {	
     Math::Position *pos = new Math::Position(-1.0, -1.0, 0.0);
- DEBUGPRINT("1\n");
 	if(pos == NULL)
 	{
 		ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initPucks()\n");
@@ -146,7 +144,6 @@ int DrawServer::sendGridConfig(int grid_fd)
 {
 	//send config to grid
     TcpConnection * l_curConn = m_serverList[grid_fd];
- DEBUGPRINT("2\n");
 	if(l_curConn == NULL)
 	{
 		ERRORPRINT("DRAWSERVER ERROR:\t Failed to create connection in sendGridConfig()\n");
@@ -189,7 +186,6 @@ void DrawServer::initTeams()
     if (this->m_teams.size() == 0)
     {
     	Math::Position *homePos = new Math::Position(55.0, 150.0, 0.0);
- DEBUGPRINT("3\n");
 		if(homePos == NULL)
 		{
 			ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initTeams()\n");
@@ -240,7 +236,6 @@ int DrawServer::handler(int fd)
 
     //Get our TCPConnection for this socket.    
     TcpConnection * l_Conn = this->m_serverList[fd];
- DEBUGPRINT("4\n");
 	if(l_Conn == NULL)
 	{
 		ERRORPRINT("DRAWSERVER ERROR:\t Failed to create connection in handler()\n");
@@ -323,14 +318,12 @@ int DrawServer::handler(int fd)
 						//TODO: check to make sure team doesn't already exist
 						{
 							Math::Position *homePos = new Math::Position(l_TeamInfo.x, l_TeamInfo.y, 0.0);
- DEBUGPRINT("5\n");
 							if(homePos == NULL)
 							{
 								ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for home position for team %d in handler()\n", l_TeamInfo.id);
 								return -1;
 							}
 		    				Game::Team *newTeam = new Game::Team(homePos, l_TeamInfo.id);
- DEBUGPRINT("6\n");
 							if(newTeam == NULL)
 							{
 								ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for new team %d in handler()\n", l_TeamInfo.id);
