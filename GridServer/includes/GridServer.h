@@ -9,6 +9,7 @@
 #include "AntixUtil.h"
 
 #define FRAME_FREQUENCY 50000	//used as microseconds = 50 ms
+#define NUM_NEIGHBOURS 2
 
 namespace Network
 {
@@ -20,6 +21,7 @@ public:
     virtual int handler(int fd);
     virtual int handleNewConnection(int fd);
 	virtual int allConnectionReadyHandler();
+    int initClock(char* host, char* ip);
 	void setTeams(int amount);
 	void setIdRange(int from, int to);
 	void setRobotsPerTeam(int amount);
@@ -49,6 +51,10 @@ private:
     GridGame* gridGameInstance;	
 
     std::map<int, int> m_GridPosToFd;
+
+    int m_ClockFd;
+    uint16_t m_Hb;
+    int m_ReadyPartners;
 
 	bool updateDrawerFlag;
     TcpConnection * m_drawerConn;

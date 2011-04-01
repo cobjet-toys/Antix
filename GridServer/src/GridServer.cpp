@@ -23,6 +23,9 @@ GridServer::GridServer():Server()
 	m_teamsConfirmed =0;	
 	m_drawerConn = 0;
 	updateDrawerFlag = 0;
+    m_Hb = 0;
+    m_ReadyPartners = 0;
+    m_ClockFd = 0;
 }
 
 int GridServer::initGridGame()
@@ -147,6 +150,21 @@ int GridServer::initGridGame()
 	return 0;
 }
 
+int GridServer::initClock(char* host, char* ip)
+{
+    int l_ClockFd = initConnection(host,ip);
+
+    if (l_ClockFd < 0)
+    {
+        DEBUGPRINT("Failed creating connection to a grid server\n");
+		return -1;
+    }
+
+    m_ClockFd = l_ClockFd;
+
+    return l_ClockFd;
+}
+
 int GridServer::handleNewConnection(int fd)
 {
     return 0;
@@ -209,6 +227,41 @@ int GridServer::handler(int fd)
 	
 	switch (l_sender) // check the sender
 	{
+        case SENDER_CLOCK:
+        {
+            switch(l_senderMsg)
+            {
+                case(MSG_HEARTBEAT) :
+                {
+                   Msg_HB l_HB;
+                   unsigned char *l_hbBuffer = new unsigned char[l_HB.size]; 
+
+                   if (l_hbBuffer == NULL)
+                   {
+                       ERRORPRINT("Couldn't allocate buffer space for receiving heartbeat\n");
+                       return -1;
+                   }
+                  
+                   //Receive the heartbeat.
+                   NetworkCommon::recvWrapper(l_curConnection, l_hbBuffer, l_HB.size); 
+
+                   //Unpack heartbeat message from our buffer.
+                   unpack(l_hbBuffer, Msg_HB_format, &l_HB.hb);
+                   DEBUGPRINT("Hearbeat character: %hd\n", l_HB.hb);
+
+                   m_Hb = l_HB.hb; 
+
+                   delete []l_hbBuffer;
+
+                   return 0;
+                }
+                default:
+                {
+                    return -1;
+                }
+            }
+            
+        }
         case SENDER_GRIDSERVER:
         {
             switch(l_senderMsg) // check the message
@@ -264,7 +317,37 @@ int GridServer::handler(int fd)
                     	ERRORPRINT("GRID_SERVER ERROR:\t Failed to update robots inside GRID_GAME\n");
                     	return -1;
                     }
-					
+
+                    m_ReadyPartners++;
+                    if (m_ReadyPartners == NUM_NEIGHBOURS)
+                    {
+                        Msg_header l_Header = {SENDER_CLIENT, MSG_HEARTBEAT};
+                        Msg_HB l_HB = {m_Hb};
+
+                        unsigned int l_MessageSize = l_Header.size+l_HB.size;
+                        unsigned char* l_HBBuffer = new unsigned char[l_MessageSize];
+
+                        if (l_HBBuffer == NULL)
+                        {
+                            ERRORPRINT("Error creating buffer for sending heartbeat\n");
+                            return -1;
+                        }
+                        NetworkCommon::packHeaderMessage(l_HBBuffer, &l_Header);
+                      
+                        //Pack the hearbeat into the header message buffer.
+                        if (pack(l_HBBuffer+l_Header.size, Msg_HB_format, l_HB.hb) != l_HB.size)
+                        {
+                            DEBUGPRINT("Failed to pack the HB message\n");
+                            return -1;
+                        }
+
+                        TcpConnection *l_ClockConn = m_Clients[m_ClockFd];
+                        NetworkCommon::sendWrapper(l_ClockConn, l_HBBuffer, l_MessageSize);
+                        DEBUGPRINT("Sent heartbeat.\n");
+                        m_ReadyPartners = 0;
+
+                        delete[]l_HBBuffer;
+                    }
 					
 					// Clean up all allocated memory
 					delete []l_Buffer;
