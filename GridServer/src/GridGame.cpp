@@ -146,19 +146,11 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
        Puck* l_Puck = new Puck(l_PuckPos, i);
        addObjectToPop(l_Puck);
     }
-
-    //exit(1);
-    
-   #ifdef DEBUG 
     
     for(std::vector<Team*>::iterator it = m_Teams.begin(); it != m_Teams.end(); it++)
     {
-    
-        LOGPRINT("GRIDGAME STATUS:\t INIT TEAM ID: %u Xpos:%f, Ypos:%f\n"(*it)->getId(), (*it)->getX(), (*it)->getY());
-
+        LOGPRINT("GRIDGAME STATUS:\t INIT TEAM ID: %u Xpos:%f, Ypos:%f\n", (*it)->getId(), (*it)->getX(), (*it)->getY());
     }
-
-    #endif
 
 
     // Sort generated pucks
@@ -168,7 +160,6 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     // set team and robot counters used by getRobots function
     teamcounter = 0;
     robotcounter = 0;
-
 }
 
 GridGame::~GridGame()
@@ -180,7 +171,6 @@ GridGame::~GridGame()
     {
         delete (*it);
     }
-
 }
 
 void GridGame::sortPopulation()
@@ -204,7 +194,9 @@ void GridGame::sortPopulation()
         m_YObjects[l_Key] = i+1;
     }
     DEBUGPRINT("GRIDGAME STATUS:\t Sort Population execution finished\n");
+    return;
 }
+
 
 int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
 {
@@ -250,15 +242,12 @@ int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
 
     }
 
-
+    return 0;
 }
 
 bool GridGame::robotsDepleted()
 {
-
-    
     return (m_Robots_Per_Team*m_Num_Of_Teams == robotcounter)?true:false;
-
 }
 
 int GridGame::registerRobot(Msg_RobotInfo robot)
@@ -295,11 +284,8 @@ int GridGame::registerRobot(Msg_RobotInfo robot)
 
 int GridGame::unregisterRobot(unsigned int robotid)
 {
-
-    int removeResult = removeObjectFromPop(robotid);    
-
+    int removeResult = removeObjectFromPop(robotid);
     return removeResult;
-
 }
 
 int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
@@ -307,15 +293,7 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
                                int& totalSensed)
 {
     DEBUGPRINT("GRIDGAME STATUS:\t Entering returnSensorData()\n");
-    /*
-    #ifdef DEBUG
-    for(std::map<GameObject*, int>::iterator it = m_YObjects.begin(); it != m_YObjects.end(); it++)
-    {
-        std::cout << it->first << " => " << it->second << std::endl;
-    }
-    #endif
-    */
-
+    
     printPopulation();
     
     std::vector<uid>::iterator clientend = robot_ids_from_client.end();
@@ -412,44 +390,20 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
                 break;
             }
         }
-
-        //l_sensed_items_map[(*it)] = temp_vector;
-        //sensed_items.push_back(RobotSensedObjectsPair<(*it), temp_vector>);
-        sensor_data->push_back(RobotSensedObjectsPair((*it), temp_vector));
-       
-        /*
-        #ifdef DEBUG
-        int total = 0;
-
-        for( std::vector<sensed_item>::iterator someit = temp_vector.begin(); someit != temp_vector.end(); someit++ ){
-            std::cout << (*someit).id << ",";
-            total++;
-        }
-        std::cout << "Total:" <<total << std::endl;
-        #endif
-        */
-
-    }
-
-    //sensed_items_map = &l_sensed_items_map;
-
-    
-    #ifdef DEBUG
-    //for( std::map<int, std::vector<sensed_item> >::iterator it = l_sensed_items_map.begin(); it != l_sensed_items_map.end(); it++){
-    for( std::vector< RobotSensedObjectsPair >::iterator it = sensor_data->begin(); it != sensor_data->end(); it++){
-
-        DEBUGPRINT("GRIDGAME STATUS:\t RobotId:%d with Sensed Information\n", it->first); 
         
-        for( std::vector<Msg_SensedObjectGroupItem>::iterator iit = (it->second).begin(); iit != (it->second).end(); iit++){
+        sensor_data->push_back(RobotSensedObjectsPair((*it), temp_vector));
+    }
+    
+    for( std::vector< RobotSensedObjectsPair >::iterator it = sensor_data->begin(); it != sensor_data->end(); it++)
+    {
+        DEBUGPRINT("GRIDGAME STATUS:\t RobotId:%d with Sensed Information\n", it->first); 
+        for( std::vector<Msg_SensedObjectGroupItem>::iterator iit = (it->second).begin(); iit != (it->second).end(); iit++)
+        {
             DEBUGPRINT("GRIDGAME STATUS:\t RobotId:%d sensed object %d\n" , it->first ,(*iit).id);
         }
-
     }
-    #endif
     
-
     return 0;
-
 }
 
 int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector< Msg_RobotInfo >* results, std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >* robots_to_pass)
@@ -544,36 +498,38 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             // add the robot to the results (which will be processed by the client who requested
             results->push_back(temp);
 
-            // check if robots are in the boundary zone
-            if( inRightInnerBoundary(new_xpos) || outOfBoundsRight(new_xpos) )
+            if(m_NumGrids != 1)
             {
-                right_robots->push_back(temp);
-                DEBUGPRINT("GRIDGAME STATUS:\t Adding this robotid %d to the \"right_robots\"vector because it is in the boundary\n or leaving our grid\n", temp.robotid);
-            }
-            else if( inLeftInnerBoundary(new_xpos) || outOfBoundsLeft(new_xpos) )
-            {
-                left_robots->push_back(temp);
-                DEBUGPRINT("GRIDGAME STATUS:\t Adding this robotid %d to the \"left_robots\"vector because it is in the boundary\n or leaving our grid\n", temp.robotid);
-            }
+                // check if robots are in the boundary zone
+                if( inRightInnerBoundary(new_xpos) || outOfBoundsRight(new_xpos) )
+                {
+                    right_robots->push_back(temp);
+                    DEBUGPRINT("GRIDGAME STATUS:\t Sending robotid %d to the right grid", temp.robotid);
+                }
+                else if( inLeftInnerBoundary(new_xpos) || outOfBoundsLeft(new_xpos) )
+                {
+                    left_robots->push_back(temp);
+                    DEBUGPRINT("GRIDGAME STATUS:\t Sending robotid %d to the left grid", temp.robotid);
+                }
             
-            // Check to see if robot was in boundary zone, and then left. If so, tell neighbor that robot
-            // is now gone.
-            if( inLeftInnerBoundary(old_xpos) && inMidZone(new_xpos) )
-            {
-                temp.gridid = 0;
-                left_robots->push_back(temp);
-            }
-            else if( inRightInnerBoundary(old_xpos) && inMidZone(new_xpos) )
-            {
-                temp.gridid = 0;
-                right_robots->push_back(temp);
+                // Check to see if robot was in boundary zone, and then left. If so, tell neighbor that robot
+                // is now gone.
+                if( inLeftInnerBoundary(old_xpos) && inMidZone(new_xpos) )
+                {
+                    temp.gridid = 0;
+                    left_robots->push_back(temp);
+                }
+                else if( inRightInnerBoundary(old_xpos) && inMidZone(new_xpos) )
+                {
+                    temp.gridid = 0;
+                    right_robots->push_back(temp);
+                }
             }
         }
         else
         {
             DEBUGPRINT("GRIDGAME ERROR:\t Robot is not in the population");
             return -1;
-            
         }
     }
 
@@ -709,17 +665,6 @@ int GridGame::removeObjectFromPop(int objectid)
         }
     }
 
-    /*
-    for(std::vector<Robot*>::iterator it = m_Population.begin(); it != end; it++)
-    {
-        if ((**it).m_id == (*robotobj).m_id){
-            printf("Found %d robot!", robotid);
-            this->m_Population.erase(it);
-            break;
-        }
-
-    }*/
-
     return 0;
 }
 
@@ -728,14 +673,6 @@ int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results)
     std::vector<GameObject*>::iterator endit = m_Population.end();
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != endit; it++)
     {   
-        // Computes robots altered position (Random)
-        //robotPosition[i][0] += float((rand()%200)-100)/50;
-        //robotPosition[i][1] += float((rand()%200)-100)/50;
-
-        //float posX = robotPosition[i][0];
-        //float posY = robotPosition[i][1];
-        //float orientation = 1.0;
-        DEBUGPRINT("GRIDGAME STATUS:\t Pushing a robot on drawer results\n");
         Msg_RobotInfo l_ObjInfo;
 
         // for each object being pushed
