@@ -752,6 +752,25 @@ int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results)
     return 0;
 }
 
+int GridGame::getTeams(std::vector< Msg_TeamInit >* results)
+{
+    std::vector<Team*>::iterator endit = m_Teams.end();
+    
+    for(std::vector<Team*>::iterator it = m_Teams.begin(); it != endit; it++)
+    {   
+        Msg_TeamInit l_TeamInfo;
+
+        // for each object being pushed
+        l_TeamInfo.id = (**it).m_TeamId;
+        l_TeamInfo.x = (**it).getX();
+        l_TeamInfo.y = (**it).getY();
+
+        results->push_back(l_TeamInfo);
+    }
+    DEBUGPRINT("GRIDGAME STATUS:\t Done pushing teams to drawer\n");
+    return 0;
+}
+
 const float& GridGame::getWorldSize() const
 {
     return m_WorldSize;

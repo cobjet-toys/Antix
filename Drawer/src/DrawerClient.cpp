@@ -89,6 +89,11 @@ size_t DrawServer::initRobots(int size)
 {	
 	int teamId = 0;
     Math::Position *pos = new Math::Position(-1.0, -1.0, 0.0);
+	if(pos == NULL)
+	{
+		ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initRobots()\n");
+		return -1;
+	}
     this->m_robots.clear();
     
     for (int i=0; i<size; i++)
@@ -105,6 +110,11 @@ size_t DrawServer::initRobots(int size)
 size_t DrawServer::initPucks(int size)
 {	
     Math::Position *pos = new Math::Position(-1.0, -1.0, 0.0);
+	if(pos == NULL)
+	{
+		ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initPucks()\n");
+		return -1;
+	}
     this->m_pucks.clear();
     
     for (int i=0; i<size; i++)
@@ -134,6 +144,11 @@ int DrawServer::sendGridConfig(int grid_fd)
 {
 	//send config to grid
     TcpConnection * l_curConn = m_serverList[grid_fd];
+	if(l_curConn == NULL)
+	{
+		ERRORPRINT("DRAWSERVER ERROR:\t Failed to create connection in sendGridConfig()\n");
+		return -1;
+	}
     if (l_curConn == 0)
     	return -1;
     
@@ -171,6 +186,10 @@ void DrawServer::initTeams()
     if (this->m_teams.size() == 0)
     {
     	Math::Position *homePos = new Math::Position(55.0, 150.0, 0.0);
+		if(homePos == NULL)
+		{
+			ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initTeams()\n");
+		}
         this->m_teams[1] = new Game::Team(homePos, 1);
     }
 
@@ -179,29 +198,32 @@ void DrawServer::initTeams()
 
 void DrawServer::updateObject(Msg_RobotInfo newInfo)
 {    
-    uint32_t objType, objId;
+    uint32_t objType, objId, objIndex;
     Antix::getTypeAndId(newInfo.robotid, &objType, &objId);
-
-	printf("Object type=%d, id=%d\n", objType, objId);
-
+	objIndex = objId - 1;
+	objType = objId > 1000000;
+	
 	try
 	{
 		if(objType == PUCK)
 		{
-		    this->m_pucks.at(objId)->getPosition()->setX(newInfo.x_pos);
-			this->m_pucks.at(objId)->getPosition()->setY(newInfo.y_pos);        		
+			objIndex -= 1000000;
+		    this->m_pucks.at(objIndex)->getPosition()->setX(newInfo.x_pos);
+			this->m_pucks.at(objIndex)->getPosition()->setY(newInfo.y_pos);      
+			DEBUGPRINT("Puck[%d]: x=%f, y=%f\n", objIndex, this->m_pucks.at(objIndex)->getPosition()->getX(), this->m_pucks.at(objIndex)->getPosition()->getY() );  		
 		}
 		else
 		{    
 			
-			this->m_robots.at(objId)->getPosition()->setX(newInfo.x_pos);
-			this->m_robots.at(objId)->getPosition()->setY(newInfo.y_pos);       		    
+			this->m_robots.at(objIndex)->getPosition()->setX(newInfo.x_pos);
+			this->m_robots.at(objIndex)->getPosition()->setY(newInfo.y_pos);       		    
 		    //this->m_robots[newInfo.id]->m_PuckHeld = this->m_pucks[newInfo.puck_id];
+		    DEBUGPRINT("Robot[%d]: x=%f, y=%f\n", objIndex, this->m_robots.at(objIndex)->getPosition()->getX(), this->m_robots.at(objIndex)->getPosition()->getY() );  		
 		}
 	}
 	catch (std::exception &e)
 	{
-		printf("%s doesn't exist at %d\n", (objType == PUCK) ? "Puck" : "Robot",  objId);
+		DEBUGPRINT("%s doesn't exist at %d\n", (objType == PUCK) ? "Puck" : "Robot",  objIndex);
 	}
 }
 
@@ -213,11 +235,12 @@ int DrawServer::handler(int fd)
     //DEBUGPRINT("Handling file descriptor: %i\n", fd);
 
     //Get our TCPConnection for this socket.    
-    TcpConnection * l_Conn = this->m_serverList[fd];	
-	if (l_Conn == NULL)
-    {
-		return -1; // no such socket descriptor
-	}	
+    TcpConnection * l_Conn = this->m_serverList[fd];
+	if(l_Conn == NULL)
+	{
+		ERRORPRINT("DRAWSERVER ERROR:\t Failed to create connection in handler()\n");
+		return -1;
+	}
 	
 	//Get message header
 	uint16_t l_sender=-1, l_senderMsg =-1;	
@@ -251,8 +274,8 @@ int DrawServer::handler(int fd)
                         unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
                                 &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.speed, &l_ObjInfo.angle, &l_ObjInfo.puckid, &l_ObjInfo.gridid );
 
-                        DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\n",
-                        	        l_ObjInfo.robotid, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.puckid );
+                        //DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\n",
+                        	        //l_ObjInfo.robotid, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.puckid );
                                 
                         updateObject(l_ObjInfo);
                     }
@@ -295,7 +318,17 @@ int DrawServer::handler(int fd)
 						//TODO: check to make sure team doesn't already exist
 						{
 							Math::Position *homePos = new Math::Position(l_TeamInfo.x, l_TeamInfo.y, 0.0);
+							if(homePos == NULL)
+							{
+								ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for home position for team %d in handler()\n", l_TeamInfo.id);
+								return -1;
+							}
 		    				Game::Team *newTeam = new Game::Team(homePos, l_TeamInfo.id);
+							if(newTeam == NULL)
+							{
+								ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for new team %d in handler()\n", l_TeamInfo.id);
+								return -1;
+							}
 		    				this->m_teams.push_back(newTeam);
 	    				}
     				}
