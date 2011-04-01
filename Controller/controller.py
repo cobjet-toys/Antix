@@ -28,14 +28,18 @@ def start_process(name, **kwargs):
         # setup full config file for robot client
         shutil.copy(GRIDS_IDS_TMP, "client_config.tmp")
         CLIENT_FULL_CONFIG_FILE = open("client_config.tmp", 'a', 0) # 0 means no buffer
-        grid_id_append = "GRID_INIT {0}\n"
+	grid_id_append = ""
+        for i in GRID_BUCKETS:
+       		grid_id_append += "INIT_GRID " + str(i) +"\n"
         client_num = kwargs['client_num']
-        CLIENT_FULL_CONFIG_FILE.write(grid_id_append.format(GRID_BUCKETS[client_num]))
+        CLIENT_FULL_CONFIG_FILE.write(grid_id_append)
+        print grid_id_append
         CLIENT_FULL_CONFIG_FILE.close()
         script += ROBOT_CLIENT_RUN_COMMAND + " -f " + PATH + "Controller/client_config.tmp"
     elif name is "grid":
         global current_grid_port
-        script += GRID_RUN_COMMAND + " -f " +PATH + "Controller/" + GRID_CONFIG + " -p " + str(current_grid_port)
+        #GRID_CONFIG_TMP.write(  ) # TODO
+        script += GRID_RUN_COMMAND + " -f " +PATH + "Controller/" + GRID_TMP + " -p " + str(current_grid_port)
         current_grid_port += 1
     elif name is "drawer":
         global current_drawer_port
@@ -68,6 +72,7 @@ def start_process(name, **kwargs):
         if name is "clock":
             to_append = "CLOCK {0} " + str(current_clock_port-1) + "\n"
             GRIDS_TMP_FILE.write(to_append.format(machine_ip.rstrip()))
+            GRID_TMP_FILE.write(to_append.format(machine_ip.rstrip()))
             GRIDS_IDS_TMP_FILE.write(to_append.format(machine_ip.rstrip()))
             proc = "clock {0}\n"
             PROC_FILE.write(proc.format(machine_ip.rstrip()))
@@ -75,8 +80,8 @@ def start_process(name, **kwargs):
             to_append = "GRID {0} " + str(current_grid_port-1) + "\n"
             to_append_id = "GRID {0} {1} " + str(current_grid_port-1) + "\n"
             GRIDS_TMP_FILE.write(to_append.format(machine_ip.rstrip()))
-            DRAWER_FULL_CONFIG_FILE.write(to_append.format(machine_ip.rstrip()))
             grid_num = kwargs['grid_num']
+            DRAWER_FULL_CONFIG_FILE.write(to_append_id.format(grid_num, machine_ip.rstrip()))
             GRIDS_IDS_TMP_FILE.write(to_append_id.format(grid_num, machine_ip.rstrip()))
             proc = "grid {0}\n"
             PROC_FILE.write(proc.format(machine_ip.rstrip()))
@@ -215,10 +220,13 @@ DRAWER_FULL_CONFIG_FILE = open(DRAWER_FULL_CONFIG, 'a', 0) # 0 means no buffer
 
 # Temporary config files
 GRIDS_TMP = "grids.tmp"
+GRID_TMP = "grid.config.tmp"
 GRIDS_IDS_TMP = "grids_ids.tmp"
 
 GRIDS_TMP_FILE = open(GRIDS_TMP, 'w', 0) # 0 means no buffer
 GRIDS_IDS_TMP_FILE = open(GRIDS_IDS_TMP, 'w', 0) # 0 means no buffer
+shutil.copy(GRID_CONFIG, GRID_TMP)
+GRID_TMP_FILE = open(GRID_TMP, 'a', 0) # 0 means no buffer
 
 FIRST_FREE_MACHINE = 0
 
@@ -241,43 +249,46 @@ for i in range (1, NUM_ROBOT_CLIENTS+1):
         if bucket < NUM_GRIDS:
             bucket += 1
 
+
 # Build all the code
 print "*** BUILDING BINARIES ***"
 print
 
 print "** BUILDING GRID **"
 print
-build_binary("grid")
+#build_binary("grid")
 
 print "** BUILDING CLOCK **"
 print
-build_binary("clock")
+#build_binary("clock")
 
 print "** BUILDING CONTROLLER CLIENT **"
 print
-build_binary("controller")
+#build_binary("controller")
 
 print "** BUILDING ROBOT CLIENT **"
 print
-build_binary("client")
+#build_binary("client")
 
 print "** BUILDING DRAWER **"
 print
-build_binary("drawer")
+#build_binary("drawer")
 
 # Start processes
 print "*** STARTING PROCESSES ***"
+
+
+print "** STARTING CLOCK **"
+print
+start_process("clock")
 
 print "** STARTING GRIDS **"
 print
 for i in range(1, int(NUM_GRIDS)+1):
     start_process("grid", grid_num=i)
 
-print "** STARTING CLOCK **"
-print
-start_process("clock")
-
 GRIDS_TMP_FILE.close()
+GRID_TMP_FILE.close()
 GRIDS_IDS_TMP_FILE.close()
 
 print "** STARTING CONTROLLER CLIENT **"
