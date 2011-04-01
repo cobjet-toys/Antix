@@ -202,29 +202,32 @@ void DrawServer::initTeams()
 
 void DrawServer::updateObject(Msg_RobotInfo newInfo)
 {    
-    uint32_t objType, objId;
+    uint32_t objType, objId, objIndex;
     Antix::getTypeAndId(newInfo.robotid, &objType, &objId);
-
-	printf("Object type=%d, id=%d\n", objType, objId);
-
+	objIndex = objId - 1;
+	objType = objId > 1000000;
+	
 	try
 	{
 		if(objType == PUCK)
 		{
-		    this->m_pucks.at(objId)->getPosition()->setX(newInfo.x_pos);
-			this->m_pucks.at(objId)->getPosition()->setY(newInfo.y_pos);        		
+			objIndex -= 1000000;
+		    this->m_pucks.at(objIndex)->getPosition()->setX(newInfo.x_pos);
+			this->m_pucks.at(objIndex)->getPosition()->setY(newInfo.y_pos);      
+			DEBUGPRINT("Puck[%d]: x=%f, y=%f\n", objIndex, this->m_pucks.at(objIndex)->getPosition()->getX(), this->m_pucks.at(objIndex)->getPosition()->getY() );  		
 		}
 		else
 		{    
 			
-			this->m_robots.at(objId)->getPosition()->setX(newInfo.x_pos);
-			this->m_robots.at(objId)->getPosition()->setY(newInfo.y_pos);       		    
+			this->m_robots.at(objIndex)->getPosition()->setX(newInfo.x_pos);
+			this->m_robots.at(objIndex)->getPosition()->setY(newInfo.y_pos);       		    
 		    //this->m_robots[newInfo.id]->m_PuckHeld = this->m_pucks[newInfo.puck_id];
+		    DEBUGPRINT("Robot[%d]: x=%f, y=%f\n", objIndex, this->m_robots.at(objIndex)->getPosition()->getX(), this->m_robots.at(objIndex)->getPosition()->getY() );  		
 		}
 	}
 	catch (std::exception &e)
 	{
-		printf("%s doesn't exist at %d\n", (objType == PUCK) ? "Puck" : "Robot",  objId);
+		DEBUGPRINT("%s doesn't exist at %d\n", (objType == PUCK) ? "Puck" : "Robot",  objIndex);
 	}
 }
 
@@ -276,8 +279,8 @@ int DrawServer::handler(int fd)
                         unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
                                 &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.speed, &l_ObjInfo.angle, &l_ObjInfo.puckid, &l_ObjInfo.gridid );
 
-                        DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\n",
-                        	        l_ObjInfo.robotid, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.puckid );
+                        //DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\n",
+                        	        //l_ObjInfo.robotid, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.puckid );
                                 
                         updateObject(l_ObjInfo);
                     }
