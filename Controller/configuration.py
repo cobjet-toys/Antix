@@ -3,8 +3,8 @@
 START_LOCALLY = False # set to True to start all processes on localhost
                       # set to False to start all processes across CSIL machines
 TYPE = "release" # can be replaced with debug
-NUM_GRIDS = 3
-NUM_ROBOT_CLIENTS = 3
+NUM_GRIDS = 2
+NUM_ROBOT_CLIENTS = 7
 
 # Server settings
 GRID_RUN_COMMAND = "GridServer/build/" + TYPE + "/grid.bin"
@@ -38,7 +38,6 @@ ROBOT_CLIENT_BUILD_COMMAND = "make robot"
 
 # Drawer settings
 DRAWER_RUN_COMMAND = "Drawer/build/" + TYPE + "/drawer.bin"
-DRAWER_PORT = "13537"
 
 # the controller will cd to antix Path + this  directory and call "make":
 DRAWER_BUILD_DIR = "Drawer/"
