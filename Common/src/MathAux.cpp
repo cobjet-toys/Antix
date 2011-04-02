@@ -50,4 +50,65 @@ float Math::AngleNormalize(const float& a)
     return angle;
 }
 
+/*
+ * Fast Arc-tangent, arc-cos, and arc-sin code. Credit to Richard Vaughan
+ * and the internet.
+ */
+float Math::atan(const float& x, const float& y)
+{
+    const float piD2( M_PI/2.0 );
+    float atan;
+    float z = y/x;
+    
+    if( x == 0.0 )
+    {
+        if ( y > 0.0 ) return piD2;
+        if ( y == 0.0 ) return 0.0;
+        return -piD2;
+    }
+    
+    if( fabs( z ) < 1.0 )
+    {
+        atan = z/(1.0 + 0.28*z*z);
+        if ( x < 0.0 )
+        {
+            if ( y < 0.0 ) return atan - M_PI;
+            return atan + M_PI;
+        }
+    }
+    else
+    {
+        atan = piD2 - z/(z*z + 0.28f);
+        if ( y < 0.0f ) return atan - M_PI;
+    }
+
+    return atan;
+}
+  
+float Math::sin(const float& t)
+{
+    const float B = 4/M_PI;
+    const float C = -4/(M_PI*M_PI);
+    const float P = 0.225;
+    const float tp = B * t + C * t * fabs(t);
+    return( P * (tp * fabs(tp) - tp) + tp );
+}
+  
+float Math::cos(const float& t)
+{
+    const float B = 4/M_PI;
+    const float C = -4/(M_PI*M_PI);
+    const float P = 0.225;
+    
+    float tp = t + M_PI/2;
+    if(tp > M_PI)
+    {
+        // Original x > M_PI/2
+        // Wrap: cos(x) = cos(x - 2 M_PI)
+        tp -= 2 * M_PI; 
+    }
+    
+    float y = B * tp + C * tp * fabs(tp); //fast, inprecise
+    return( P * (y * fabs(y) - y) + y );
+}
 

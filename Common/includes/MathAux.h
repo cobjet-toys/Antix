@@ -27,6 +27,15 @@ namespace Math
      * Normalize the angle 'a'.
      */
     float AngleNormalize(const float& a);
+
+    /**
+     * Calculate the arc tangent of dy/dx
+     */
+    float atan(const float& dx, const float& dy);
+
+    float cos(const float& x);
+
+    float sin(const float& y);
 }
 
 #endif
