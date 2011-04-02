@@ -119,7 +119,10 @@ for process in processes:
 # Remove all tmp files
 os.remove("drawer_config.tmp")
 os.remove("grids_ids.tmp")
+os.remove("grid.config.tmp")
 os.remove("grids.tmp")
+os.remove("client_config.tmp")
+os.remove("controller_config.tmp")
 os.remove("proc.tmp")
 print
 print "Heads have rolled."

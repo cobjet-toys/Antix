@@ -7,7 +7,6 @@ from configuration import *
 global FIRST_FREE_MACHINE
 global current_clock_port
 global current_grid_port
-global current_drawer_port
 global FILE_ITER
 
 def start_process(name, **kwargs):
@@ -22,33 +21,45 @@ def start_process(name, **kwargs):
         script = "ssh -f -p 24 " + USER + "@" + machine + " 'nohup " + PATH
     if name is "clock":
         global current_clock_port
-        script += CLOCK_RUN_COMMAND + " -p " + str(current_clock_port) + " -c " + str(NUM_ROBOT_CLIENTS)
+        script += CLOCK_RUN_COMMAND + " -p " + str(current_clock_port) + " -c " + str(NUM_ROBOT_CLIENTS) + " -g " + str(NUM_GRIDS)
         current_clock_port += 1
     elif name is "client":
         # setup full config file for robot client
         shutil.copy(GRIDS_IDS_TMP, "client_config.tmp")
         CLIENT_FULL_CONFIG_FILE = open("client_config.tmp", 'a', 0) # 0 means no buffer
-        grid_id_append = "GRID_INIT {0}\n"
         client_num = kwargs['client_num']
-        CLIENT_FULL_CONFIG_FILE.write(grid_id_append.format(GRID_BUCKETS[client_num]))
+
+        # start the proper number of teams on each grid
+        if client_num+1 == NUM_ROBOT_CLIENTS:
+            for _ in itertools.repeat(None, TEAMS_PER_CLIENT):
+                grid_id_append = "INIT_GRID {0}\n"
+                CLIENT_FULL_CONFIG_FILE.write(grid_id_append.format(GRID_BUCKETS[client_num]))
+            for _ in itertools.repeat(None, TEAMS_PER_CLIENT_OFFSET):
+                grid_id_append = "INIT_GRID {0}\n"
+                CLIENT_FULL_CONFIG_FILE.write(grid_id_append.format(GRID_BUCKETS[client_num]))
+        else:
+            for _ in itertools.repeat(None, TEAMS_PER_CLIENT):
+                grid_id_append = "INIT_GRID {0}\n"
+                CLIENT_FULL_CONFIG_FILE.write(grid_id_append.format(GRID_BUCKETS[client_num]))
+
         CLIENT_FULL_CONFIG_FILE.close()
         script += ROBOT_CLIENT_RUN_COMMAND + " -f " + PATH + "Controller/client_config.tmp"
     elif name is "grid":
         global current_grid_port
-        script += GRID_RUN_COMMAND + " -f " +PATH + "Controller/" + GRID_CONFIG + " -p " + str(current_grid_port)
+        script += GRID_RUN_COMMAND + " -f " +PATH + "Controller/" + GRID_TMP + " -p " + str(current_grid_port)
         current_grid_port += 1
     elif name is "drawer":
-        global current_drawer_port
         if START_LOCALLY:
             script = PATH
-            script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG + " -p " + str(current_drawer_port)
+            script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG
         else:
-            script = "ssh -X -p 24 " + USER + "@" + machine + " '" + PATH
-            script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG + " -p " + str(current_drawer_port)
-            script += "'"
-        current_drawer_port += 1
+            #script = "ssh -X -p 24 " + USER + "@" + machine + " '" + PATH
+            #script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG
+            #script += "'"
+            script = PATH
+            script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG
     elif name is "controller":
-        script += CTRL_CLIENT_RUN_COMMAND + " -f " +PATH + "Controller/" + GRIDS_TMP
+        script += CTRL_CLIENT_RUN_COMMAND + " -f " +PATH + "Controller/" + CTRL_FULL_CONFIG
 
     if name is not "drawer":
         if START_LOCALLY:
@@ -68,15 +79,18 @@ def start_process(name, **kwargs):
         if name is "clock":
             to_append = "CLOCK {0} " + str(current_clock_port-1) + "\n"
             GRIDS_TMP_FILE.write(to_append.format(machine_ip.rstrip()))
+            GRID_TMP_FILE.write(to_append.format(machine_ip.rstrip()))
             GRIDS_IDS_TMP_FILE.write(to_append.format(machine_ip.rstrip()))
+            CTRL_FULL_CONFIG_FILE.write(to_append.format(machine_ip.rstrip()))
             proc = "clock {0}\n"
             PROC_FILE.write(proc.format(machine_ip.rstrip()))
         elif name is "grid":
             to_append = "GRID {0} " + str(current_grid_port-1) + "\n"
             to_append_id = "GRID {0} {1} " + str(current_grid_port-1) + "\n"
             GRIDS_TMP_FILE.write(to_append.format(machine_ip.rstrip()))
-            DRAWER_FULL_CONFIG_FILE.write(to_append.format(machine_ip.rstrip()))
+            CTRL_FULL_CONFIG_FILE.write(to_append.format(machine_ip.rstrip()))
             grid_num = kwargs['grid_num']
+            DRAWER_FULL_CONFIG_FILE.write(to_append_id.format(grid_num, machine_ip.rstrip()))
             GRIDS_IDS_TMP_FILE.write(to_append_id.format(grid_num, machine_ip.rstrip()))
             proc = "grid {0}\n"
             PROC_FILE.write(proc.format(machine_ip.rstrip()))
@@ -195,9 +209,9 @@ class BashScriptException(Exception):
 # Main:
 
 # Get the user argument
-if len(sys.argv) != 5:
-    print "Usage: python controller.py <sfu_username> <path/to/antix/directory/in/your/home/directory/> <grid config file> <drawer config file>"
-    print "For example: python contoller.py hha13 ~/Documents/Antix/ grids.config drawer.config"
+if len(sys.argv) != 6:
+    print "Usage: python controller.py <sfu_username> <path/to/antix/directory/in/your/home/directory/> <grid config file> <drawer config file> <controller config file>"
+    print "For example: python contoller.py hha13 ~/Documents/Antix/ grid.config drawer.config controller.config"
     print "Also, make sure you've set up SSH keys for your account."
     sys.exit()
 
@@ -205,20 +219,38 @@ USER = sys.argv[1]
 PATH = sys.argv[2]
 GRID_CONFIG = sys.argv[3]
 DRAWER_CONFIG = sys.argv[4]
+CTRL_CONFIG = sys.argv[5]
 
 GRID_CONFIG_FILE = open(GRID_CONFIG, 'r')
+
+# Read the number of teams from the grid config file
+def strip_newlines(s): return s.rstrip()
+grid_lines = map(strip_newlines, GRID_CONFIG_FILE.readlines())
+total_teams = grid_lines[0].split(' ')[1]
+total_teams = int(total_teams) * NUM_GRIDS
+
+TEAMS_PER_CLIENT = total_teams / NUM_ROBOT_CLIENTS
+TEAMS_PER_CLIENT_OFFSET = int(total_teams) % NUM_ROBOT_CLIENTS
 
 # Set up full config file for drawer
 DRAWER_FULL_CONFIG = "drawer_config.tmp"
 shutil.copy(DRAWER_CONFIG, DRAWER_FULL_CONFIG)
 DRAWER_FULL_CONFIG_FILE = open(DRAWER_FULL_CONFIG, 'a', 0) # 0 means no buffer
 
+# Set up full controller config file
+CTRL_FULL_CONFIG = "controller_config.tmp"
+shutil.copy(CTRL_CONFIG, CTRL_FULL_CONFIG)
+CTRL_FULL_CONFIG_FILE = open(CTRL_FULL_CONFIG, 'a', 0) # 0 means no buffer
+
 # Temporary config files
 GRIDS_TMP = "grids.tmp"
+GRID_TMP = "grid.config.tmp"
 GRIDS_IDS_TMP = "grids_ids.tmp"
 
 GRIDS_TMP_FILE = open(GRIDS_TMP, 'w', 0) # 0 means no buffer
 GRIDS_IDS_TMP_FILE = open(GRIDS_IDS_TMP, 'w', 0) # 0 means no buffer
+shutil.copy(GRID_CONFIG, GRID_TMP)
+GRID_TMP_FILE = open(GRID_TMP, 'a', 0) # 0 means no buffer
 
 FIRST_FREE_MACHINE = 0
 
@@ -227,7 +259,6 @@ FILE_ITER = 0
 # copy the clock/port setting
 current_clock_port = int(CLOCK_PORT)
 current_grid_port = int(GRID_PORT)
-current_drawer_port = int(DRAWER_PORT)
 
 PROC_FILE = open("proc.tmp", 'w', 0) # 0 means no buffer
 
@@ -268,16 +299,18 @@ build_binary("drawer")
 # Start processes
 print "*** STARTING PROCESSES ***"
 
-print "** STARTING GRIDS **"
-print
-for i in range(1, int(NUM_GRIDS)+1):
-    start_process("grid", grid_num=i)
 
 print "** STARTING CLOCK **"
 print
 start_process("clock")
 
+print "** STARTING GRIDS **"
+print
+for i in range(1, int(NUM_GRIDS)+1):
+    start_process("grid", grid_num=i)
+
 GRIDS_TMP_FILE.close()
+GRID_TMP_FILE.close()
 GRIDS_IDS_TMP_FILE.close()
 
 print "** STARTING CONTROLLER CLIENT **"
@@ -296,6 +329,7 @@ start_process("drawer")
 GRID_CONFIG_FILE.close()
 DRAWER_FULL_CONFIG_FILE.close()
 PROC_FILE.close()
+CTRL_FULL_CONFIG.close()
 
 print
 print "EVERYTHING IS DONE!"

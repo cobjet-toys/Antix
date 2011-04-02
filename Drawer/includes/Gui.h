@@ -59,5 +59,9 @@ static GLfloat yRobotVals[360];
 static GLfloat xSensVals[360];
 static GLfloat ySensVals[360];
 
+// Variables for drawing detail
+static int cutOffRange = 8500;
+static int robotEdgeCount = 20;
+
 // TEMPORARY TESTING VARIABLES //
 static int angleOffset = 0;

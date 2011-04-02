@@ -28,11 +28,28 @@ SCRIPT RUN SEQUENCE
 MANUAL RUN SEQUENCE
 ======================================================================
 
-  1.) Grid Servers
-  2.) Clock
+  1.) Clock
+  2.) Grid Servers
   3.) ControllerClient
   4.) RobotClients
   5.) Drawer
+
+
+
+    RUN: Clock
+    ======================================================================
+
+      Description: 
+
+	  The clock helps keep the simulation in sync.
+
+      How to: 
+
+	  ./clock.bin -p {{port}} -c {{# of robot clients}} -g {{# of grid servers}}
+
+      Configuration file:
+
+	  None.
 
 
     RUN: Grid Servers
@@ -50,24 +67,32 @@ MANUAL RUN SEQUENCE
 
 	  NUMBER_OF_TEAMS {{integer}} # Required: specifies the number of teams on the grid
 	  ROBOTS_PER_TEAM {{integer}} # Required: specified the number of robots per team
+	  CLOCK {{IP ADDRESS}} {{port}}
+	  NUM_CLIENTS {{integer}} # Required: specified the number of robots clients
 
 
-    RUN: Clock
+    RUN: ControllerClient
     ======================================================================
 
-      Description: 
+      Description: ControllerClient
 
-	  The clock helps keep the simulation in sync.
+	  The ControllerClient regulates the simulation
 
       How to: 
 
-	  ./clock.bin -p {{port}} -c {{# of robot clients}}
+	  ./controller.bin -f {{config file}}
 
       Configuration file:
 
-	  None.
+	  HOME_RADIUS {{float}} 
+	  WORLD_SIZE {{integer}} 
+	  NUM_GRIDS {{integer}} 
+	  PUCK_TOTAL {{integer}} 
+	  GRID {{IP Address}} {{port}}
+	  CLOCK {{IP Address}} {{port}}
 
-    RUN: ControllerClient
+
+    RUN: RobotClient
     ======================================================================
 
       Description: RobotClients
@@ -83,6 +108,7 @@ MANUAL RUN SEQUENCE
 	  GRID {{ID}} {{IP ADDRESS}} {{port}}
 	  CLOCK {{IP ADDRESS}} {{port}}
 	  INIT_GRID {{ID}} # will request a team from this grid
+
 
     RUN: Drawer
     ======================================================================

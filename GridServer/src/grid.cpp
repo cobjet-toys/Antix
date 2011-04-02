@@ -8,11 +8,9 @@
 int main(int argc, char ** argv)
 {
     //Seed random number generator
-    // TODO RE-Enable this
     srand((unsigned)time(0));
     
     setbuf(stdout, NULL);
-
 
     Network::GridServer *l_grid = new Network::GridServer();
 
@@ -20,7 +18,7 @@ int main(int argc, char ** argv)
     l_grid->initGridGame();
     #endif
 
-	if (argc < 5) 
+	if (argc < 5)
 	{
 		printf("Usage: ./grid.bin -p <port> -f <init_file>\n");
 		return -1;
@@ -62,9 +60,12 @@ int main(int argc, char ** argv)
 		}
 	}
 	
-	
+	if (l_grid->init(l_bindPort) < 0) 
+	{
+		LOGPRINT("GRID FAIL:\t Cannot init port\n");
+		return -1;
+	}
 
-	
 	GridParser l_parser;
 	
 	l_res = 0;
@@ -91,13 +92,7 @@ int main(int argc, char ** argv)
 		return -1;
 	} 
 	
-	
-	if (l_grid->init(l_bindPort) < 0) 
-	{
-		LOGPRINT("GRID FAIL:\t Cannot init port\n");
-		return -1;
-	}
-	
+
 	if (l_grid->start() < 0 )
 	{
 		LOGPRINT("GRID FAIL:\t Server failed, did not exit cleanly.\n");

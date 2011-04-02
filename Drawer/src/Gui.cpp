@@ -29,11 +29,9 @@ void displayFunc()
     glMatrixMode (GL_MODELVIEW);
     glLoadIdentity();
 
-    // ----- Draw Functions ----- //
-
-    drawTeams();
+    // ----- Draw Functions ----- //    drawTeams();
     drawPucks();
-    drawRobots(20);
+    drawRobots(robotEdgeCount);
     //drawTest(50, 16, 45.0, 6);
     
     // ----- Draws framerate ----- //
@@ -51,6 +49,10 @@ void displayFunc()
     char buf[20];
     sprintf(buf, "Framerate: %d", framerate);
     drawText(buf, 5, 585, false);
+
+    char tmpBuf[30];
+    sprintf(tmpBuf, "Width/Height: [%d, %d], robotEdgeCount: %d", abs(left - right), abs(bottom - top), robotEdgeCount);
+    drawText(tmpBuf, 0, 540, false);
 
     // ------------------------ //
     glutSwapBuffers();
@@ -120,12 +122,11 @@ void drawRobots(int edgePoints)
     float worldsize        = drawServerRef->getWorldSize();
     float radius           = drawServerRef->getHomeRadius();
 
-    glPointSize(2.0);
+    glPointSize(1.0);
     glColor3f(255, 255, 255);
-    
-    // if robots are smaller than 4 pixels across, draw them as points
-    //if( (radius * (double)winsize/(double)worldsize) < 2.0 )
-    if(true)
+
+    int i = 0, d = 0;
+    if(abs(left - right) < cutOffRange)
     {
         const size_t len(drawServerRef->getRobotsCount()); 
     	
@@ -140,7 +141,6 @@ void drawRobots(int edgePoints)
         //glEnableClientState(GL_COLOR_ARRAY);
         //glColorPointer(3, GL_FLOAT, 0, &colors[0]);
 
-        int i = 0;
         for (Network::RobotIter it = drawServerRef->getFirstRobot(); it != drawServerRef->getLastRobot(); it++)
         {
            	if(!(*it))
@@ -151,14 +151,21 @@ void drawRobots(int edgePoints)
             Math::Position * robotPos = (*it)->getPosition();
             if (!robotPos) continue;
 
-            //pts[2*i + 0] = robotPos->getX();
-            //pts[2*i + 1] = robotPos->getY();
+            int xPos = (int)robotPos->getX();
+            int yPos = (int)robotPos->getY();
 
-            // Sets the circle points for each robot
-            for(size_t a = 0; a < edgePoints; a++)
+            if(xPos > left - 10 && xPos < right + 10)
             {
-                sPts[(edgePoints*2*i) + (2*a)]     = robotPos->getX() + xRobotVals[(int)(a*360/edgePoints)];
-                sPts[(edgePoints*2*i) + (2*a) + 1] = robotPos->getY() + yRobotVals[(int)(a*360/edgePoints)];
+                if(yPos > bottom - 10 && yPos < top + 10)
+                {
+                    // Sets the circle points for each robot                
+                    for(size_t a = 0; a < edgePoints; a++)
+                    {
+                        sPts[(edgePoints*2*d) + (2*a)]     = robotPos->getX() + xRobotVals[(int)(a*360/edgePoints)];
+                        sPts[(edgePoints*2*d) + (2*a) + 1] = robotPos->getY() + yRobotVals[(int)(a*360/edgePoints)];
+                    }
+                    d++;
+                }
             }
     
             // --- NEEDS A HEADING VALUE FOR PASSED IN ROBOTS -- //
@@ -172,13 +179,13 @@ void drawRobots(int edgePoints)
             //colors[3*i + 1] = 255;
             //colors[3*i + 2] = 255;
 
-            char tmpBuf[40];
-            sprintf(tmpBuf, "Robots[%d]: [%f, %f]", i, robotPos->getX(), robotPos->getY());
-            drawText(tmpBuf, 5, 540 - (15*i), false);
+            //char tmpBuf[40];
+            //sprintf(tmpBuf, "Robots[%d]: [%f, %f]", i, robotPos->getX(), robotPos->getY());
+            //drawText(tmpBuf, 5, 540 - (15*i), false);
 
             i++;
         }
-        glEnd();
+        //glEnd();
 
         // Activate and specify pointer to vertex array
         glEnableClientState(GL_VERTEX_ARRAY);
@@ -188,7 +195,7 @@ void drawRobots(int edgePoints)
 
         // Draw robot circles
         glVertexPointer(2, GL_FLOAT, 0, &sPts[0]);        
-        for (int x = 0; x < i; x++)
+        for (int x = 0; x < d; x++)
         {
             glDrawArrays(GL_LINE_LOOP, x*edgePoints, edgePoints);
         }
@@ -203,24 +210,47 @@ void drawRobots(int edgePoints)
         // Deactivate vertex arrays after drawing
         //glDisableClientState(GL_COLOR_ARRAY);
         glDisableClientState(GL_VERTEX_ARRAY);
-
-        char tmpBuf[16];
-        sprintf(tmpBuf, "Robots #: %u", len);
-        drawText(tmpBuf, 5, 555, false);
     }
     else 
     {
-        for (Network::RobotIter it = drawServerRef->getFirstRobot(); it != drawServerRef->getLastRobot();it++)
+        const size_t len(drawServerRef->getRobotsCount()); 
+    	
+        // keep this buffer around between calls for speed
+        static std::vector<GLfloat> pts;
+        pts.resize(len * 2);
+
+        for (Network::RobotIter it = drawServerRef->getFirstRobot(); it != drawServerRef->getLastRobot(); it++)
         {
-        	if (!(*it))
-        	{
-        		continue;
-        	}
+           	if(!(*it)){continue;}
         	
-            //(*it).second->draw();
+            Math::Position * robotPos = (*it)->getPosition();
+            if (!robotPos) continue;
+
+            pts[(2*i) + 0] = robotPos->getX();
+            pts[(2*i) + 1] = robotPos->getY();
+
+            //colors[3*i + 0] = 255;
+            //colors[3*i + 1] = 255;
+            //colors[3*i + 2] = 255;
+
+            i++;
+            d++;
         }
+
+        // Activate and specify pointer to vertex array
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glVertexPointer(2, GL_FLOAT, 0, &pts[0]);
+
+        // Draw a line strip (robot circle)
+        glDrawArrays(GL_POINTS, 0, i);
+
+        // deactivate vertex arrays after drawing
+        glDisableClientState(GL_VERTEX_ARRAY);
     }
 
+    char tmpBuf[40];
+    sprintf(tmpBuf, "Robots #: %d, Drawn #: %d", i, d);
+    drawText(tmpBuf, 5, 555, false);
 }
 
 void drawText(char* text, float x, float y, bool absolute)
@@ -249,7 +279,7 @@ void drawTest(int robotCount, int edgePoints, float viewAngle, int viewEdgePoint
 
     if(drawCount%20 == 19){angleOffset++;}
 
-    if(abs(left - right) < 8500)
+    if(abs(left - right) < cutOffRange)
     {
         // Set colour to WHITE
         glColor3f(255, 255, 255);
@@ -505,6 +535,10 @@ void mouseMotionHandler(int x, int y)
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         gluOrtho2D(left, right, bottom, top);
+
+        // Sets the robots edge count detail
+        robotEdgeCount = (int)(cutOffRange/abs(left - right)) + 3;
+        if(robotEdgeCount > 20){robotEdgeCount = 20;}
     }
 }
 

@@ -128,8 +128,8 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     }
 
     // TEMPORARY until I write the bit shifting functions
-    high_puck_range = high_puck_range + 1000000;
-    low_puck_range = low_puck_range + 1000000;
+    high_puck_range = high_puck_range + 10000000;
+    low_puck_range = low_puck_range + 10000000;
 
     LOGPRINT("GRIDGAME STATUS:\t INIT PUCK Range high:%d low:%d", high_puck_range, low_puck_range);
 
@@ -435,7 +435,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
     {
         // grab the robots and update their positions
         DEBUGPRINT("GRIDGAME STATUS:\t Looking for robot: %d\n", (*it).robotid);
-        std::map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
+        std::tr1::unordered_map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
         if (robot_find != m_MapPopulation.end())
         {
             Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
@@ -601,7 +601,7 @@ int GridGame::updateRobots(RobotInfoList& robots)
     {
         DEBUGPRINT("GRIDGAME STATUS:\t Entering updateRobot function for loop\n");
         // grab the robots and update their positions
-        std::map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
+        std::tr1::unordered_map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
         if (robot_find == m_MapPopulation.end())
         {
             DEBUGPRINT("GRIDGAME STATUS:\t NEW ROBOT\n");
@@ -731,3 +731,4 @@ void GridGame::printPopulation()
 	}
 	return;
 }
+

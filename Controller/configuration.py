@@ -3,12 +3,12 @@
 START_LOCALLY = False # set to True to start all processes on localhost
                       # set to False to start all processes across CSIL machines
 TYPE = "release" # can be replaced with debug
-NUM_GRIDS = 3
-NUM_ROBOT_CLIENTS = 3
+NUM_GRIDS = 2
+NUM_ROBOT_CLIENTS = 2
 
 # Server settings
 GRID_RUN_COMMAND = "GridServer/build/" + TYPE + "/grid.bin"
-GRID_PORT = "13337" # for simplicity, every subsequent grid will use port +1
+GRID_PORT = "23337" # for simplicity, every subsequent grid will use port +1
 
 # the controller will cd to antix Path + this  directory and call "make":
 GRID_BUILD_DIR = "GridServer/"
@@ -16,7 +16,7 @@ GRID_BUILD_COMMAND = "make grid"
 
 # Clock settings
 CLOCK_RUN_COMMAND = "ClockServer/build/" + TYPE + "/clock.bin"
-CLOCK_PORT = "13437" # for simplicity, every subseqent clock will use port +1
+CLOCK_PORT = "23437" # for simplicity, every subseqent clock will use port +1
 
 # the controller will cd to antix Path + this  directory and call "make":
 CLOCK_BUILD_DIR = "ClockServer/"
@@ -38,7 +38,6 @@ ROBOT_CLIENT_BUILD_COMMAND = "make robot"
 
 # Drawer settings
 DRAWER_RUN_COMMAND = "Drawer/build/" + TYPE + "/drawer.bin"
-DRAWER_PORT = "13537"
 
 # the controller will cd to antix Path + this  directory and call "make":
 DRAWER_BUILD_DIR = "Drawer/"
