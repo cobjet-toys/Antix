@@ -6,12 +6,12 @@ namespace Math
     /**
      * Convert radions 'r' to degrees.
      */
-    float rtod( const float& r );
+    float rtod(const float& r);
 
     /**
      * Convert degrees 'd' to radians.
      */
-    float dtor( const float& d);
+    float dtor(const float& d);
 
     /**
      * Calcuate the distance assuming the world wraps. 
@@ -31,11 +31,11 @@ namespace Math
     /**
      * Calculate the arc tangent of dy/dx
      */
-    float atan(const float& dx, const float& dy);
+    float fast_atan(const float& dx, const float& dy);
 
-    float cos(const float& x);
+    float fast_cos(const float& x);
 
-    float sin(const float& y);
+    float fast_sin(const float& y);
 }
 
 #endif

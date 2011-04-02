@@ -46,11 +46,6 @@ public:
     void updatePosition(const float x_pos, const float y_pos);
 
     /**
-     * Change the ID of the puck that is currently held
-     */
-     void setPuckHeld(unsigned int puckId);
-
-    /**
      * Update the AI - this is what tells the robot what to do.
      */
     Msg_Action getAction();
@@ -61,19 +56,9 @@ public:
     bool Holding() const;
 
     /**
-     * Drop a puck if one is being held.
+     * Set the speed of this robot.
      */
-    Msg_Action Drop();
-
-    /**
-     * Attempt to puck up the nearest puck.
-     */
-    Msg_Action Pickup();
-
-    /**
-     * Attempt to puck up the nearest puck.
-     */
-    Msg_Action setSpeed(Speed* speed);
+    int setSpeed(Speed* speed);
 
 
     /**
@@ -87,29 +72,55 @@ public:
     float getY();
 
     /**
-     * Return the radius of the robot.
+     * Make this robot hold on to a new puck
      */
-    static float& getRadius();
+    void setPuckHeld(uid puckToHold);
 
     /**
-     * Return the sensor range of all robots.
+     * Returns true if the puck coords given are within our pickup range
      */
-
-    static float& getSensRange();
+    bool puckInPickupRange(const float& puckX, const float& puckY) const;
 
     /**
-     * Return the FOV of all robots.
+     * FOV of any robot.
      */
+    static float FOV;
 
-    static float& getFOV();
+    /**
+     * Radius of any robot.
+     */
+    static float Radius;
 
+    /**
+     * Size of any home
+     */
+     static float HomeRadius;
 
+    /**
+     * Range at which a robot can pick a puck up at.
+     */
+    static float PickupRange;
+
+    /**
+     * Range at which the robot can see other objects.
+     */
+    static float SensorRange;
+
+    /**
+     * Size of the world
+     */
+     static float WorldSize;
 
 private: 
     /**
      * Current speed of the object.
      */
     Math::Speed* m_Speed;
+
+    /**
+     * Current position of the robot
+     */
+    Math::Position* m_Position;
 
     /**
      * A robot id if this robot is holding a puck, 0 otherwise.
@@ -119,36 +130,23 @@ private:
     /**
      * Collection of visible objects, resets at every update.
      */
-    std::list< std::pair<float,float> > m_VisiblePucks;
-    std::list< std::pair<float,float> > m_VisibleRobots;
+    ObjectLocationList m_VisiblePucks;
+    ObjectLocationList m_VisibleRobots;
 
     /*
      * Absolute location of this robot's home
      */
     float m_homeX;
     float m_homeY;
+
+    /*
+     * Location of last picked up puck
+     */
+     Math::Position* m_LastPickup;
     
-    /**
-     * FOV of any robot.
-     */
-    static float m_FOV;
-
-    /**
-     * Radius of any robot.
-     */
-    static float m_Radius;
-
-    /**
-     * Range at which a robot can pick a puck up at.
-     */
-    static float m_PickupRange;
-
-    /**
-     * Range at which the robot can see other objects.
-     */
-    static float m_SensorRange;
 };
-}
+
+} //end namespace Game
 
 
 #endif

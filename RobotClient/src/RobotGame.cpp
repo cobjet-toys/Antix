@@ -18,6 +18,13 @@ RobotGame::RobotGame()
     robot_Radius = 0.01;
     robot_SensorRange = 0.1;
     robot_PickupRange = robot_SensorRange / 5.0;
+
+    Robot::FOV = robot_FOV;
+    Robot::Radius = robot_Radius;
+    Robot::SensorRange = robot_SensorRange;
+    Robot::PickupRange = robot_PickupRange;
+    Robot::WorldSize = 10;
+    Robot::HomeRadius = 0.1;
 }
 
 RobotGame::~RobotGame()
