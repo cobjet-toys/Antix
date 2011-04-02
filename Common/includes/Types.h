@@ -58,7 +58,6 @@ typedef std::vector<Msg_SensedObjectGroupItem> SensedItemsList;
 typedef std::vector<Msg_RobotInfo> RobotInfoList;
 typedef std::vector<uid> IDList;
 typedef std::pair<uid, std::vector<Msg_SensedObjectGroupItem> > RobotSensedObjectsPair;
-//typedef std::map<int, std::vector<sensed_item> > SensedItems;
 
 // For checking output of Antix::getTypes()
 const int ROBOT = 0;

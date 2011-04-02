@@ -9,15 +9,13 @@
 using namespace Game;
 using namespace Antix;
 
-Robot::Robot(Math::Position *pos, int teamid, unsigned int id):GameObject(pos, id)
+Robot::Robot(Math::Position *pos, float homeX, float homeY, unsigned int id):GameObject(pos, id)
 {
     m_Speed = new Math::Speed();
-    m_TeamId = teamid;
+    m_homeX = homeX;
+    m_homeY = homeY;
 
-    //TODO: get TEAM_SIZE from the config
-    //int TEAM_SIZE = 1000;
-    //m_Team = id/TEAM_SIZE;
-    
+    // Puckheld is 0 when the robot is not holding a puck
     m_PuckHeld = 0;
 }
 
@@ -25,10 +23,6 @@ Robot::Robot(Math::Position *pos, int teamid, unsigned int id):GameObject(pos, i
 Robot::Robot(Math::Position *pos, unsigned int id):GameObject(pos, id)
 {
     m_Speed = new Math::Speed();
-
-    //TODO: get TEAM_SIZE from the config
-    //int TEAM_SIZE = 1000;
-    //m_Team = id/TEAM_SIZE;
 }
 
 Robot::~Robot()
@@ -38,15 +32,18 @@ Robot::~Robot()
     delete m_Speed;
 }
 
-int Robot::setSpeed(Speed* speed)
+Msg_Action Robot::setSpeed(Speed* speed)
 {
+    /*
     if(speed == NULL)
     {
         return -1;
     }
     delete m_Speed;
 	m_Speed = speed;
-    return 0;
+    return 0;*/
+    Msg_Action l_action;
+    return l_action;
 }
 
 
@@ -83,11 +80,12 @@ Msg_Action Robot::getAction()
 {
     Msg_Action l_action;
     l_action.robotid = this->getId();
-    l_action.action = 1;
-    l_action.speed = 1.0;
-    l_action.angle = 0.0f;
-    return l_action;
-/*
+    //l_action.action = 1;
+    //l_action.speed = 1.0;
+    //l_action.angle = 0.0f;
+    //return l_action;
+
+    /*
     float l_HeadingError = 0.0;
 
     Position* l_CurrentPos = getPosition();
@@ -174,7 +172,7 @@ Msg_Action Robot::getAction()
         //Turn to reduce error.
         m_Speed->setRotSpeed(0.2 * l_HeadingError);
     }
-*/
+    */
 }
 
 bool Robot::Holding() const
@@ -188,19 +186,21 @@ bool Robot::Holding() const
     }
 }
 
-int Robot::Drop()
+Msg_Action Robot::Drop()
 {
-    unsigned int temppuck;
+    /*unsigned int temppuck;
 
     //If we're holding a puck, drop it.
     if (Holding())
     {
         m_PuckHeld = NULL;
     }
-    return temppuck;
+    return temppuck; */
+    Msg_Action l_action;
+    return l_action;
 }
 
-bool Robot::Pickup()
+Msg_Action Robot::Pickup()
 {
     /*
     // TODO: Not deleting this yet, may be needed for actions
@@ -221,7 +221,8 @@ bool Robot::Pickup()
         }
     }
     */
-    return false;
+    Msg_Action l_action;
+    return l_action;
 }
 
 float Robot::getX()
@@ -237,5 +238,4 @@ float Robot::getY()
 	return (*getPosition()).getY();
 
 }
-
 

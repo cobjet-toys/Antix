@@ -29,7 +29,7 @@ public:
 
     Robot(Math::Position *pos, unsigned int id);
 
-    Robot(Math::Position *pos, int teamid, unsigned int id);
+    Robot(Math::Position *pos, float homeX, float homeY, unsigned int id);
     
     /**
      * Delete position object.
@@ -49,7 +49,6 @@ public:
      * Update the AI - this is what tells the robot what to do.
      */
     Msg_Action getAction();
-    
 
     /**
      * Is the robot holding a puck.
@@ -59,17 +58,17 @@ public:
     /**
      * Drop a puck if one is being held.
      */
-    int Drop();
+    Msg_Action Drop();
 
     /**
      * Attempt to puck up the nearest puck.
      */
-    bool Pickup();
+    Msg_Action Pickup();
 
     /**
      * Attempt to puck up the nearest puck.
      */
-    int setSpeed(Speed* speed);
+    Msg_Action setSpeed(Speed* speed);
 
 
     /**
@@ -100,7 +99,6 @@ public:
     static float& getFOV();
 
 
-    unsigned int m_PuckHeld;    
 
 private: 
     /**
@@ -108,6 +106,10 @@ private:
      */
     Math::Speed* m_Speed;
 
+    /**
+     * A robot id if this robot is holding a puck, 0 otherwise.
+     */
+    unsigned int m_PuckHeld;    
 
     /**
      * Collection of visible objects, resets at every update.
@@ -115,8 +117,12 @@ private:
     std::list< std::pair<float,float> > m_VisiblePucks;
     std::list< std::pair<float,float> > m_VisibleRobots;
 
-    int m_TeamId;
-
+    /*
+     * Absolute location of this robot's home
+     */
+    float m_homeX;
+    float m_homeY;
+    
     /**
      * FOV of any robot.
      */

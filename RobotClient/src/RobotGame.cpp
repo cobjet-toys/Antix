@@ -42,7 +42,9 @@ int RobotGame::setTeamRobot(int gridId, int teamId, Msg_InitRobot robot)
 		ERRORPRINT("ROBOTGAME ERROR:\t Failed to allocate memory for robotPosition in setTeamRobot()\n");
 		return -1;
 	}
-    Game::Robot* l_Robot = new Robot(l_robotPosition, teamId, robot.id);
+    
+    std::pair<float,float> homeLoc = m_homeLocations[teamId];
+    Game::Robot* l_Robot = new Robot(l_robotPosition, homeLoc.first, homeLoc.second, robot.id);
 	if(l_Robot == NULL)
 	{
 		ERRORPRINT("ROBOTGAME ERROR:\t Failed to allocate memory for robot in setTeamRobot()\n");
