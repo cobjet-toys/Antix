@@ -53,9 +53,6 @@ def start_process(name, **kwargs):
             script = PATH
             script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG
         else:
-            #script = "ssh -X -p 24 " + USER + "@" + machine + " '" + PATH
-            #script += "../Drawer/build/debug/drawer.bin" + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG
-            #script += "'"
             script = PATH
             script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG
     elif name is "controller":

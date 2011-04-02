@@ -128,8 +128,8 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     }
 
     // TEMPORARY until I write the bit shifting functions
-    high_puck_range = high_puck_range + 1000000;
-    low_puck_range = low_puck_range + 1000000;
+    high_puck_range = high_puck_range + 10000000;
+    low_puck_range = low_puck_range + 10000000;
 
     LOGPRINT("GRIDGAME STATUS:\t INIT PUCK Range high:%d low:%d", high_puck_range, low_puck_range);
 
