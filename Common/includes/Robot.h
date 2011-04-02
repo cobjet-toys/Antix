@@ -46,6 +46,11 @@ public:
     void updatePosition(const float x_pos, const float y_pos);
 
     /**
+     * Change the ID of the puck that is currently held
+     */
+     void setPuckHeld(unsigned int puckId);
+
+    /**
      * Update the AI - this is what tells the robot what to do.
      */
     Msg_Action getAction();

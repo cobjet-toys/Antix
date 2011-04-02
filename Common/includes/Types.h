@@ -15,6 +15,7 @@ using std::string;
 
 const string DEFAULT_REDIS_PORT = "6379";
 
+/*
 typedef struct{
     unsigned int id;
     float x;
@@ -44,7 +45,7 @@ typedef struct{
     float angle;
     unsigned int puck_id;
 } robot_info;
-
+*/
 
 typedef unsigned int uid;
 typedef std::pair<string, string> ConnectionPair;

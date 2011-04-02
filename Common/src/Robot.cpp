@@ -76,6 +76,12 @@ void Robot::updateSensors( SensedItemsList sensedItems )
     }
 }
 
+void Robot::setPuckHeld(uid puckId)
+{
+    m_PuckHeld = puckId;
+    return;
+}
+
 Msg_Action Robot::getAction()
 {
     Msg_Action l_action;

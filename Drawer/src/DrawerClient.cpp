@@ -100,7 +100,7 @@ size_t DrawServer::initRobots(int size)
 			ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initRobots()\n");
 			return -1;
 		}
-		robot = new Game::Robot(pos, teamId, i);
+		robot = new Game::Robot(pos, i);
 		if(robot == NULL)
 		{
 			ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for robot in initRobots()\n");

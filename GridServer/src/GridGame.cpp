@@ -27,7 +27,6 @@ using std::make_pair;
 #define PUCK 1
 
 typedef pair<int, GameObject*> ObjectIDPair;
-typedef pair<int, std::vector<sensed_item> > ObjectPair;
 
 GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_from, int id_to, float homeRadius, float worldSize, int numGrids, int puckTotal)
 {
@@ -270,7 +269,7 @@ int GridGame::registerRobot(Msg_RobotInfo robot)
     	return -1;
     }
     
-    (*l_Robot).m_PuckHeld = robot.puckid;
+    l_Robot->setPuckHeld(robot.puckid);
 			
     // add robot to the population
     addObjectToPop(l_Robot);
@@ -619,7 +618,7 @@ int GridGame::updateRobots(RobotInfoList& robots)
                 DEBUGPRINT("GRIDGAME STATUS:\t UPDATE ROBOT ID:%d\n", (*it).robotid);
                 Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
                 l_Robot->updatePosition((*it).x_pos, (*it).y_pos);
-                l_Robot->m_PuckHeld = (*it).puckid;
+                l_Robot->setPuckHeld((*it).puckid);
                 l_Robot->getPosition()->setOrient((*it).angle);
                 DEBUGPRINT("GRIDGAME STATUS:\t MOVED TO: %f\n", l_Robot->getPosition()->getX());
             }
