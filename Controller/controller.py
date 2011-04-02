@@ -53,9 +53,6 @@ def start_process(name, **kwargs):
             script = PATH
             script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG
         else:
-            #script = "ssh -X -p 24 " + USER + "@" + machine + " '" + PATH
-            #script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG
-            #script += "'"
             script = PATH
             script += DRAWER_RUN_COMMAND + " -f " +PATH + "Controller/" + DRAWER_FULL_CONFIG
     elif name is "controller":
@@ -209,10 +206,12 @@ class BashScriptException(Exception):
 # Main:
 
 # Get the user argument
-if len(sys.argv) != 6:
-    print "Usage: python controller.py <sfu_username> <path/to/antix/directory/in/your/home/directory/> <grid config file> <drawer config file> <controller config file>"
-    print "For example: python contoller.py hha13 ~/Documents/Antix/ grid.config drawer.config controller.config"
+if (len(sys.argv) != 6) and (len(sys.argv) != 7):
+    print "Usage: python controller.py <sfu_username> <path/to/antix/directory/in/your/home/directory/> <grid config file> <drawer config file> <controller config file> optional:BUILD"
+    print "For example(with build): python contoller.py hha13 ~/Documents/Antix/ grid.config drawer.config controller.config BUILD"
+    print "For example(without build): python contoller.py hha13 ~/Documents/Antix/ grid.config drawer.config controller.config"
     print "Also, make sure you've set up SSH keys for your account."
+    print len(sys.argv)
     sys.exit()
 
 USER = sys.argv[1]
@@ -220,6 +219,15 @@ PATH = sys.argv[2]
 GRID_CONFIG = sys.argv[3]
 DRAWER_CONFIG = sys.argv[4]
 CTRL_CONFIG = sys.argv[5]
+try:
+    BUILD_OPTION = sys.argv[6]
+except:
+    print "Running without building\n"
+    BUILD_OPTION = None
+
+BUILD_BOOLEAN = False
+if BUILD_OPTION == "BUILD":
+	BUILD_BOOLEAN = True
 
 GRID_CONFIG_FILE = open(GRID_CONFIG, 'r')
 
@@ -272,29 +280,30 @@ for i in range (1, NUM_ROBOT_CLIENTS+1):
         if bucket < NUM_GRIDS:
             bucket += 1
 
-# Build all the code
-print "*** BUILDING BINARIES ***"
-print
+if BUILD_BOOLEAN:
+    # Build all the code
+    print "*** BUILDING BINARIES ***"
+    print
 
-print "** BUILDING GRID **"
-print
-build_binary("grid")
+    print "** BUILDING GRID **"
+    print
+    build_binary("grid")
 
-print "** BUILDING CLOCK **"
-print
-build_binary("clock")
+    print "** BUILDING CLOCK **"
+    print
+    build_binary("clock")
 
-print "** BUILDING CONTROLLER CLIENT **"
-print
-build_binary("controller")
+    print "** BUILDING CONTROLLER CLIENT **"
+    print
+    build_binary("controller")
 
-print "** BUILDING ROBOT CLIENT **"
-print
-build_binary("client")
+    print "** BUILDING ROBOT CLIENT **"
+    print
+    build_binary("client")
 
-print "** BUILDING DRAWER **"
-print
-build_binary("drawer")
+    print "** BUILDING DRAWER **"
+    print
+    build_binary("drawer")
 
 # Start processes
 print "*** STARTING PROCESSES ***"
