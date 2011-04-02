@@ -668,28 +668,32 @@ int GridGame::removeObjectFromPop(int objectid)
     return 0;
 }
 
-std::vector<GameObject*>::iterator endit = m_Population.end();
+int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results)
+{
+    std::vector<GameObject*>::iterator endit = m_Population.end();
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != endit; it++)
     {   
         Msg_RobotInfo l_ObjInfo;
-    	l_ObjInfo.x_pos = -1.0;
-    	l_ObjInfo.y_pos = -1.0;
-    	l_ObjInfo.angle = 0.0;
+        l_ObjInfo.x_pos = -1.0;
+        l_ObjInfo.y_pos = -1.0;
+        l_ObjInfo.angle = 0.0;
         l_ObjInfo.puckid = 0;
 
         // for each object being pushed
         l_ObjInfo.robotid = Antix::writeId((**it).getId(), ROBOT);
         float l_x = (**it).getX();
-        if (!outOfBoundsLeft(l_x) && !outOfBoundsRight(l_x))
+        
+        if (!outOfBoundsLeft(l_x) && !outOfBoundsRight(l_y))
         {
-        	l_ObjInfo.x_pos = l_x;
-        	l_ObjInfo.y_pos = (**it).getY();
+		    l_ObjInfo.x_pos = l_x;
+		    l_ObjInfo.y_pos = (**it).getY();
 		    l_ObjInfo.angle = ((**it).getPosition())->getOrient();
-        	l_ObjInfo.puckid = (**it).m_PuckHeld; //TODO: uncomment when m_PuckHeld works....
+		    l_ObjInfo.puckid = (**it).m_PuckHeld;
         }
 
         results->push_back(l_ObjInfo);
     }
+    
     DEBUGPRINT("GRIDGAME STATUS:\t Done pushing robots to drawer\n");
     return 0;
 }
