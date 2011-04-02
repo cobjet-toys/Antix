@@ -216,13 +216,13 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
     uint32_t objType, objId, objIndex;
     Antix::getTypeAndId(newInfo.robotid, &objType, &objId);
 	objIndex = objId - 1;
-	objType = objId > 1000000;
+	objType = objId > 10000000;
 	
 	try
 	{
 		if(objType == PUCK)
 		{
-			objIndex -= 1000000;
+			objIndex -= 10000000;
 		    this->m_pucks.at(objIndex)->getPosition()->setX(newInfo.x_pos);
 			this->m_pucks.at(objIndex)->getPosition()->setY(newInfo.y_pos);      
 			//DEBUGPRINT("Puck[%d]: x=%f, y=%f\n", objIndex, this->m_pucks.at(objIndex)->getPosition()->getX(), this->m_pucks.at(objIndex)->getPosition()->getY() );  		
