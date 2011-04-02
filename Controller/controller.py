@@ -225,8 +225,9 @@ GRID_CONFIG_FILE = open(GRID_CONFIG, 'r')
 def strip_newlines(s): return s.rstrip()
 grid_lines = map(strip_newlines, GRID_CONFIG_FILE.readlines())
 total_teams = grid_lines[0].split(' ')[1]
+total_teams = int(total_teams) * NUM_GRIDS
 
-TEAMS_PER_CLIENT = int(total_teams) / NUM_ROBOT_CLIENTS
+TEAMS_PER_CLIENT = total_teams / NUM_ROBOT_CLIENTS
 TEAMS_PER_CLIENT_OFFSET = int(total_teams) % NUM_ROBOT_CLIENTS
 
 # Set up full config file for drawer
