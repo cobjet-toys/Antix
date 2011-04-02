@@ -178,7 +178,7 @@ int Network::Client::start()
     for (;;)
 	{
       	int nfd;		
-		nfd = epoll_wait(m_epfd, e, 1, 500);
+		nfd = epoll_wait(m_epfd, e, 1, -1);
         DEBUGPRINT("nfd: %i\n", nfd);
         for (int i = 0; i < nfd; i++)
         {    
