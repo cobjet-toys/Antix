@@ -531,7 +531,7 @@ int GridServer::handler(int fd)
 					
 					int l_numRobots = l_msgSize.msgSize;
 					
-					if (l_numRobots <= 0)
+					if (l_numRobots < 0)
 					{
 						ERRORPRINT("GRID_SERVER ERROR:\t Requested sensor data for less than or equal to zero robots.\n");
 						return -1;
