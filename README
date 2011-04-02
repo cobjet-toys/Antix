@@ -68,6 +68,7 @@ MANUAL RUN SEQUENCE
 	  NUMBER_OF_TEAMS {{integer}} # Required: specifies the number of teams on the grid
 	  ROBOTS_PER_TEAM {{integer}} # Required: specified the number of robots per team
 	  CLOCK {{IP ADDRESS}} {{port}}
+	  NUM_CLIENTS {{integer}} # Required: specified the number of robots clients
 
 
     RUN: ControllerClient
