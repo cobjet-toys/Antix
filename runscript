@@ -1,4 +1,5 @@
 nohup gnome-terminal --tab --title="Make GridServer" --working-directory="$PWD/GridServer/" --tab --title="Run GridServer" --working-directory="$PWD/GridServer/build/debug/"
+nohup gnome-terminal --tab --title="Make GridServer" --working-directory="$PWD/GridServer/" --tab --title="Run GridServer" --working-directory="$PWD/GridServer/build/debug/"
 nohup gnome-terminal --tab --title="Make Clock" --working-directory="$PWD/ClockServer/" --tab --title="Run Clock" --working-directory="$PWD/ClockServer/build/debug/"
 nohup gnome-terminal --tab --title="Make Controller" --working-directory="$PWD/ControllerClient/" --tab --title="Run Controller" --working-directory="$PWD/ControllerClient/build/debug/"
 nohup gnome-terminal --tab --title="Make RobotClient" --working-directory="$PWD/RobotClient/" --tab --title="Run RobotClient" --working-directory="$PWD/RobotClient/build/debug/"
