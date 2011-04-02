@@ -26,6 +26,7 @@ public:
 	void setIdRange(int from, int to);
 	void setRobotsPerTeam(int amount);
 	void setId(int id);
+	void setNumClients(int numClients);
 		
     //Drawer Connections
     int updateDrawer(uint32_t framestep);
@@ -36,6 +37,8 @@ private:
 	uint32_t m_idRangeFrom;
 	uint32_t m_idRangeTo;
 
+	int m_numClients;
+
 	float m_homeRadius; // information for the GridGame/GridClient
     float m_worldSize;
 	int m_numGrids;
@@ -45,7 +48,7 @@ private:
 	int m_teamsAvailable;
 	int m_robotsAvailable;
 	int m_robotsConfirmed;
- int m_teamsConfirmed;
+ 	int m_teamsConfirmed;
 	int m_ControllerFd;
 	//GridGame gridGameInstance;
     GridGame* gridGameInstance;	

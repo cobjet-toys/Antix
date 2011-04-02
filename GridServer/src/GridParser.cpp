@@ -48,6 +48,18 @@ int GridParser::handler(std::vector<std::string> commands, void *args)
 			}
 			return -1;
 		}
+		if (command == "NUM_CLIENTS" && commands.size() >= 2)
+		{
+			int numClients = atoi(commands.at(1).c_str());
+			LOGPRINT("GRID_PARSER STATUS:\t PARSED: Number of clients: %i\n", numClients);
+			l_gridServer->setNumClients(numClients);
+			if (numClients > 0 )
+			{
+				m_hasNumClients = true;
+				return 0;
+			}
+			return -1;
+		}		
 		if (command == "CLOCK" && commands.size() >= 3)
 		{
 			const char * address = commands.at(1).c_str();
@@ -77,5 +89,5 @@ int GridParser::handler(std::vector<std::string> commands, void *args)
 int GridParser::verify()
 {
 	DEBUGPRINT("GRID_PARSER STATUS:\tVERIFY hasnumteams=%i hasperteam=%i\n", (int)m_hasNumTeams, (int)m_hasRobotsPerTeam);
-	return (m_hasNumTeams && m_hasRobotsPerTeam && m_clock)?0:-1;
+	return (m_hasNumTeams && m_hasRobotsPerTeam && m_clock && m_hasNumClients)?0:-1;
 }

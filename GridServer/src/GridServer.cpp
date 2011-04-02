@@ -26,6 +26,7 @@ GridServer::GridServer():Server()
     m_Hb = 0;
     m_ReadyPartners = 0;
     m_ClockFd = 0;
+    m_numClients = 0;
 }
 
 int GridServer::initGridGame()
@@ -142,7 +143,6 @@ int GridServer::initGridGame()
     }
 
     #else
-    // needs to not do this in grid game constructor!
 	gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam,
 	    m_idRangeFrom, m_idRangeTo, m_homeRadius, m_worldSize, m_numGrids, m_puckTotal);
     #endif
@@ -678,6 +678,8 @@ int GridServer::handler(int fd)
 					
 					DEBUGPRINT("GRID_SERVER STATUS:\t Sent sensory response to grid\n");
 
+					sensedItems->clear();
+					delete sensedItems;
                     delete []l_msgBuffer;
                     delete []l_robotIdBuff;
 						
@@ -967,6 +969,8 @@ int GridServer::handler(int fd)
 						return -1;
 					}
 
+					l_robots->clear();
+					delete l_robots;
 					delete []l_message;
 		            return 0;
 				}
@@ -1200,5 +1204,10 @@ void Network::GridServer::setRobotsPerTeam(int amount)
 void Network::GridServer::setId(int id)
 {
 	m_uId = id;
+}
+
+void Network::GridServer::setNumClients(int numClients)
+{
+	m_numClients = numClients;
 }
 
