@@ -683,12 +683,12 @@ int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results)
         l_ObjInfo.robotid = Antix::writeId((**it).getId(), ROBOT);
         float l_x = (**it).getX();
         
-        if (!outOfBoundsLeft(l_x) && !outOfBoundsRight(l_y))
+        if (!outOfBoundsLeft(l_x) && !outOfBoundsRight(l_x))
         {
 		    l_ObjInfo.x_pos = l_x;
 		    l_ObjInfo.y_pos = (**it).getY();
 		    l_ObjInfo.angle = ((**it).getPosition())->getOrient();
-		    l_ObjInfo.puckid = (**it).m_PuckHeld;
+		    //l_ObjInfo.puckid = (**it).m_PuckHeld;
         }
 
         results->push_back(l_ObjInfo);
