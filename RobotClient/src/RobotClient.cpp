@@ -353,7 +353,7 @@ int RobotClient::handler(int fd)
                         unpack(l_RobotInfoBuff+l_Offset, Msg_RobotInfo_format, &l_Result.robotid, &l_Result.x_pos, &l_Result.y_pos, &l_Result.speed, &l_Result.angle, &l_Result.puckid, &l_Result.gridid);
                         l_Results.push_back(l_Result);
                         l_Offset += l_Result.size;
-                        DEBUGPRINT("NEW ROBOTINFO: %d, %f, %f \n", l_Result.robotid, l_Result.x_pos, l_Result.y_pos);
+                        //DEBUGPRINT("NEW ROBOTINFO: %d, %f, %f \n", l_Result.robotid, l_Result.x_pos, l_Result.y_pos);
                     }
                     
                     robotGameInstance->actionResult(&l_Results);

@@ -1,7 +1,7 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#define RELEASE
+//#define RELEASE
 #define DEBUG
 #define STEP_BY_STEP //OOOOHHH BABY! Gonna get to you gurrrrl.
 #define LOGGING
