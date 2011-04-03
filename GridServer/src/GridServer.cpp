@@ -188,7 +188,7 @@ void * drawer_function(void* gridPtr)
         {
         	objsUpdated = grid->updateDrawer(frame);
         	if (objsUpdated > 0)
-            	printf("UpdateDrawer return[%d]: %d\n", frame, objsUpdated);
+            DEBUGPRINT("UpdateDrawer return[%d]: %d\n", frame, objsUpdated);
         }
         catch(std::exception & e)
         {
