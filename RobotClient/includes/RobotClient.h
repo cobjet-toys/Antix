@@ -20,6 +20,16 @@ public:
     int handleNewGrid(int id); 
     int initGrid(const char * host, const char * port, const int id);
     int initClock(const char * host, const char * port);
+    
+    void initRobotGame();
+    
+    void setFOV(float fov);
+	void setRadius(float radius);
+	void setSensorRange(float sensorRange);
+	void setPickupRange(float pickupRange);
+	void setWorldSize(float worldSize);
+	void setHomeRadius(float homeRadius);
+    
 private:
 
     int packHeaderMessage(unsigned char* buffer, uint16_t sender, uint16_t message);
@@ -37,6 +47,14 @@ private:
 	uint16_t m_totalGridRequests;
 	uint16_t m_totalGridResponses;
 	uint16_t m_totalRobotsReceived;
+	
+	float m_robot_FOV;
+    float m_robot_Radius;
+    float m_robot_SensorRange;
+    float m_robot_PickupRange;
+    float m_robot_WorldSize;
+    float m_robot_HomeRadius;
+	
 };
 }
 

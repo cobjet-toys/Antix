@@ -19,16 +19,26 @@ static int Timesteps = 0;
 
 
 RobotClient::RobotClient():Client(), m_ReadyGrids(0), m_ReadyActionGrids(0)
-{
-    robotGameInstance = new RobotGame();
-
-    // make a robot_info vector for testing
-    std::vector<uid>* robot_ids;
-    robotGameInstance->requestSensorData(1, robot_ids);
-    
+{    
 	m_totalGridRequests = 0;
 	m_totalGridResponses = 0;
 	m_totalRobotsReceived = 0;
+	
+	m_robot_FOV = 0.0f;
+    m_robot_Radius = 0.0f;
+    m_robot_SensorRange = 0.0f;
+    m_robot_PickupRange = 0.0f;
+    m_robot_WorldSize = 0.0f;
+    m_robot_HomeRadius = 0.0f;
+    
+}
+
+void RobotClient::initRobotGame()
+{
+    robotGameInstance = new RobotGame(m_robot_FOV, m_robot_Radius,m_robot_SensorRange, m_robot_PickupRange, m_robot_WorldSize,m_robot_HomeRadius);
+    // make a robot_info vector for testing
+    //std::vector<uid>* robot_ids;
+    //robotGameInstance->requestSensorData(1, robot_ids);    
 }
 
 RobotClient::~RobotClient()
@@ -524,7 +534,37 @@ int RobotClient::handler(int fd)
             break;
     }
 
+
     delete[] l_HeaderBuffer;
 
     return 0;
+}
+
+void RobotClient::setFOV(float fov)
+{
+	m_robot_FOV = fov;
+}
+
+void RobotClient::setRadius(float radius)
+{
+	m_robot_Radius = radius;
+}
+
+void RobotClient::setSensorRange(float sensorRange)
+{
+	m_robot_SensorRange = sensorRange;
+}
+void RobotClient::setPickupRange(float pickupRange)
+{
+	m_robot_PickupRange = pickupRange;
+}
+
+void RobotClient::setWorldSize(float worldSize)
+{
+	m_robot_WorldSize = worldSize;
+}
+
+void RobotClient::setHomeRadius(float homeRadius)
+{
+	m_robot_HomeRadius = homeRadius;
 }

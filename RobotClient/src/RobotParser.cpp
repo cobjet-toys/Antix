@@ -45,7 +45,49 @@ int RobotParser::handler(std::vector<std::string> commands, void *args)
 			printf("PARSED: INIT_GRID with ID %d\n", id);
 			return l_robot->handleNewGrid(id);
 		}
-
+        if ( command == "ROBOT_FOV" && commands.size() >= 2)
+		{	
+			float fov = atof(commands.at(1).c_str());
+			printf("PARSED: Robot FOV %f\n", fov);
+			l_robot->setFOV(fov);
+			return 0;
+		}
+        if ( command == "ROBOT_RADIUS" && commands.size() >= 2)
+		{	
+			float radius = atof(commands.at(1).c_str());
+			printf("PARSED: ROBOT RADIUS %f\n", radius);
+			l_robot->setRadius(radius);
+			return 0;			
+		}
+        if ( command == "SENSOR_RANGE" && commands.size() >= 2)
+		{	
+			float sensorRange = atof(commands.at(1).c_str());
+			printf("PARSED: SENSOR_RANGE %f\n", sensorRange);
+			l_robot->setSensorRange(sensorRange);
+			return 0;			
+		}
+        if ( command == "PICKUP_RANGE" && commands.size() >= 2)
+		{	
+			float pickupRange = atof(commands.at(1).c_str());
+			printf("PARSED: PICKUP_RANGE  %f\n", pickupRange);
+			l_robot->setPickupRange(pickupRange);
+			return 0;			
+		}
+        if ( command == "WORLD_SIZE" && commands.size() >= 2)
+		{	
+			float worldSize = atof(commands.at(1).c_str());
+			printf("PARSED: WORLD_SIZE  %f\n", worldSize);
+			l_robot->setWorldSize(worldSize);
+			return 0;			
+		}
+        if ( command == "HOME_RADIUS" && commands.size() >= 2)
+		{	
+			float homeRadius = atof(commands.at(1).c_str());
+			printf("PARSED: PICKUP_RANGE  %f\n", homeRadius);
+			l_robot->setHomeRadius(homeRadius);
+			return 0;			
+		}				
+		
 		if (command == "#")
 		{
 			DEBUGPRINT("Skipped Comment\n");

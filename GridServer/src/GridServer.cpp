@@ -342,7 +342,9 @@ int GridServer::handler(int fd)
                             DEBUGPRINT("Failed to pack the HB message\n");
                             return -1;
                         }
-
+						
+						gridGameInstance->sortPopulation();
+						
                         TcpConnection *l_ClockConn = m_Clients[m_ClockFd];
                         NetworkCommon::sendWrapper(l_ClockConn, l_HBBuffer, l_MessageSize);
                         DEBUGPRINT("Sent heartbeat. %hd\n", m_Hb);

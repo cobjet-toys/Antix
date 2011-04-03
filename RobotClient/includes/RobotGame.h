@@ -18,9 +18,8 @@ class RobotGame
 {
 public:
 
-    RobotGame();
+    RobotGame(float robotFOV, float robotRadius, float sensorRange, float pickupRange, float worldSize, float homeRadius);
     ~RobotGame();
-
 
     // Initialization functions
     //int intitializeTeam(int grid_id, vector<int> team_mapping);
@@ -41,8 +40,6 @@ public:
     int sendAction(int grid_id, vector<Msg_Action>* robot_actions);
     int actionResult(vector<Msg_RobotInfo>* results);
 
-
-
 private:
 
     // Map of grid ids to vector of Robot *'s
@@ -61,6 +58,9 @@ private:
     float robot_Radius;
     float robot_SensorRange;
     float robot_PickupRange;
+    float robot_WorldSize;
+    float robot_HomeRadius;
+    
 };
 
 #endif // __ROBOTGAME_H__

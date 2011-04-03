@@ -182,6 +182,7 @@ typedef struct{
     uint16_t gridid;        //2
 	static const size_t size = 26;
 } Msg_RobotInfo;
+
 static const char * Msg_RobotInfo_format = "lfffflh";
 
 typedef struct{

@@ -276,7 +276,7 @@ int GridGame::registerRobot(Msg_RobotInfo robot)
     addObjectToPop(l_Robot);
 
     //Sort robots at this point
-    sortPopulation();
+   // sortPopulation();
 
     return 0;
     
@@ -534,7 +534,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
     }
 
     // sort population after we update the positions
-    sortPopulation();
+    //sortPopulation();
 
     return 0;
 }
@@ -625,7 +625,7 @@ int GridGame::updateRobots(RobotInfoList& robots)
             }
         }
     }
-    sortPopulation();
+    //sortPopulation();
     return 0;
 }
 
