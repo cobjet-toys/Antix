@@ -275,7 +275,7 @@ int GridGame::registerRobot(Msg_RobotInfo robot)
     addObjectToPop(l_Robot);
 
     //Sort robots at this point
-    sortPopulation();
+    //sortPopulation();
 
     return 0;
     
@@ -441,88 +441,100 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
             Msg_RobotInfo temp;
             temp.robotid = l_Robot->getId();
-            temp.x_pos = l_Robot->getX();
-            DEBUGPRINT("GRIDGAME STATUS:\t Previous Xpos: %f Ypos: %f\n", l_Robot->getX(), l_Robot->getY());
-            
-            // TODO: Need to handle robots wrapping around both left and right, up and down
-            float old_ypos = l_Robot->getY();
-            float new_ypos = old_ypos;
-            if (new_ypos > m_WorldSize)
+
+
+            if((*it).action == PICKUP)
             {
-                new_ypos -= m_WorldSize;
+                DEBUGPRINT("Pickup puck!");
             }
-            
-            float old_xpos = l_Robot->getX();
-            float new_xpos = old_xpos + 0.1;
-            if (new_xpos > m_WorldSize)
+            else if((*it).action == DROP)
             {
-                new_xpos -= m_WorldSize;
+                DEBUGPRINT("Drop puck!");
             }
-            temp.x_pos = new_xpos;
-            temp.y_pos = new_ypos;
-            temp.speed = (*it).speed;
-            temp.angle = (*it).angle;
-            temp.puckid = 0;
-            DEBUGPRINT("GRIDGAME STATUS:\t New position Xpos: %f Ypos: %f\n", temp.x_pos, temp.y_pos);
-
-            // set the new position of the robot
-            l_Robot->setPosition(temp.x_pos, temp.y_pos, temp.angle);
-
-            // check if the robots new position is in a new grid. If it is, we must remove the robot
-            // from the grids population, and set the gridid in the Msg_RobotInfo, so the robotclient
-            // can fix the mapping
-            if( outOfBoundsRight(new_xpos) )
+            else if((*it).action == SET_SPEED)
             {
-                // set the robot to the appropriate grid
-                temp.gridid = m_RightGrid;
-                // remove robot from population
-                removeObjectFromPop(temp.robotid);
 
-                DEBUGPRINT("GRIDGAME STATUS:\t Robot has left this grid on the right side! Removing it from population\n");
+                Math::Position* l_CurrentPos = l_Robot->getPosition();
 
-            } //&& !(temp.x_pos < (0.0f + robot_SensorRange)) 
-            else if( outOfBoundsLeft(new_xpos) )
-            {
-                // set the robot to the appropriate grid
-                temp.gridid = m_LeftGrid;
-                //remove robot from population
-                removeObjectFromPop(temp.robotid);
+                float l_Dx = (*it).speed * fast_cos( l_CurrentPos->getOrient() );
+                float l_Dy = (*it).speed * fast_sin( l_CurrentPos->getOrient() );
 
-                DEBUGPRINT("GRIDGAME STATUS:\t Robot has left this grid on the left side! Removing it from population\n");
-            }
-            else
-            {
-                temp.gridid = m_GridId;
-            }
+                float new_x = Math::DistanceNormalize( l_CurrentPos->getX(), m_WorldSize );
+                float new_y = Math::DistanceNormalize( l_CurrentPos->getY(), m_WorldSize );
 
-            // add the robot to the results (which will be processed by the client who requested
-            results->push_back(temp);
+                float new_orient = Math::AngleNormalize(l_CurrentPos->getOrient() + (*it).angle);
 
-            if(m_NumGrids != 1)
-            {
-                // check if robots are in the boundary zone
-                if( inRightInnerBoundary(new_xpos) || outOfBoundsRight(new_xpos) )
+                temp.x_pos = new_x;
+                temp.y_pos = new_y;
+                DEBUGPRINT("GRIDGAME STATUS:\t Previous Xpos: %f Ypos: %f\n", l_Robot->getX(), l_Robot->getY());
+                
+                temp.speed = (*it).speed;
+                temp.angle = new_orient;
+                temp.puckid = 0;
+                DEBUGPRINT("GRIDGAME STATUS:\t New position Xpos: %f Ypos: %f\n", temp.x_pos, temp.y_pos);
+
+                float old_xpos = l_CurrentPos->getX();
+                float old_ypos = l_CurrentPos->getY();
+
+                // set the new position of the robot
+                l_Robot->setPosition(new_x, new_y, new_orient );
+
+                // check if the robots new position is in a new grid. If it is, we must remove the robot
+                // from the grids population, and set the gridid in the Msg_RobotInfo, so the robotclient
+                // can fix the mapping
+                if( outOfBoundsRight(new_x) )
                 {
-                    right_robots->push_back(temp);
-                    DEBUGPRINT("GRIDGAME STATUS:\t Sending robotid %d to the right grid", temp.robotid);
+                    // set the robot to the appropriate grid
+                    temp.gridid = m_RightGrid;
+                    // remove robot from population
+                    removeObjectFromPop(temp.robotid);
+
+                    DEBUGPRINT("GRIDGAME STATUS:\t Robot has left this grid on the right side! Removing it from population\n");
+
+                } //&& !(temp.x_pos < (0.0f + robot_SensorRange)) 
+                else if( outOfBoundsLeft(new_x) )
+                {
+                    // set the robot to the appropriate grid
+                    temp.gridid = m_LeftGrid;
+                    //remove robot from population
+                    removeObjectFromPop(temp.robotid);
+
+                    DEBUGPRINT("GRIDGAME STATUS:\t Robot has left this grid on the left side! Removing it from population\n");
                 }
-                else if( inLeftInnerBoundary(new_xpos) || outOfBoundsLeft(new_xpos) )
+                else
                 {
-                    left_robots->push_back(temp);
-                    DEBUGPRINT("GRIDGAME STATUS:\t Sending robotid %d to the left grid", temp.robotid);
+                    temp.gridid = m_GridId;
                 }
-            
-                // Check to see if robot was in boundary zone, and then left. If so, tell neighbor that robot
-                // is now gone.
-                if( inLeftInnerBoundary(old_xpos) && inMidZone(new_xpos) )
+
+                // add the robot to the results (which will be processed by the client who requested
+                results->push_back(temp);
+
+                if(m_NumGrids != 1)
                 {
-                    temp.gridid = 0;
-                    left_robots->push_back(temp);
-                }
-                else if( inRightInnerBoundary(old_xpos) && inMidZone(new_xpos) )
-                {
-                    temp.gridid = 0;
-                    right_robots->push_back(temp);
+                    // check if robots are in the boundary zone
+                    if( inRightInnerBoundary(new_x) || outOfBoundsRight(new_x) )
+                    {
+                        right_robots->push_back(temp);
+                        DEBUGPRINT("GRIDGAME STATUS:\t Sending robotid %d to the right grid", temp.robotid);
+                    }
+                    else if( inLeftInnerBoundary(new_x) || outOfBoundsLeft(new_x) )
+                    {
+                        left_robots->push_back(temp);
+                        DEBUGPRINT("GRIDGAME STATUS:\t Sending robotid %d to the left grid", temp.robotid);
+                    }
+                
+                    // Check to see if robot was in boundary zone, and then left. If so, tell neighbor that robot
+                    // is now gone.
+                    if( inLeftInnerBoundary(old_xpos) && inMidZone(new_x) )
+                    {
+                        temp.gridid = 0;
+                        left_robots->push_back(temp);
+                    }
+                    else if( inRightInnerBoundary(old_xpos) && inMidZone(new_x) )
+                    {
+                        temp.gridid = 0;
+                        right_robots->push_back(temp);
+                    }
                 }
             }
         }
