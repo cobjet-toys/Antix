@@ -22,7 +22,7 @@ GridServer::GridServer():Server()
 	m_ControllerFd = -1;
 	m_teamsConfirmed =0;	
 	m_drawerConn = 0;
-	updateDrawerFlag = 0;
+	m_updateDrawerFlag = 0;
     m_Hb = 0;
     m_ReadyPartners = 0;
     m_ClockFd = 0;
@@ -188,7 +188,7 @@ void * drawer_function(void* gridPtr)
         {
         	objsUpdated = grid->updateDrawer(frame);
         	if (objsUpdated > 0)
-            	DEBUGPRINT("UpdateDrawer return[%d]: %d\n", frame, objsUpdated);
+            	printf("UpdateDrawer return[%d]: %d\n", frame, objsUpdated);
         }
         catch(std::exception & e)
         {
@@ -1115,7 +1115,11 @@ int GridServer::handler(int fd)
                     //change send-to-drawer status accordingly
                     float l_gridLeft = gridGameInstance->getLeftBoundary();
                     float l_gridRight = gridGameInstance->getRightBoundary();
-                    updateDrawerFlag = !(l_gridLeft > configData.br_x || l_gridRight < configData.tl_x);
+                    m_updateDrawerFlag = !(l_gridLeft > configData.br_x || l_gridRight < configData.tl_x);
+                    m_drawerTop = configData.tl_y;
+                    m_drawerBottom = configData.br_y;
+                    m_drawerLeft = configData.tl_x;
+                    m_drawerRight = configData.br_x;
             		
                     return 0;
                 }
@@ -1139,7 +1143,7 @@ int GridServer::handler(int fd)
 
 int GridServer::updateDrawer(uint32_t framestep)
 {
-	if (!updateDrawerFlag) return 0;
+	if (!m_updateDrawerFlag) return 0;
 
     Msg_header l_Header = {SENDER_GRIDSERVER, MSG_GRIDDATAFULL };
 
@@ -1148,7 +1152,7 @@ int GridServer::updateDrawer(uint32_t framestep)
     Msg_RobotInfo l_RoboInfo;
 
     std::vector<Msg_RobotInfo> objects;
-    gridGameInstance->getPopulation(&objects);
+    gridGameInstance->getPopulation(&objects, m_drawerTop, m_drawerBottom, m_drawerLeft, m_drawerRight);
 
     l_Size.msgSize = objects.size();
     DEBUGPRINT("updateDrawer: Sending %d objects.\n", l_Size.msgSize);
@@ -1182,7 +1186,7 @@ int GridServer::updateDrawer(uint32_t framestep)
     }   
     
     delete l_Buffer;
-    return 0;
+    return l_Size.msgSize;
 }
 
 void Network::GridServer::setTeams(int amount)
