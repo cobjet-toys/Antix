@@ -29,9 +29,19 @@ void displayFunc()
     glMatrixMode (GL_MODELVIEW);
     glLoadIdentity();
 
-    // ----- Draw Functions ----- //    drawTeams();
-    drawPucks();
-    drawRobots(robotEdgeCount);
+    // ----- Draw Functions ----- //    
+    if(drawTeam)
+    {
+        drawTeams();
+    }
+    if(drawPuck)
+    {
+        drawPucks();
+    }
+    if(drawRobot)
+    {
+        drawRobots(robotEdgeCount);
+    }
     //drawTest(50, 16, 45.0, 6);
     
     // ----- Draws framerate ----- //
@@ -52,7 +62,7 @@ void displayFunc()
 
     char tmpBuf[30];
     sprintf(tmpBuf, "Width/Height: [%d, %d], robotEdgeCount: %d", abs(left - right), abs(bottom - top), robotEdgeCount);
-    drawText(tmpBuf, 0, 540, false);
+    drawText(tmpBuf, 5, 540, false);
 
     // ------------------------ //
     glutSwapBuffers();
@@ -68,20 +78,23 @@ void drawTeams()
     float worldsize      = drawServerRef->getWorldSize();
     float radius         = drawServerRef->getHomeRadius();
 
+    int i = 0;
     for (Network::TeamIter it = drawServerRef->getFirstTeam(); it != drawServerRef->getLastTeam(); it++)
     {
-        glColor3f(255, 255, 255);
+        glColor3f(colorArray[(i*3)], colorArray[(i*3) + 1], colorArray[(i*3) + 2]);
 
         Math::Position * homePos = (*it)->getPosition();
         GlDrawCircle(homePos->getX(), homePos->getY(), radius, 16);
+
+        i++;
     }
 }
 
 void drawPucks()
 {
-    glColor3f(255, 0, 0); // RED
+    glColor3f(1.0, 1.0, 1.0); // White
 
-    glPointSize(4.0);
+    glPointSize(puckSize);
 
     unsigned int winsize = drawServerRef->getWindowSize();
 
@@ -91,18 +104,23 @@ void drawPucks()
     // keep this buffer around between calls for speed
     static std::vector<GLfloat> pts;
     pts.resize(len * 2);
+
     // Activate and specify pointer to vertex array
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(2, GL_FLOAT, 0, &pts[0]);
 
-    int i = 0;
+    int i = 0, d = 0;
     for (Network::PuckIter it = drawServerRef->getFirstPuck(); it != drawServerRef->getLastPuck(); it++)
     {    
         Math::Position * puckPos = (*it)->getPosition();
         
-        pts[i]      = puckPos->getX();
-        pts[i + 1]  = puckPos->getY();
-        i += 2;
+        if(puckPos->getX() != -1)
+        {
+            pts[i + 0]      = puckPos->getX();
+            pts[i + 1]  = puckPos->getY();
+        }
+        
+        i++;
     }
 
     // Draw the array of vertices
@@ -123,30 +141,25 @@ void drawRobots(int edgePoints)
     float radius           = drawServerRef->getHomeRadius();
 
     glPointSize(1.0);
-    glColor3f(255, 255, 255);
+
+    const size_t len(drawServerRef->getRobotsCount()); 
+
+    int robotsPerTeam = len/drawServerRef->getTeamsCount();
+
+    // keep this buffer around between calls for speed
+    static std::vector<GLfloat> pts, sPts, lPts;
+    static std::vector<GLfloat> colors;
+    pts.resize(len * 2);
+    sPts.resize(len * edgePoints * 2);
+    lPts.resize(len * 4);
+    colors.resize(len * 3);
 
     int i = 0, d = 0;
     if(abs(left - right) < cutOffRange)
     {
-        const size_t len(drawServerRef->getRobotsCount()); 
-    	
-        // keep this buffer around between calls for speed
-        static std::vector<GLfloat> pts, sPts, lPts;
-        //static std::vector<GLfloat> colors;
-        pts.resize(len * 2);
-        sPts.resize(len * edgePoints * 2);
-        lPts.resize(len * 4);
-        //colors.resize(len * 3);
-
-        //glEnableClientState(GL_COLOR_ARRAY);
-        //glColorPointer(3, GL_FLOAT, 0, &colors[0]);
-
         for (Network::RobotIter it = drawServerRef->getFirstRobot(); it != drawServerRef->getLastRobot(); it++)
         {
-           	if(!(*it))
-          	{
-        		continue;
-          	}
+           	if(!(*it)){continue;}
         	
             Math::Position * robotPos = (*it)->getPosition();
             if (!robotPos) continue;
@@ -154,7 +167,7 @@ void drawRobots(int edgePoints)
             int xPos = (int)robotPos->getX();
             int yPos = (int)robotPos->getY();
 
-            if(xPos > left - 10 && xPos < right + 10)
+            if(xPos > left - 10 && xPos < right + 10 && xPos != -1)
             {
                 if(yPos > bottom - 10 && yPos < top + 10)
                 {
@@ -164,61 +177,52 @@ void drawRobots(int edgePoints)
                         sPts[(edgePoints*2*d) + (2*a)]     = robotPos->getX() + xRobotVals[(int)(a*360/edgePoints)];
                         sPts[(edgePoints*2*d) + (2*a) + 1] = robotPos->getY() + yRobotVals[(int)(a*360/edgePoints)];
                     }
+
+                    int angle = (int)((robotPos->getOrient()/(2*M_PI))*360);
+    
+                    // Sets the heading line points for each robot
+                    lPts[(4*d) + 0] = robotPos->getX();
+                    lPts[(4*d) + 1] = robotPos->getY();
+                    lPts[(4*d) + 2] = robotPos->getX() + xRobotVals[angle];
+                    lPts[(4*d) + 3] = robotPos->getY() + yRobotVals[angle];
+
+                    int colorIndex = ((*it)->getId() + 1)/robotsPerTeam;
+
+                    colors[3*d + 0] = colorArray[(colorIndex*3) + 0];
+                    colors[3*d + 1] = colorArray[(colorIndex*3) + 1];
+                    colors[3*d + 2] = colorArray[(colorIndex*3) + 2];
+
                     d++;
                 }
             }
     
-            // --- NEEDS A HEADING VALUE FOR PASSED IN ROBOTS -- //
-            // Sets the heading line points for each robot
-            //lPts[(4*i) + 0] = values[i];
-            //lPts[(4*i) + 1] = values[i];
-            //lPts[(4*i) + 2] = values[i] + xRobotVals[(int)(*it).second->getHeading()];
-            //lPts[(4*i) + 3] = values[i] + yRobotVals[(int)(*it).second->getHeading()];
-
-            //colors[3*i + 0] = 255;
-            //colors[3*i + 1] = 255;
-            //colors[3*i + 2] = 255;
-
-            //char tmpBuf[40];
-            //sprintf(tmpBuf, "Robots[%d]: [%f, %f]", i, robotPos->getX(), robotPos->getY());
-            //drawText(tmpBuf, 5, 540 - (15*i), false);
-
             i++;
         }
-        //glEnd();
 
         // Activate and specify pointer to vertex array
         glEnableClientState(GL_VERTEX_ARRAY);
-
-        //glVertexPointer(2, GL_FLOAT, 0, &pts[0]);        
-        //glDrawArrays(GL_POINTS, 0, len);
-
+       
         // Draw robot circles
         glVertexPointer(2, GL_FLOAT, 0, &sPts[0]);        
         for (int x = 0; x < d; x++)
         {
-            glDrawArrays(GL_LINE_LOOP, x*edgePoints, edgePoints);
+            glColor3f(colors[(x*3)], colors[(x*3) + 1], colors[(x*3) + 2]);
+            glDrawArrays(GL_LINE_LOOP, x*edgePoints, edgePoints);     
         }
 
         // Draw robot orientation lines
-        //glVertexPointer(2, GL_FLOAT, 0, &lPts[0]);
-        //for (int x = 0; x < i; x++)
-        //{
-        //    glDrawArrays(GL_LINE_LOOP, x*2, 2);
-        //}
+        glVertexPointer(2, GL_FLOAT, 0, &lPts[0]);
+        for (int x = 0; x < d; x++)
+        {
+            glColor3f(colors[(x*3)], colors[(x*3) + 1], colors[(x*3) + 2]);
+            glDrawArrays(GL_LINE_LOOP, x*2, 2);
+        }
 
         // Deactivate vertex arrays after drawing
-        //glDisableClientState(GL_COLOR_ARRAY);
         glDisableClientState(GL_VERTEX_ARRAY);
     }
     else 
     {
-        const size_t len(drawServerRef->getRobotsCount()); 
-    	
-        // keep this buffer around between calls for speed
-        static std::vector<GLfloat> pts;
-        pts.resize(len * 2);
-
         for (Network::RobotIter it = drawServerRef->getFirstRobot(); it != drawServerRef->getLastRobot(); it++)
         {
            	if(!(*it)){continue;}
@@ -229,13 +233,18 @@ void drawRobots(int edgePoints)
             pts[(2*i) + 0] = robotPos->getX();
             pts[(2*i) + 1] = robotPos->getY();
 
-            //colors[3*i + 0] = 255;
-            //colors[3*i + 1] = 255;
-            //colors[3*i + 2] = 255;
+            int colorIndex = ((*it)->getId() + 1)/robotsPerTeam;
+
+            colors[3*i + 0] = colorArray[(colorIndex*3) + 0];
+            colors[3*i + 1] = colorArray[(colorIndex*3) + 1];
+            colors[3*i + 2] = colorArray[(colorIndex*3) + 2];
 
             i++;
             d++;
         }
+
+        glEnableClientState(GL_COLOR_ARRAY);
+        glColorPointer(3, GL_FLOAT, 0, &colors[0]);
 
         // Activate and specify pointer to vertex array
         glEnableClientState(GL_VERTEX_ARRAY);
@@ -246,6 +255,7 @@ void drawRobots(int edgePoints)
 
         // deactivate vertex arrays after drawing
         glDisableClientState(GL_VERTEX_ARRAY);
+        glDisableClientState(GL_COLOR_ARRAY);
     }
 
     char tmpBuf[40];
@@ -272,14 +282,11 @@ void drawText(char* text, float x, float y, bool absolute)
 // Draws robots and their orientation
 void drawTest(int robotCount, int edgePoints, float viewAngle, int viewEdgePoints)
 {
-    // Start clock timer (testing purposes)
-    //clock_t start = clock();
-
     int windowSize = drawServerRef->getWindowSize();
 
     if(drawCount%20 == 19){angleOffset++;}
 
-    if(abs(left - right) < cutOffRange)
+    if(right - left < cutOffRange)
     {
         // Set colour to WHITE
         glColor3f(255, 255, 255);
@@ -301,7 +308,6 @@ void drawTest(int robotCount, int edgePoints, float viewAngle, int viewEdgePoint
             {
                 cVertices[(edgePoints*2*i) + (2*a)]     = values[i] + xRobotVals[(int)(a*360/edgePoints)];
                 cVertices[(edgePoints*2*i) + (2*a) + 1] = values[i] + yRobotVals[(int)(a*360/edgePoints)];
-                //printf("vertices[%d]: (%f, %f) \n", (20*i) + (2*a), vertices[(20*i) + (2*a)], vertices[(20*i) + (2*a) + 1]);
             }
 
             // Set robots orientation line
@@ -350,13 +356,10 @@ void drawTest(int robotCount, int edgePoints, float viewAngle, int viewEdgePoint
                 {
                     sVertices[((viewEdgePoints + 1)*2*i) + (2*a) + 0] = values[i] + xSensVals[(int)current%360];
                     sVertices[((viewEdgePoints + 1)*2*i) + (2*a) + 1] = values[i] + ySensVals[(int)current%360];
-                    //printf("vertices[%d]: (%f, %f) \n", (20*i) + (2*a), vertices[(20*i) + (2*a)], vertices[(20*i) + (2*a) + 1]);
-        
+                    
                     current += incr;
                 }    
             }
-
-            //printf("drawCount-360: %d \n", (int)(drawCount%360));
 
             glVertexPointer(2, GL_FLOAT, 0, sVertices);
             
@@ -438,6 +441,57 @@ void initializePositionLookupArrays(double radius, int count, GLfloat *xVals, GL
     }
 }
 
+void initializeColorArray(GLfloat *colors)
+{
+    // Sets some start colours
+    // Red
+    colors[0] = 1.0;
+    colors[1] = 0.0;
+    colors[2] = 0.0;
+
+    // Green
+    colors[3] = 0.0;
+    colors[4] = 1.0;
+    colors[5] = 0.0;
+
+    // Blue
+    colors[6] = 0.0;
+    colors[7] = 0.0;
+    colors[8] = 1.0;
+
+    // Yellow
+    colors[9] = 1.0;
+    colors[10] = 1.0;
+    colors[11] = 0.0;
+
+    // Purple
+    colors[12] = 0.0;
+    colors[13] = 1.0;
+    colors[14] = 1.0;
+
+    // Orange
+    colors[15] = 1.0;
+    colors[16] = 0.0;
+    colors[17] = 1.0; 
+
+    // Pink
+    colors[18] = 1.0;
+    colors[19] = 0.2;
+    colors[20] = 0.7; 
+
+    srand(time(NULL));
+    int cColor = 150 + (rand()%105);
+    for(int x = 7; x < 100; x++)
+    {
+        cColor = (cColor + (rand()%255))%255; 
+        colors[(x*3) + 0] = ((float)cColor)/255;
+        colors[(x*3) + 1] = ((float)((cColor + rand())%255))/255;
+        colors[(x*3) + 2] = ((float)((cColor + rand())%255))/255;
+
+        printf("Color[%d]: (%f, %f, %f)\n", x, colors[(x*3) + 0], colors[(x*3) + 1], colors[(x*3) + 2]);
+    }
+}
+
 void mouseClickHandler(int button, int state, int x, int y)
 {	
     if(button == GLUT_LEFT_BUTTON)
@@ -446,7 +500,6 @@ void mouseClickHandler(int button, int state, int x, int y)
         switch(state)
         {
             case GLUT_DOWN:
-                //printf("Mouse Down @ [%d, %d]\n", x, y);
                 inDrag = true;
                 xInit = x;
                 yInit = y;
@@ -454,7 +507,6 @@ void mouseClickHandler(int button, int state, int x, int y)
                 yCur = y;
                 break;
             case GLUT_UP:
-                //printf("Mouse Up   @ [%d, %d]\n", x, y);
                 inDrag = false;     
                 xEnd = x;
                 yEnd = y;
@@ -470,7 +522,6 @@ void mouseClickHandler(int button, int state, int x, int y)
         switch(state)
         {
             case GLUT_DOWN:
-                //printf("Mouse Down @ [%d, %d]\n", x, y);
                 inDrag = true;
                 xInit = x;
                 yInit = y;
@@ -478,7 +529,6 @@ void mouseClickHandler(int button, int state, int x, int y)
                 yCur = y;
                 break;
             case GLUT_UP:
-                //printf("Mouse Up   @ [%d, %d]\n", x, y);
                 inDrag = false;     
                 xEnd = x;
                 yEnd = y;
@@ -510,25 +560,27 @@ void mouseMotionHandler(int x, int y)
                 bottom += yD;
                 top += yD;
                 break;
-            case 1: // Zoom
+            case 1: // Zoom                
                 if(yD < 0) // Zoom out
-                {                    
-                    left += yD;
-                    right -= yD;
-                    bottom += yD;
-                    top -= yD;
+                {       
+                    if((right - yD) - (left + yD) < maxZoomSize) // Max Zoom Limit
+                    {             
+                        left += yD;
+                        right -= yD;
+                        bottom += yD;
+                        top -= yD;
+                    }
                 }
                 else if(yD > 0) // Zoom in
                 {
-                    if((right - yD) - (left + yD) > 10) // Zoom limit
+                    if((right - yD) - (left + yD) > minZoomSize) // Min Zoom limit
                     {
                         left += yD;
                         right -= yD;
                         bottom += yD;
                         top -= yD;
                     }
-                }                
-                //printf("Zoom Level: %f \n", zoomLevel);
+                }
                 break;
         }
         
@@ -536,9 +588,15 @@ void mouseMotionHandler(int x, int y)
         glLoadIdentity();
         gluOrtho2D(left, right, bottom, top);
 
+        // Size (width or height) of draw area
+        float size = right - left;
+
         // Sets the robots edge count detail
-        robotEdgeCount = (int)(cutOffRange/abs(left - right)) + 3;
+        robotEdgeCount = (int)(cutOffRange/size) + 3;
         if(robotEdgeCount > 20){robotEdgeCount = 20;}
+
+        // Sets the size of the puck
+        puckSize = 8.0/(((size/(float)cutOffRange)*19) + 1);
     }
 }
 
@@ -546,8 +604,17 @@ void keyEventHandler(unsigned char key, int x, int y)
 {
     switch(tolower(key))
     {
+        case 'r':
+            drawRobot = !drawRobot;
+            break;
         case 'f':
             drawFOV = !drawFOV;
+            break;
+        case 'p':
+            drawPuck = !drawPuck;
+            break;
+        case 't':
+            drawTeam = !drawTeam;
             break;
     }
 
@@ -563,7 +630,7 @@ void initGraphics(int argc, char **argv)
     glutInitWindowSize(lWindowSize, lWindowSize);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
     glutCreateWindow(argv[0]);
-    glClearColor(0.1, 0.1, 0.1, 1);
+    glClearColor(0.0, 0.0, 0.0, 1);
     glutDisplayFunc(displayFunc);
     glutIdleFunc(idleFunc);
     glutMouseFunc(mouseClickHandler);
@@ -585,7 +652,10 @@ void initGraphics(int argc, char **argv)
 
     // Initialize look up arrays
     initializePositionLookupArrays(5, 360, xRobotVals, yRobotVals);
-    initializePositionLookupArrays(20, 360, xSensVals, ySensVals);
+    initializePositionLookupArrays(100, 360, xSensVals, ySensVals);
+
+    // Initialize team color array
+    initializeColorArray(colorArray);
 
     pthread_t thread1;  
 	int ret = pthread_create(&thread1, NULL, listener_function, NULL);

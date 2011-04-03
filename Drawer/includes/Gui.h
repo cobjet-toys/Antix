@@ -25,6 +25,7 @@ void mouseMotionHandler(int x, int y);
 void keyEventHandler(unsigned char key, int x, int y);
 void GlDrawCircle(double x, double y, double r, double count);
 void initializePositionLookupArrays(double radius, GLfloat *xVals, GLfloat *yVals);
+void initializeColorArray(int *colors);
 
 static int drawCount = 0;
 
@@ -47,10 +48,11 @@ static float xCur = -1, yCur = -1, xInit = -1, yInit = -1, xEnd = -1, yEnd = -1;
 static float zoomLevel = 1.0;
 
 // Variables for Draw options
-static bool drawFOV = false;
+static bool drawRobot = true, drawFOV = false, drawPuck = true, drawTeam = true;
 
 // Viewport rect positioning values
 static float left = 0, top = 0, right = 0, bottom = 0;
+static float maxZoomSize = 20000, minZoomSize = 10;
 
 // Lookup arrays for position values based on angle
 static GLfloat xRobotVals[360];
@@ -62,6 +64,10 @@ static GLfloat ySensVals[360];
 // Variables for drawing detail
 static int cutOffRange = 8500;
 static int robotEdgeCount = 20;
+static GLfloat puckSize = 4.0;
+
+// Array for team colours
+static GLfloat colorArray[300];
 
 // TEMPORARY TESTING VARIABLES //
 static int angleOffset = 0;
