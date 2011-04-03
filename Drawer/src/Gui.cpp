@@ -58,11 +58,15 @@ void displayFunc()
 
     char buf[20];
     sprintf(buf, "Framerate: %d", framerate);
-    drawText(buf, 5, 585, false);
+    drawText(buf, 5, drawServerRef->getWindowSize() - 15, false);
 
-    char tmpBuf[30];
-    sprintf(tmpBuf, "Width/Height: [%d, %d], robotEdgeCount: %d", abs(left - right), abs(bottom - top), robotEdgeCount);
-    drawText(tmpBuf, 5, 540, false);
+    char buf2[30];
+    sprintf(buf2, "Width/Height: [%d, %d], robotEdgeCount: %d", (int)(right - left), (int)(top - bottom), robotEdgeCount);
+    drawText(buf2, 5, drawServerRef->getWindowSize() - 30, false);
+
+    char buf3[30];
+    sprintf(buf3, "Mouse XY: [%d, %d]", (int)xTrue, (int)yTrue);
+    drawText(buf3, 5, drawServerRef->getWindowSize() - 45, false);
 
     // ------------------------ //
     glutSwapBuffers();
@@ -114,24 +118,30 @@ void drawPucks()
     {    
         Math::Position * puckPos = (*it)->getPosition();
         
-        if(puckPos->getX() != -1)
+        int xPos = (int)puckPos->getX();
+        int yPos = (int)puckPos->getY();
+
+        if(xPos > left - 10 && xPos < right + 10 && xPos != -1)
         {
-            pts[i + 0]      = puckPos->getX();
-            pts[i + 1]  = puckPos->getY();
-        }
-        
+           if(yPos > bottom - 10 && yPos < top + 10)
+           {
+                pts[(d*2) + 0]  = puckPos->getX();
+                pts[(d*2) + 1]  = puckPos->getY();
+                d++;
+            }
+        }        
         i++;
     }
 
     // Draw the array of vertices
-    glDrawArrays(GL_POINTS, 0, len);
+    glDrawArrays(GL_POINTS, 0, d);
 
     // Deactivate vertex arrays after drawing
     glDisableClientState(GL_VERTEX_ARRAY);
 
-    char tmpBuf[16];
-    sprintf(tmpBuf, "Pucks  #: %u", len);
-    drawText(tmpBuf, 5, 570, false);
+    char tmpBuf[40];
+    sprintf(tmpBuf, "Pucks  #: %u, Drawn #: %d", i, d);
+    drawText(tmpBuf, 5, drawServerRef->getWindowSize() - 60, false);
 }
 
 void drawRobots(int edgePoints)
@@ -260,7 +270,7 @@ void drawRobots(int edgePoints)
 
     char tmpBuf[40];
     sprintf(tmpBuf, "Robots #: %d, Drawn #: %d", i, d);
-    drawText(tmpBuf, 5, 555, false);
+    drawText(tmpBuf, 5, drawServerRef->getWindowSize() - 75, false);
 }
 
 void drawText(char* text, float x, float y, bool absolute)
@@ -406,10 +416,6 @@ void drawTest(int robotCount, int edgePoints, float viewAngle, int viewEdgePoint
         glDisableClientState(GL_VERTEX_ARRAY);
     }
 
-    char tmpBuf[30];
-    sprintf(tmpBuf, "Width/Height: [%d, %d]", abs(left - right), abs(bottom - top));
-    drawText(tmpBuf, 600, 0, true);
-
     // Print time in (ms) that it took to fetch data 
     //double elapsed = (clock() - start);
     //printf("Draw func #1: %fms\n", elapsed);
@@ -544,60 +550,69 @@ void mouseMotionHandler(int x, int y)
 {
     float windowSize = drawServerRef->getWindowSize();
 
-    if(inDrag)
+    // Updated mouse position display values
+    mousePassiveMotionHandler(x, y);
+
+    float xD = (float)(xCur - x)*(abs(left - right)/windowSize);
+    float yD = (float)(y - yCur)*(abs(bottom - top)/windowSize);
+
+    xCur = x;
+    yCur = y;
+    
+    switch(actionType)
     {
-        float xD = (float)(xCur - x)*(abs(left - right)/windowSize);
-        float yD = (float)(y - yCur)*(abs(bottom - top)/windowSize);
-
-        xCur = x;
-        yCur = y;
-        
-        switch(actionType)
-        {
-            case 0: // Translate
-                left += xD;
-                right += xD;            
-                bottom += yD;
-                top += yD;
-                break;
-            case 1: // Zoom                
-                if(yD < 0) // Zoom out
-                {       
-                    if((right - yD) - (left + yD) < maxZoomSize) // Max Zoom Limit
-                    {             
-                        left += yD;
-                        right -= yD;
-                        bottom += yD;
-                        top -= yD;
-                    }
+        case 0: // Translate
+            left += xD;
+            right += xD;            
+            bottom += yD;
+            top += yD;
+            break;
+        case 1: // Zoom                
+            if(yD < 0) // Zoom out
+            {       
+                if((right - yD) - (left + yD) < maxZoomSize) // Max Zoom Limit
+                {             
+                    left += yD;
+                    right -= yD;
+                    bottom += yD;
+                    top -= yD;
                 }
-                else if(yD > 0) // Zoom in
+            }
+            else if(yD > 0) // Zoom in
+            {
+                if((right - yD) - (left + yD) > minZoomSize) // Min Zoom limit
                 {
-                    if((right - yD) - (left + yD) > minZoomSize) // Min Zoom limit
-                    {
-                        left += yD;
-                        right -= yD;
-                        bottom += yD;
-                        top -= yD;
-                    }
+                    left += yD;
+                    right -= yD;
+                    bottom += yD;
+                    top -= yD;
                 }
-                break;
-        }
-        
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        gluOrtho2D(left, right, bottom, top);
-
-        // Size (width or height) of draw area
-        float size = right - left;
-
-        // Sets the robots edge count detail
-        robotEdgeCount = (int)(cutOffRange/size) + 3;
-        if(robotEdgeCount > 20){robotEdgeCount = 20;}
-
-        // Sets the size of the puck
-        puckSize = 8.0/(((size/(float)cutOffRange)*19) + 1);
+            }
+            break;
     }
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(left, right, bottom, top);
+
+    // Size (width or height) of draw area
+    float size = right - left;
+
+    // Sets the robots edge count detail
+    robotEdgeCount = (int)(cutOffRange/size) + 3;
+    if(robotEdgeCount > 20){robotEdgeCount = 20;}
+
+    // Sets the size of the puck
+    puckSize = 8.0/(((size/(float)cutOffRange)*19) + 1);
+}
+
+void mousePassiveMotionHandler(int x, int y)
+{
+    float windowSize = drawServerRef->getWindowSize();
+
+    // Sets the display values for the true position of the mouse
+    xTrue = left + ((float)x/windowSize)*(float)(right - left);
+    yTrue = top + ((float)y/windowSize)*(float)(bottom - top);
 }
 
 void keyEventHandler(unsigned char key, int x, int y)
@@ -635,6 +650,7 @@ void initGraphics(int argc, char **argv)
     glutIdleFunc(idleFunc);
     glutMouseFunc(mouseClickHandler);
     glutMotionFunc(mouseMotionHandler);
+    glutPassiveMotionFunc(mousePassiveMotionHandler);
     glutKeyboardFunc(keyEventHandler);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);

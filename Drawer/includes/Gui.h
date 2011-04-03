@@ -22,6 +22,7 @@ void drawTest(int robotCount, int edgePoints, float viewAngle, int viewEdgePoint
 //void drawHome(Game::Home* home, const GUI::Color* color);
 void mouseClickHandler(int button, int state, int x, int y);
 void mouseMotionHandler(int x, int y);
+void mousePassiveMotionHandler(int x, int y);
 void keyEventHandler(unsigned char key, int x, int y);
 void GlDrawCircle(double x, double y, double r, double count);
 void initializePositionLookupArrays(double radius, GLfloat *xVals, GLfloat *yVals);
@@ -44,7 +45,7 @@ static Network::DrawServer* drawServerRef = Network::DrawServer::getInstance();
 // Values for mouse drag/zoom options
 static int actionType = 0;
 static bool inDrag = false;
-static float xCur = -1, yCur = -1, xInit = -1, yInit = -1, xEnd = -1, yEnd = -1;
+static float xCur = -1, yCur = -1, xInit = -1, yInit = -1, xEnd = -1, yEnd = -1, xTrue = -1, yTrue = -1;
 static float zoomLevel = 1.0;
 
 // Variables for Draw options
