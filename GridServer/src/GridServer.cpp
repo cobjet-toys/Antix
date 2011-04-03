@@ -692,16 +692,47 @@ int GridServer::handler(int fd)
 				case (MSG_PROCESSACTION):
 				{
                     Msg_header l_Header;
-                    Msg_MsgSize l_Size;
-                    Msg_Action l_Action;
 
-                    if (NetworkCommon::recvMessageSize(l_Size, l_curConnection) < 0)
+                    Msg_MsgSize_32 l_moveObjectCountMsg = {0};
+                    Msg_MsgSize_32 l_dropObjectCountMsg = {0};
+                    Msg_MsgSize_32 l_pickupObjectCountMsg = {0};
+                    
+                    Msg_Request_Movement l_moveMsg;
+                    Msg_Request_Drop l_dropMsg;
+                    Msg_Request_Pickup l_pickupMsg;
+                    
+                    
+                    if (NetworkCommon::recvMessageSize32(l_moveObjectCountMsg, l_curConnection) < 0)
                     {
                     	ERRORPRINT("GRID_SERVER ERROR:\t Failed to receive message size\n");
                     	return -1;
                     }
+                    
 
-                    unsigned int l_MessageSize = l_Size.msgSize*l_Action.size;
+                    if (NetworkCommon::recvMessageSize32(l_dropObjectCountMsg, l_curConnection) < 0)
+                    {
+                    	ERRORPRINT("GRID_SERVER ERROR:\t Failed to receive message size\n");
+                    	return -1;
+                    }
+                    
+ 
+                    if (NetworkCommon::recvMessageSize32(l_pickupObjectCountMsg, l_curConnection) < 0)
+                    {
+                    	ERRORPRINT("GRID_SERVER ERROR:\t Failed to receive message size\n");
+                    	return -1;
+                    }   
+                    
+               
+
+                    DEBUGPRINT("Received %d MOVEMENT actions for grid %d \n", l_moveObjectCountMsg.msgSize, m_uId);
+                    DEBUGPRINT("Received %d DROP actions for grid %d \n", l_dropObjectCountMsg.msgSize, m_uId);
+                    DEBUGPRINT("Received %d PICKUP actions for grid %d \n", l_pickupObjectCountMsg.msgSize, m_uId);
+
+                    unsigned int l_MessageSize = l_moveObjectCountMsg.msgSize*l_moveMsg.size;
+                    l_MessageSize += l_dropObjectCountMsg.msgSize*l_dropMsg.size;
+                    l_MessageSize += l_pickupObjectCountMsg.msgSize*l_pickupMsg.size;
+                    
+                    printf("messagesize: %i\n", l_MessageSize);
                     
                     unsigned char * l_ActionBuffer = new unsigned char[l_MessageSize];
                     
@@ -711,19 +742,38 @@ int GridServer::handler(int fd)
                     	return -1;
                     }
                     
+                    printf("recv\n");
+                    
                   	if (l_curConnection->recv(l_ActionBuffer, l_MessageSize) < 0)
 					{
 						ERRORPRINT("GRID_SERVER ERROR:\t Could not get Msg_Actions for processs actions\n");
 						return -1;
 					}
 
-                    std::vector<Msg_Action> l_Actions;
+					printf("done recv\n");			
+			
+					std::vector<Msg_Request_Movement> l_move;
+					std::vector<Msg_Request_Pickup> l_pickup;
+					std::vector<Msg_Request_Drop> l_drop;
                     
                     unsigned int l_Offset = 0;
                     
-                    DEBUGPRINT("GRID_SERVER STATUS:\t Received a total of %d action requests\n", l_Size.msgSize);
+					for (int i = 0; i < l_moveObjectCountMsg.msgSize; i++)
+                    {
+                    	Msg_Request_Movement l_requestMovement;
+                    	printf("here\n");
+                    	
+                        unpack(l_ActionBuffer+l_Offset, Msg_Request_Movement_format, &l_requestMovement.robotId, 
+                        		&l_requestMovement.forwardSpeed, &l_requestMovement.rotationSpeed);
+                        		
+                       printf("done\n");
+                        DEBUGPRINT("ROBOT_CLIENT STATUS:\t Packing MOVE Robot ID:%u, forwardSpeed:%f rotationalSpeed:%f\n", l_requestMovement.robotId, 
+                        	l_requestMovement.forwardSpeed, l_requestMovement.rotationSpeed);
+                        l_Offset += l_moveMsg.size;
+                    }    
                     
-                    for (int i = 0; i < l_Size.msgSize; i++)
+                    printf("Done\n");          
+                    /*for (int i = 0; i < l_Size.msgSize; i++)
                     {
                         unpack(l_ActionBuffer+l_Offset, Msg_Action_format, &l_Action.robotid, &l_Action.action, 
                                 &l_Action.speed, &l_Action.angle);
@@ -731,16 +781,21 @@ int GridServer::handler(int fd)
                         l_Offset += l_Action.size;
                     }
 
+
                     std::vector<Msg_RobotInfo> l_Results;
 
                     
                     std::vector<std::pair<int, std::vector<Msg_RobotInfo> > > robots_to_pass;
+                    
+// SIMULATION ABSTRACTION ==================================================================================
                     
                     if (gridGameInstance->processAction(l_Actions, &l_Results, &robots_to_pass) < 0)
                     {
                     	ERRORPRINT("GRID_SERVER ERROR:\t Failed to process actions inside of GRID_GAME\n");
                     	return -1;
                     }
+                  
+// ==================================================================================
 
                     DEBUGPRINT("GRID_SERVER STATUS:\t Received %zu results\n", l_Results.size());
 
@@ -878,7 +933,8 @@ int GridServer::handler(int fd)
 					
 					delete []l_ActionBuffer;
 					delete []l_ResultsBuffer;
-								
+							*/
+					exit(0);	
 		            break;
 				}
 				

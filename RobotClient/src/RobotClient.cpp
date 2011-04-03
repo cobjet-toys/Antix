@@ -473,13 +473,16 @@ int RobotClient::handler(int fd)
                         delete []l_GroupHeaderBuff;
                     }
                     robotGameInstance->receiveSensorData(&l_SensedInfo);
-
+					// don't need to optimize the above code for this case it already is
                     m_ReadyGrids++; 
                     DEBUGPRINT("Received sensory data from a grid. %d Ready, %zu total\n", m_ReadyGrids, m_Grids.size());
                     if (m_ReadyGrids == m_Grids.size())
                     {   
                         DEBUGPRINT("Finished receiving sensory info.\n");
-                        std::vector<Msg_Action> l_RoboActions;
+                        std::vector<Msg_Request_Movement> l_move;
+                        std::vector<Msg_Request_Pickup> l_pickup;
+                        std::vector<Msg_Request_Drop> l_drop;
+                        
                         std::vector<int>::const_iterator end = m_Grids.end();
                         DEBUGPRINT("Getting actions from simulation\n");
                         for(std::vector<int>::const_iterator it = m_Grids.begin(); it != end; it++)
@@ -488,43 +491,136 @@ int RobotClient::handler(int fd)
                             int gridFd = (*it);
                             DEBUGPRINT("Grid ID: %d, Grid FD: %d\n", gridId, gridFd);
                             
-                            robotGameInstance->sendAction(gridId, &l_RoboActions);
-                            DEBUGPRINT("Received %zu actions for grid %d \n", l_RoboActions.size(), gridId);
+                            robotGameInstance->sendAction(gridId, &l_move, &l_drop,  &l_pickup);
+                            
+                            uint32_t l_moveSize = l_move.size();
+                            uint32_t l_dropSize = l_drop.size();
+                            uint32_t l_pickupSize = l_pickup.size();
+
+                            DEBUGPRINT("Received %zu MOVEMENT actions for grid %d \n", l_moveSize, gridId);
+                            DEBUGPRINT("Received %zu DROP actions for grid %d \n", l_dropSize, gridId);
+                            DEBUGPRINT("Received %zu PICKUP actions for grid %d \n", l_pickupSize, gridId);
+                            
+                            // Prepair to send the information
                             
                             Msg_header l_Header = {SENDER_CLIENT, MSG_PROCESSACTION};
-                            Msg_MsgSize l_Size = {l_RoboActions.size()};
-                            Msg_Action l_Action;
+                            
+                            Msg_MsgSize_32 l_moveObjectCountMsg = {l_moveSize};
+                            Msg_MsgSize_32 l_dropObjectCountMsg = {l_dropSize};
+                            Msg_MsgSize_32 l_pickupObjectCountMsg = {l_pickupSize};
+                            
+                            Msg_Request_Movement l_moveMsg;
+                            Msg_Request_Drop l_dropMsg;
+                            Msg_Request_Pickup l_pickupMsg;
+                            
 
-                            unsigned int l_MessageSize = l_Header.size+l_Size.size+ (l_Action.size*l_RoboActions.size());
+                            unsigned int l_MessageSize = l_Header.size;
+                            l_MessageSize += (l_moveSize * l_moveMsg.size);
+                            l_MessageSize += (l_dropSize * l_dropMsg.size);
+                            l_MessageSize += (l_pickupSize * l_pickupMsg.size);
+                            
                             unsigned char *l_ActionBuffer = new unsigned char[l_MessageSize];
 
                             if (l_ActionBuffer == NULL)
                             {
-                                ERRORPRINT("Error allocating buffer for sendin actions \n");
+                                ERRORPRINT("Error allocating buffer for sending actions \n");
                                 return -1;
                             }
+                            
                             unsigned int l_Offset = 0;
 
                             NetworkCommon::packHeaderMessage(l_ActionBuffer+l_Offset, &l_Header);
                             l_Offset += l_Header.size;
 
-                            pack(l_ActionBuffer+l_Offset, Msg_MsgSize_format, l_Size.msgSize);
-                            l_Offset += l_Size.size;
-
-                            for (int i = 0; i < l_RoboActions.size(); i++)
+                            if (pack(l_ActionBuffer+l_Offset, Msg_MsgSize_32_format, l_moveObjectCountMsg.msgSize) != l_moveObjectCountMsg.size)
                             {
-                                if (pack(l_ActionBuffer+l_Offset, Msg_Action_format, l_RoboActions[i].robotid, l_RoboActions[i].action, l_RoboActions[i].speed,l_RoboActions[i].angle) != l_Action.size)
+                               ERRORPRINT("ROBOT_CLIENT ERROR:\t Error packing MOVEMENT size\n");
+                               return -1;
+                            }
+                            
+                            l_Offset += l_moveObjectCountMsg.size;
+
+						
+							if (pack(l_ActionBuffer+l_Offset, Msg_MsgSize_32_format, l_dropObjectCountMsg.msgSize) != l_dropObjectCountMsg.size)
+                            {
+                               ERRORPRINT("ROBOT_CLIENT ERROR:\t Error packing MOVEMENT size\n");
+                               return -1;
+                            }                            
+                            l_Offset += l_dropObjectCountMsg.size;
+                            
+							if (pack(l_ActionBuffer+l_Offset, Msg_MsgSize_32_format, l_pickupObjectCountMsg.msgSize) != l_pickupObjectCountMsg.size)
+                            {
+                               ERRORPRINT("ROBOT_CLIENT ERROR:\t Error packing MOVEMENT size\n");
+                               return -1;
+                            }                            
+                            l_Offset += l_pickupObjectCountMsg.size;
+                            
+                            DEBUGPRINT("ROBOT_CLIENT STATUS:\t Message size:%d after header + size MOVE DROP PICKUP\n", l_Offset);
+                            
+
+                            for (int i = 0; i < l_moveSize; i++)
+                            {
+                                if (pack(l_ActionBuffer+l_Offset, Msg_Request_Movement_format, l_move.at(i).robotId, 
+                                		l_move.at(i).forwardSpeed, l_move.at(i).rotationSpeed)
+                                			!= l_moveMsg.size
+                                	)
                                 {
-                                    ERRORPRINT("Error packing robo actions");
+                                    ERRORPRINT("ROBOT_CLIENT ERROR:\t Error packing robo actions\n");
                                     return -1;
                                 }
-                                l_Offset += l_Action.size;
+                                
+                                DEBUGPRINT("ROBOT_CLIENT STATUS:\t Packing MOVE Robot ID:%u, forwardSpeed:%f rotationalSpeed:%f\n", l_move.at(i).robotId, 
+                                	l_move.at(i).forwardSpeed, l_move.at(i).rotationSpeed);
+                                l_Offset += l_moveMsg.size;
                             }
+                         
+                         	DEBUGPRINT("ROBOT_CLIENT STATUS:\t Message size:%d after MOVE\n", l_Offset);
+                         	
+							for (int i = 0; i < l_dropSize; i++)
+                            {
+                                if (pack(l_ActionBuffer+l_Offset, Msg_Request_Drop_format, l_drop.at(i).robotId)
+                                			!= l_dropMsg.size
+                                	)
+                                {
+                                    ERRORPRINT("ROBOT_CLIENT ERROR:\t Error packing robo actions\n");
+                                    return -1;
+                                }
+                                 DEBUGPRINT("ROBOT_CLIENT STATUS:\t Packing DROP Robot ID:%u\n", l_drop.at(i).robotId);
+                                l_Offset += l_dropMsg.size;
+                            }  
+                            
+                            DEBUGPRINT("ROBOT_CLIENT STATUS:\t Message size:%d after DROP\n", l_Offset);
+                            
+							for (int i = 0; i < l_pickupSize; i++)
+                            {
+                                if (pack(l_ActionBuffer+l_Offset, Msg_Request_Pickup_format, l_pickup.at(i).robotId,
+                                			l_pickup.at(i).puckId) != l_pickupMsg.size
+                                	)
+                                {
+                                    ERRORPRINT("ROBOT_CLIENT ERROR:\t Error packing robo actions\n");
+                                    return -1;
+                                }
+                                 DEBUGPRINT("ROBOT_CLIENT STATUS:\t Packing PICKUP Robot ID:%u, puckId:%u\n", l_pickup.at(i).robotId, 
+                                	l_pickup.at(i).puckId);
+                                l_Offset += l_dropMsg.size;
+                            }                                                              
+                            
+                            DEBUGPRINT("ROBOT_CLIENT STATUS:\t Message size:%d after PICKUP\n", l_Offset);
+                            
+                           
                             NetworkCommon::sendWrapper(m_serverList[(*it)],l_ActionBuffer, l_MessageSize);
-                            DEBUGPRINT("Sent process action request to grid server\n");
-                            l_RoboActions.clear();
+                            
+                            DEBUGPRINT("ROBOT_CLIENT STATUS:\t Sent process action request to grid server\n");
+                            
 
-                            delete[]l_ActionBuffer;
+                            /*l_move.clear();
+							l_drop.clear();
+							l_pickup.clear();*/
+							exit(0);
+							
+							
+                            //if (l_ActionBuffer != NULL) delete[] l_ActionBuffer;
+
                         }
                         m_ReadyGrids = 0;
                     }

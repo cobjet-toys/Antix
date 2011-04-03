@@ -103,7 +103,7 @@ int RobotGame::receiveSensorData(vector< std::pair<uid, std::vector<Msg_SensedOb
 }
 
 // Send and recieve actions
-int RobotGame::sendAction(int grid_id, vector<Msg_Action>* robot_actions)
+int RobotGame::sendAction(int grid_id, std::vector<Msg_Request_Movement> *positionUpdates, std::vector<Msg_Request_Drop> *puckDrops, std::vector<Msg_Request_Pickup> *puckPickups)
 {
     // after a decision has been made, send it to the client
     // Shawn mentioned how the client and the grid would do this calculation twice,
@@ -112,19 +112,51 @@ int RobotGame::sendAction(int grid_id, vector<Msg_Action>* robot_actions)
     // that it picks up or moves, the calculation is trivial.
     // in the case that it moves, the robot only DECIDES to move, and doesn't calculate
     // it's new position so i don't think we need to change this.
-
+    
+    
+	if (positionUpdates == NULL || puckDrops == NULL || puckPickups == NULL) return -2; // failed because of bad input
+	
     // Get list of robots for this grid
-    vector<Msg_Action>& l_robotActions = *robot_actions;
+
     RobotList robots = m_robotsByGrid[grid_id];
     RobotList::iterator iter;
-   
+    RobotList::iterator iterEnd = robots.end();
+    Msg_RobotInfo actionRequest;
+       
     DEBUGPRINT("Getting actions for grid id %d with %zu robots\n", grid_id, robots.size()); 
     // Loop through the robots, and get an action to do for each robot
-    for(iter = robots.begin(); iter != robots.end(); iter++)
+    for(iter = robots.begin(); iter != iterEnd; iter++)
     {
         DEBUGPRINT("Accessing robot with with id %d\n", (*iter)->getId());
-        Msg_Action l_action = (*iter)->getAction();
-        l_robotActions.push_back(l_action);
+        int action = (*iter)->getAction(&actionRequest);
+        if (action == ACTION_MOVE)
+        {
+        	Msg_Request_Movement moveRequest;
+        	
+			moveRequest.robotId = actionRequest.robotid;
+			moveRequest.rotationSpeed = actionRequest.speed;
+			moveRequest.forwardSpeed = actionRequest.angle;
+        	
+        	positionUpdates->push_back(moveRequest);
+        	
+        } else if (action == ACTION_PICKUP_PUCK)
+        {
+        	Msg_Request_Drop dropRequest;
+            dropRequest.robotId = actionRequest.robotid;
+			
+			puckDrops->push_back(dropRequest);
+			
+        } else if (action == ACTION_DROP_PUCK)
+        {
+        	Msg_Request_Pickup pickupRequest;
+            pickupRequest.robotId = actionRequest.robotid;
+			pickupRequest.puckId = actionRequest.puckid;       
+			
+			puckPickups->push_back(pickupRequest);
+			
+        } else {
+        	return -1; // the robot returned a malformed action
+        }    
     }
 
     return 0;

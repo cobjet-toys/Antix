@@ -79,14 +79,17 @@ void Robot::updateSensors( SensedItemsList sensedItems )
     }
 }
 
-Msg_Action Robot::getAction()
+int Robot::getAction(Msg_RobotInfo *action)
 {
-    Msg_Action l_action;
-    l_action.robotid = this->getId();
-    l_action.action = 1;
-    l_action.speed = 1.0;
-    l_action.angle = 0.0f;
-    return l_action;
+	if (action == NULL) return -2; // invalid input
+
+    action->robotid = this->getId();
+    action->speed = 1.0;
+    action->angle = 0.0f;
+    
+    
+    return ACTION_MOVE;
+    
 /*
     float l_HeadingError = 0.0;
 

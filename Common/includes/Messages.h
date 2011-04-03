@@ -56,6 +56,13 @@ enum
 	DRAWER_COMPRESSEDDETAILS = 'C',
 };
 
+enum
+{
+	ACTION_MOVE = 0,
+	ACTION_PICKUP_PUCK = 1,
+	ACTION_DROP_PUCK = 2
+};
+
 typedef struct
 {
     uint32_t id;
@@ -110,6 +117,12 @@ typedef struct{
 	static const size_t size = 2;
 } Msg_MsgSize;
 static const char* Msg_MsgSize_format = "h"; 
+
+typedef struct{
+	uint32_t msgSize; //THIS IS THE NUMBER OF OBJECTS WE ARE REQUESTING
+	static const size_t size = 4;
+} Msg_MsgSize_32;
+static const char* Msg_MsgSize_32_format = "l"; 
 
 typedef struct
 {
@@ -230,5 +243,50 @@ typedef struct{
 	static const size_t size = 1;
 } Msg_ClockStatus;
 static const char * Msg_ClockStatus_format = "c";
+
+typedef struct {
+	float	xPos;
+	float	yPos;
+	float	rotationSpeed;
+	float	robotId;
+	char	gridId;
+	static const size_t size = 18;
+} Msg_Response_Movement;
+static const char * Msg_Response_Movement_format = "ffffc";
+
+typedef struct {
+	uint32_t robotId;
+	uint32_t puckId;
+	static const size_t size = 8;
+} Msg_Response_Drop;
+static const char * Msg_Response_Drop_format = "ll";
+
+typedef struct {
+	uint32_t robotId;
+	uint32_t puckId;
+	static const size_t size = 8;	
+} Msg_Response_Pickup;
+static const char * Msg_Response_Pickup_format = "ll";
+
+typedef struct {
+	uint32_t robotId;
+	float forwardSpeed;
+	float rotationSpeed;
+	static const size_t size = 12;	
+} Msg_Request_Movement;
+static const char * Msg_Request_Movement_format = "lff";
+
+typedef struct {
+	uint32_t robotId;
+	uint32_t puckId;
+	static const size_t size = 8;	
+} Msg_Request_Pickup;
+static const char * Msg_Request_Pickup_format = "ll";
+
+typedef struct {
+	uint32_t robotId;
+	static const size_t size = 4;	
+} Msg_Request_Drop;
+static const char * Msg_Request_Drop_format = "l";
 
 #endif

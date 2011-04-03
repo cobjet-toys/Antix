@@ -48,7 +48,7 @@ public:
     /**
      * Update the AI - this is what tells the robot what to do.
      */
-    Msg_Action getAction();
+    int getAction(Msg_RobotInfo *action);
     
 
     /**
