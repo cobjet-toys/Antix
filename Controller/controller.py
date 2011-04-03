@@ -74,7 +74,7 @@ def start_process(name, **kwargs):
             script += " > ~/antix." + name + str(FILE_ITER) + ".out &"
             FILE_ITER += 1
         else:
-            script += " > antix." + machine + ".out &'"
+            script += " > antix-" + name + "." + machine + ".out &'"
     print "Running: " + script
 
     try:
