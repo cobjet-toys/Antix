@@ -59,7 +59,11 @@ private:
     uint16_t m_Hb;
     int m_ReadyPartners;
 
-	bool updateDrawerFlag;
+	bool m_updateDrawerFlag;
+	float m_drawerTop;			//top edge in view
+	float m_drawerBottom;		//bottom edge in view
+	float m_drawerLeft;			//left edge in view
+	float m_drawerRight;		//right edge in view
     TcpConnection * m_drawerConn;
 };
 }

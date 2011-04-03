@@ -77,7 +77,7 @@ public:
     /**
      * Interface function to Network layer for processing actions for each robot and puck.
      */
-    int getPopulation(std::vector< Msg_RobotInfo >* results);
+    int getPopulation(std::vector< Msg_DrawerObjectInfo >* results, float top, float bottom, float left, float right);
     
     /**
      * Interface function to Network layer for sending teams.

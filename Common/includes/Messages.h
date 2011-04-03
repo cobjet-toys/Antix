@@ -185,12 +185,22 @@ typedef struct{
 static const char * Msg_RobotInfo_format = "lfffflh";
 
 typedef struct{
+    uint32_t robotid;       //4
+    float x_pos;            //4
+    float y_pos;            //4
+    float angle;            //4
+    uint32_t puckid;        //4
+	static const size_t size = 20;
+} Msg_DrawerObjectInfo;
+static const char * Msg_DrawerObjectInfo_format = "lfffl";
+
+typedef struct{
    	char send_data;			//'T' or 'F'
     char data_type;			//'F' or 'C'
-    float tl_x;				// top-left corner x; 0 for full grid
-    float tl_y;				// top-left corner y; 0 for full grid
-    float br_x;				// bottom-right corner x; 0 for full grid
-    float br_y;				// bottom-right corner y; 0 for full grid
+    float top;				// top edge of view; 0 for full grid
+    float bottom;			// bottom edge of view; 0 for full grid
+    float left;				// left edge of view; 0 for full grid
+    float right;			// right edge of view; 0 for full grid
 	static const size_t size = 18;
 } Msg_DrawerConfig;
 static const char * Msg_DrawerConfig_format = "ccffff";
