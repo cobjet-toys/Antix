@@ -99,15 +99,20 @@ Msg_Action Robot::getAction()
     Position* l_CurrentPos = getPosition();
     float l_WorldSize = Robot::WorldSize;
 
-    //Distance and angle to home.
-    float l_Dx = Math::WrapDistance(m_homeX - l_CurrentPos->getX(), Robot::WorldSize);
-    float l_Dy = Math::WrapDistance(m_homeY - l_CurrentPos->getY(), Robot::WorldSize);
+    float l_x = l_CurrentPos->getX();
+    float l_y = l_CurrentPos->getY();
+    float l_orient = l_CurrentPos->getOrient();
+
+    float l_Dx = Math::WrapDistance(m_homeX - l_x, Robot::WorldSize);
+    float l_Dy = Math::WrapDistance(m_homeY - l_y, Robot::WorldSize);
     float l_Da = fast_atan(l_Dx, l_Dy);
     float l_Distance = hypot(l_Dx, l_Dy);
-
+    
     //If holding a puck, drive home.
     if (Holding())
     {
+        //Distance and angle to home.
+        
         //Turn towards home.
         l_HeadingError = Math::AngleNormalize(l_Da - l_CurrentPos->getOrient());
         
@@ -124,31 +129,31 @@ Msg_Action Robot::getAction()
         if (m_VisiblePucks.size() > 0 && l_Distance > Robot::HomeRadius)
         {
             //Find the closest angle to the closest puck that is not being carried.
-            float l_ClosestRange = 1e9;
+            float closestPuck = 1e9;
             for (ObjectLocationList::iterator it = m_VisiblePucks.begin();
                     it != m_VisiblePucks.end(); it++)
             {
-                // TODO if this puck is in range, try to pick it up, secondary
+                // If this puck is in range, try to pick it up, secondary
                 // plan is to adjust course towards the nearest puck
                 float puckX = it->first;
                 float puckY = it->second;
-                // If this puck requires us to turn the least to get to it
-                // head towards it
-                if (/*angleToPuck(puckX, puckY) < l_ClosestRange*/ false)
+                float distToPuck = hypot( puckX - l_x, puckY - l_y);
+                
+                if(distToPuck < Robot::PickupRange)
                 {
-                    //l_HeadingError = l_Puck.getOrient();
-                    //l_ClosestRange = l_Puck.getRange();
-                    // TODO calculate angle to puck, 
+                    action = PICKUP;
+                    m_LastPickup->setX(l_CurrentPos->getX());
+                    m_LastPickup->setY(l_CurrentPos->getY()); 
+                    break;
                 }
-            }
 
-            //Attempt to puck up the puck.
-            if (true) //TODO CanPickup Puck
-            {
-                //Got one! Remember where it was.
-                m_LastPickup->setX(l_CurrentPos->getX());
-                m_LastPickup->setY(l_CurrentPos->getY()); 
-                action = PICKUP;
+                if (distToPuck < closestPuck)
+                {
+                    float l_Dx = Math::WrapDistance(puckX - l_x, Robot::WorldSize);
+                    float l_Dy = Math::WrapDistance(puckY - l_y, Robot::WorldSize);
+                    closestPuck = distToPuck;
+                    l_HeadingError = Math::AngleNormalize(fast_atan(l_x,l_y) - l_orient);
+                }
             }
         }
         else
@@ -157,17 +162,16 @@ Msg_Action Robot::getAction()
             float l_Dx = Math::WrapDistance(m_LastPickup->getX()-l_CurrentPos->getX(), l_WorldSize);
             float l_Dy = Math::WrapDistance(m_LastPickup->getY()-l_CurrentPos->getY(), l_WorldSize);
 
-            l_HeadingError = Math::AngleNormalize((atan2(l_Dy, l_Dx) - l_CurrentPos->getOrient()));
+            l_HeadingError = Math::AngleNormalize((fast_atan(l_Dy, l_Dx) - l_CurrentPos->getOrient()));
 
             //If we are at the last place we found a puck, and there are no visible pucks,
             //then choose another place.
             if (hypot(l_Dx, l_Dy) < 0.05)
             {
-                m_LastPickup->setX(m_LastPickup->getX() + (drand48() * 0.4 -0.2));
-                m_LastPickup->setY(m_LastPickup->getY() + (drand48() * 0.4 -0.2));
-                
-                m_LastPickup->setX(Math::DistanceNormalize(m_LastPickup->getX(), l_WorldSize));
-                m_LastPickup->setY(Math::DistanceNormalize(m_LastPickup->getY(), l_WorldSize));
+                m_LastPickup->setX(Math::DistanceNormalize(m_LastPickup->getX() + (drand48() * 0.4 -0.2),
+                                                           l_WorldSize));
+                m_LastPickup->setY(Math::DistanceNormalize(m_LastPickup->getY() + (drand48() * 0.4 -0.2),
+                                                           l_WorldSize));
             }
 
         }
@@ -192,6 +196,12 @@ Msg_Action Robot::getAction()
     //Create action
     Msg_Action l_action;
     l_action.robotid = this->getId();
+    l_action.action = action;
+    if(action == SET_SPEED)
+    {
+        l_action.speed = m_Speed->getForwSpeed();
+        l_action.angle = m_Speed->getRotSpeed();
+    }
     return l_action; 
 }
 
