@@ -21,10 +21,10 @@ DrawServer::DrawServer()
     this->m_framestep = 0;
     this->m_drawerDataType = DRAWER_FULLDETAILS;    
     
-	this->m_viewTL_x = 0;
-	this->m_viewTL_y = 0;
-	this->m_viewBR_x = this->m_windowSize;
-	this->m_viewBR_y = this->m_windowSize;
+	this->m_viewLeft = 0;
+	this->m_viewTop = 0;
+	this->m_viewRight = this->m_windowSize;
+	this->m_viewBottom = this->m_windowSize;
 }
 
 DrawServer::~DrawServer() 
@@ -64,8 +64,8 @@ DrawServer* DrawServer::getInstance()
 void DrawServer::setWindowSize(int val)
 {
 	this->m_windowSize = val;
-	this->m_viewBR_x = this->m_windowSize;
-	this->m_viewBR_y = this->m_windowSize;
+	this->m_viewRight = this->m_windowSize;
+	this->m_viewBottom = this->m_windowSize;
 }
 
 // Sends initialization message to grid @ host:port, telling it 
@@ -141,12 +141,12 @@ size_t DrawServer::initPucks(int size)
     return this->m_pucks.size();
 }
 
-void DrawServer::updateViewRange(float tl_x, float tl_y, float br_x, float br_y)
+void DrawServer::updateViewRange(float left, float top, float right, float bottom)
 {	
-	this->m_viewTL_x = tl_x;
-	this->m_viewTL_y = tl_y;
-	this->m_viewBR_x = br_x;
-	this->m_viewBR_y = br_y;	
+	this->m_viewLeft = left;
+	this->m_viewTop = top;
+	this->m_viewRight = right;
+	this->m_viewBottom = bottom;	
 	
 	std::map<int, TcpConnection*>::iterator it;	
 	
@@ -186,12 +186,12 @@ int DrawServer::sendGridConfig(int grid_fd)
     //Pack config message
 	l_DrawerConfig.send_data = 'T';
 	l_DrawerConfig.data_type = this->m_drawerDataType;
-	l_DrawerConfig.tl_x = this->m_viewTL_x;
-	l_DrawerConfig.tl_y = this->m_viewTL_y;
-	l_DrawerConfig.br_x = this->m_viewBR_x;
-	l_DrawerConfig.br_y = this->m_viewBR_y;
+	l_DrawerConfig.top = this->m_viewTop;
+	l_DrawerConfig.bottom = this->m_viewBottom;
+	l_DrawerConfig.right = this->m_viewRight;
+	l_DrawerConfig.left = this->m_viewLeft;
     pack(l_Buffer+l_BufferOf, Msg_DrawerConfig_format, 
-    	l_DrawerConfig.send_data, l_DrawerConfig.data_type, l_DrawerConfig.tl_x, l_DrawerConfig.tl_y, l_DrawerConfig.br_x, l_DrawerConfig.br_y);
+    	l_DrawerConfig.send_data, l_DrawerConfig.data_type, l_DrawerConfig.top, l_DrawerConfig.bottom, l_DrawerConfig.left, l_DrawerConfig.right);
     
     return sendWrapper(l_curConn, l_Buffer, l_MessageSize);   
 }
@@ -211,7 +211,7 @@ void DrawServer::initTeams()
     DEBUGPRINT("Teams=%zu\n", this->m_teams.size());
 }
 
-void DrawServer::updateObject(Msg_RobotInfo newInfo)
+void DrawServer::updateObject(Msg_DrawerObjectInfo newInfo)
 {    
     uint32_t objType, objId, objIndex;
     Antix::getTypeAndId(newInfo.robotid, &objType, &objId);
@@ -272,7 +272,7 @@ int DrawServer::handler(int fd)
                     DEBUGPRINT("MSG_GRIDDATAFULL\n");
                     
                     Msg_MsgSize l_NumObjects;
-	                Msg_RobotInfo l_ObjInfo;
+	                Msg_DrawerObjectInfo l_ObjInfo;
 	                unsigned char * l_ObjInfoBuf = new unsigned char[l_ObjInfo.size];
 	                
                     //Receive the total number of robots we are getting sens info for.
@@ -286,11 +286,8 @@ int DrawServer::handler(int fd)
                         
                         recvWrapper(l_Conn, l_ObjInfoBuf, l_ObjInfo.size);
 
-                        unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
-                                &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.speed, &l_ObjInfo.angle, &l_ObjInfo.puckid, &l_ObjInfo.gridid );
-
-                        //DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\n",
-                        	        //l_ObjInfo.robotid, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.puckid );
+                        unpack(l_ObjInfoBuf, Msg_DrawerObjectInfo_format,
+                                &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.puckid );
                                 
                         updateObject(l_ObjInfo);
                     }

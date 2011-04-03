@@ -1040,11 +1040,8 @@ int GridServer::handler(int fd)
 						DEBUGPRINT("Could not receive a config data.");
 						return -1;
 					}
-					unpack(configDataBuf, Msg_DrawerConfig_format, &configData.send_data, &configData.data_type, &configData.tl_x, &configData.tl_y, &configData.br_x, &configData.br_y);
+					unpack(configDataBuf, Msg_DrawerConfig_format, &configData.send_data, &configData.data_type, &configData.top, &configData.bottom, &configData.left, &configData.right);
 					delete configDataBuf;
-
-                    //DEBUGPRINT("Config: send_data=%c, data_type=%c, tl_x=%f, tl_y=%f, br_x=%f, br_y=%f\n",
-                           //configData.send_data, configData.data_type, configData.tl_x, configData.tl_y, configData.br_x, configData.br_y);
 
 					// If this is the first message from the Drawer, send team home data and create update thread
 					if (!m_drawerConn)
@@ -1115,11 +1112,11 @@ int GridServer::handler(int fd)
                     //change send-to-drawer status accordingly
                     float l_gridLeft = gridGameInstance->getLeftBoundary();
                     float l_gridRight = gridGameInstance->getRightBoundary();
-                    m_updateDrawerFlag = !(l_gridLeft > configData.br_x || l_gridRight < configData.tl_x);
-                    m_drawerTop = configData.tl_y;
-                    m_drawerBottom = configData.br_y;
-                    m_drawerLeft = configData.tl_x;
-                    m_drawerRight = configData.br_x;
+                    m_updateDrawerFlag = !(l_gridLeft > configData.right || l_gridRight < configData.left);
+                    m_drawerTop = configData.top;
+                    m_drawerBottom = configData.bottom;
+                    m_drawerLeft = configData.left;
+                    m_drawerRight = configData.right;
             		
                     return 0;
                 }
@@ -1149,9 +1146,9 @@ int GridServer::updateDrawer(uint32_t framestep)
 
 
     Msg_MsgSize l_Size;
-    Msg_RobotInfo l_RoboInfo;
+    Msg_DrawerObjectInfo l_RoboInfo;
 
-    std::vector<Msg_RobotInfo> objects;
+    std::vector<Msg_DrawerObjectInfo> objects;
     gridGameInstance->getPopulation(&objects, m_drawerTop, m_drawerBottom, m_drawerLeft, m_drawerRight);
 
     l_Size.msgSize = objects.size();
@@ -1169,13 +1166,8 @@ int GridServer::updateDrawer(uint32_t framestep)
 
     for (int i = 0; i < l_Size.msgSize; i++)
     {
-        pack(l_Buffer+l_Offset, Msg_RobotInfo_format, objects[i].robotid, objects[i].x_pos, objects[i].y_pos, 0, 0, 0 ); 
-        
-        //unpack(l_Buffer+l_Offset, Msg_RobotInfo_format,
-                                //&l_RoboInfo.robotid, &l_RoboInfo.x_pos, &l_RoboInfo.y_pos, &l_RoboInfo.speed, &l_RoboInfo.angle, &l_RoboInfo.puckid, &l_RoboInfo.gridid );
-        //DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\n",
-                        	        //l_RoboInfo.robotid, l_RoboInfo.x_pos, l_RoboInfo.y_pos, l_RoboInfo.angle, l_RoboInfo.puckid );
-                         
+        pack(l_Buffer+l_Offset, Msg_DrawerObjectInfo_format, objects[i].robotid, objects[i].x_pos, objects[i].y_pos, objects[i].angle, objects[i].puckid ); 
+                                 
         l_Offset += l_RoboInfo.size;
     }
 
