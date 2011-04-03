@@ -42,6 +42,10 @@ void displayFunc()
     {
         drawRobots(robotEdgeCount);
     }
+    if(drawBoundary)
+    {
+        drawBoundaries();
+    }
     //drawTest(50, 16, 45.0, 6);
     
     // ----- Draws framerate ----- //
@@ -273,6 +277,26 @@ void drawRobots(int edgePoints)
     drawText(tmpBuf, 5, drawServerRef->getWindowSize() - 75, false);
 }
 
+void drawBoundaries()
+{
+    float worldSize = drawServerRef->getWorldSize();
+    size_t serverCount = drawServerRef->getGridCount();
+
+    int gridWidth = worldSize/serverCount;
+
+    glColor3f(1.0, 1.0, 1.0);
+
+    for(int x = 0; x < serverCount; x++)
+    {
+        glBegin(GL_LINE_LOOP);
+        glVertex2f(x*gridWidth, 0);
+        glVertex2f(x*gridWidth, worldSize);
+        glVertex2f(x*gridWidth + gridWidth, worldSize);
+        glVertex2f(x*gridWidth + gridWidth, 0);
+        glEnd();
+    }
+}
+
 void drawText(char* text, float x, float y, bool absolute)
 {
     glColor3f(0, 255, 255);
@@ -493,8 +517,6 @@ void initializeColorArray(GLfloat *colors)
         colors[(x*3) + 0] = ((float)cColor)/255;
         colors[(x*3) + 1] = ((float)((cColor + rand())%255))/255;
         colors[(x*3) + 2] = ((float)((cColor + rand())%255))/255;
-
-        printf("Color[%d]: (%f, %f, %f)\n", x, colors[(x*3) + 0], colors[(x*3) + 1], colors[(x*3) + 2]);
     }
 }
 
@@ -631,6 +653,9 @@ void keyEventHandler(unsigned char key, int x, int y)
         case 't':
             drawTeam = !drawTeam;
             break;
+        case 'b':
+            drawBoundary = !drawBoundary;
+            break;
     }
 
     printf("Key Pressed: %c \n", key);
@@ -639,8 +664,7 @@ void keyEventHandler(unsigned char key, int x, int y)
 void initGraphics(int argc, char **argv)
 {    
     unsigned int lWindowSize = drawServerRef->getWindowSize();
-    float lWorldSize = drawServerRef->getWorldSize();
-
+    
     glutInit(&argc, argv);
     glutInitWindowSize(lWindowSize, lWindowSize);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
@@ -664,7 +688,6 @@ void initGraphics(int argc, char **argv)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(left, right, bottom, top);    
-    glScalef(1.0/lWorldSize, 1.0/lWorldSize, 1);
 
     // Initialize look up arrays
     initializePositionLookupArrays(5, 360, xRobotVals, yRobotVals);

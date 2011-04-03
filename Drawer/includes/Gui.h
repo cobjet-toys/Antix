@@ -16,6 +16,7 @@ void displayFunc();
 void drawPucks();
 void drawTeams();
 void drawRobots(int edgePoints);
+void drawBoundaries();
 void drawText(char* text, float x, float y, bool absolute);
 void drawTest(int robotCount, int edgePoints, float viewAngle, int viewEdgePoints);
 //void drawRobot(Game::Robot* robot, const GUI::Color* color);
@@ -49,7 +50,7 @@ static float xCur = -1, yCur = -1, xInit = -1, yInit = -1, xEnd = -1, yEnd = -1,
 static float zoomLevel = 1.0;
 
 // Variables for Draw options
-static bool drawRobot = true, drawFOV = false, drawPuck = true, drawTeam = true;
+static bool drawRobot = true, drawFOV = false, drawPuck = true, drawTeam = true, drawBoundary = false;
 
 // Viewport rect positioning values
 static float left = 0, top = 0, right = 0, bottom = 0;
