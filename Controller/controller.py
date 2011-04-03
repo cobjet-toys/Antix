@@ -29,7 +29,16 @@ def start_process(name, **kwargs):
         CLIENT_FULL_CONFIG_FILE = open("client_config.tmp", 'a', 0) # 0 means no buffer
         client_num = kwargs['client_num']
 
-        # start the proper number of teams on each grid
+
+        
+        teams_for_clients = GRID_DICT[client_num+1]
+        print "Client: %d" %(client_num+1)
+        for team in teams_for_clients:
+            grid_id_append = "INIT_GRID {0}\n"
+            PRINT_INIT = grid_id_append.format(team)
+            CLIENT_FULL_CONFIG_FILE.write(PRINT_INIT)
+            print "PRINT_INT"
+        '''
         if client_num+1 == NUM_ROBOT_CLIENTS:
             for _ in itertools.repeat(None, TEAMS_PER_CLIENT):
                 grid_id_append = "INIT_GRID {0}\n"
@@ -41,6 +50,7 @@ def start_process(name, **kwargs):
             for _ in itertools.repeat(None, TEAMS_PER_CLIENT):
                 grid_id_append = "INIT_GRID {0}\n"
                 CLIENT_FULL_CONFIG_FILE.write(grid_id_append.format(GRID_BUCKETS[client_num]))
+        '''
 
         CLIENT_FULL_CONFIG_FILE.close()
         script += ROBOT_CLIENT_RUN_COMMAND + " -f " + PATH + "Controller/client_config.tmp"
@@ -110,7 +120,7 @@ def start_process(name, **kwargs):
 def build_binary(name):
     script = "cd " + PATH
     if name is "clock":
-        script += CLOCK_BUILD_DIR + "; rm build/release/clock.bin; rm build/release/obj/*; "
+        script += CLOCK_BUILD_DIR + "; rm build/release/clock.bin; rm build/release/obj/*; rm ../Common/build/release/obj/*;"
         script += CLOCK_BUILD_COMMAND
     elif name is "client":
         script += ROBOT_CLIENT_BUILD_DIR + "; rm build/release/robot.bin; rm build/release/obj/*; "
@@ -234,11 +244,8 @@ GRID_CONFIG_FILE = open(GRID_CONFIG, 'r')
 # Read the number of teams from the grid config file
 def strip_newlines(s): return s.rstrip()
 grid_lines = map(strip_newlines, GRID_CONFIG_FILE.readlines())
-total_teams = grid_lines[0].split(' ')[1]
-total_teams = int(total_teams) * NUM_GRIDS
-
-TEAMS_PER_CLIENT = total_teams / NUM_ROBOT_CLIENTS
-TEAMS_PER_CLIENT_OFFSET = int(total_teams) % NUM_ROBOT_CLIENTS
+teams_per_grid = int(grid_lines[0].split(' ')[1])
+total_teams = int(teams_per_grid) * NUM_GRIDS
 
 # Set up full config file for drawer
 DRAWER_FULL_CONFIG = "drawer_config.tmp"
@@ -270,6 +277,7 @@ current_grid_port = int(GRID_PORT)
 
 PROC_FILE = open("proc.tmp", 'w', 0) # 0 means no buffer
 
+'''
 # Calculate which grids each robot client will go on
 bucket = 1
 GRID_BUCKETS = list()
@@ -279,6 +287,42 @@ for i in range (1, NUM_ROBOT_CLIENTS+1):
     if i%div == 0:
         if bucket < NUM_GRIDS:
             bucket += 1
+
+print GRID_BUCKETS
+'''
+
+
+GRID_DICT = dict()
+TEAMS_PER_CLIENT = total_teams / NUM_ROBOT_CLIENTS
+#TEAMS_PER_CLIENT_OFFSET = int(total_teams) % NUM_ROBOT_CLIENTS
+
+GRID_TEAM_LIST = list()
+
+for i in range (1, NUM_GRIDS+1):
+    for j in range (1, teams_per_grid+1):
+        GRID_TEAM_LIST.append(i)
+
+print GRID_TEAM_LIST
+
+for i in range (1, NUM_ROBOT_CLIENTS+1):
+    print "shiiiiiet"
+    teams_for_clients = list()
+    for _ in range(1, TEAMS_PER_CLIENT+1):
+        teams_for_clients.append(GRID_TEAM_LIST.pop(0))
+    GRID_DICT[i] = teams_for_clients
+
+client_pointer = 1;
+while(len(GRID_TEAM_LIST) != 0):
+    teams_for_clients = GRID_DICT[client_pointer]
+    teams_for_clients.append(GRID_TEAM_LIST.pop(0))
+    client_pointer += 1
+    if client_pointer > NUM_ROBOT_CLIENTS:
+        client_pointer = 1
+
+print GRID_DICT
+
+    
+
 
 if BUILD_BOOLEAN:
     # Build all the code

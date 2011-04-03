@@ -276,7 +276,7 @@ int GridGame::registerRobot(Msg_RobotInfo robot)
     addObjectToPop(l_Robot);
 
     //Sort robots at this point
-    sortPopulation();
+    //sortPopulation();
 
     return 0;
     
