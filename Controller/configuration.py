@@ -3,8 +3,8 @@
 START_LOCALLY = False # set to True to start all processes on localhost
                       # set to False to start all processes across CSIL machines
 TYPE = "release" # can be replaced with debug
-NUM_GRIDS = 4
-NUM_ROBOT_CLIENTS = 4
+NUM_GRIDS = 3
+NUM_ROBOT_CLIENTS = 2
 
 # Server settings
 GRID_RUN_COMMAND = "GridServer/build/" + TYPE + "/grid.bin"
@@ -45,7 +45,6 @@ DRAWER_BUILD_COMMAND = "make drawer"
 
 # Computers
 CSIL_COMPUTERS = (
-
     'apple',
     'apricot',
     'avocado',
