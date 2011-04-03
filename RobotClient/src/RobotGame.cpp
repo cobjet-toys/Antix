@@ -153,8 +153,6 @@ int RobotGame::actionResult(vector<Msg_RobotInfo>* results)
             return -1;
         }
         
-        // TODO Currently our action_result message does not send a rotational velocity
-        l_robotp->setSpeed( new Math::Speed( result.speed, 0.0) );
         l_robotp->setPosition( result.x_pos, result.y_pos, result.angle );
         
         int oldGridId = m_robotGrids.find(robotId)->second;
