@@ -16,7 +16,7 @@ RobotGame::RobotGame()
     //TODO: these should come out of the config
     robot_FOV = Math::dtor(90.0);
     robot_Radius = 0.01;
-    robot_SensorRange = 0.1;
+    robot_SensorRange = 0.2;
     robot_PickupRange = robot_SensorRange / 5.0;
 
     Robot::FOV = robot_FOV;
@@ -129,12 +129,11 @@ int RobotGame::sendAction(int grid_id, vector<Msg_Action>* robot_actions)
     // Loop through the robots, and get an action to do for each robot
     for(iter = robots.begin(); iter != robots.end(); iter++)
     {
-        //DEBUGPRINT("Accessing robot with with id %d\n", (*iter)->getId());
         Msg_Action l_action = (*iter)->getAction();
         if(l_action.action == 0)
         {
-            //DEBUGPRINT("SET SPEED for robot%d is FwSp: %f  RotSp: %f\n", l_action.robotid,
-            //l_action.speed, l_action.angle);
+            DEBUGPRINT("SET SPEED for robot%d is FwSp: %f  RotSp: %f\n", l_action.robotid,
+            l_action.speed, l_action.angle);
         }
         else if (l_action.action == DROP)
         {
@@ -142,7 +141,7 @@ int RobotGame::sendAction(int grid_id, vector<Msg_Action>* robot_actions)
         }
         else
         {
-            DEBUGPRINT("PICKUP PUCK robot%d\n", l_action.robotid);
+            DEBUGPRINT("PICKUP PUCK robot %d", l_action.robotid);
         }
         l_robotActions.push_back(l_action);
     }

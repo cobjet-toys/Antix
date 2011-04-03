@@ -74,7 +74,7 @@ void Robot::updateSensors( SensedItemsList sensedItems )
     for( iter = sensedItems.begin(); iter != sensedItems.end(); iter++)
     {
         DEBUGPRINT("Adding sensed item: %d, %d, %d\n", (*iter).id, (*iter).x, (*iter).y);
-        if( getType((*iter).id) == ROBOT )
+        if( (*iter).id < 10000000 )
         {
             m_VisibleRobots.push_back( Location( (*iter).x, (*iter).y ) );
         }
@@ -122,9 +122,9 @@ Msg_Action Robot::getAction()
             action = DROP;
         }
     }
-    //If we're not holding a puck.
     else
-    {
+    {   
+        //If we're not holding a puck.
         //If there are pucks and I'm not at home.
         if (m_VisiblePucks.size() > 0 && l_Distance > Robot::HomeRadius)
         {
@@ -215,10 +215,11 @@ bool Robot::Holding() const
 {
     if (m_PuckHeld == 0)
     {
-        return true;
-    }
-    else{
         return false;
+    }
+    else
+    {
+        return true;
     }
 }
 

@@ -391,6 +391,7 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
         }
         
         sensor_data->push_back(RobotSensedObjectsPair((*it), temp_vector));
+        //std::cout << "NumSensed: " << temp_vector.size() << "\n";
     }
     
     for( std::vector< RobotSensedObjectsPair >::iterator it = sensor_data->begin(); it != sensor_data->end(); it++)
