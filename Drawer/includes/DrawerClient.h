@@ -65,6 +65,7 @@ namespace Network
         size_t getTeamsCount() { return this->m_teams.size(); }
         size_t getPucksCount() { return this->m_pucks.size(); }
         size_t getRobotsCount() { return this->m_robots.size(); }
+        size_t getGridCount() { return this->m_serverList.size(); }
         size_t initPucks(int size);
         size_t initRobots(int size);
                 
