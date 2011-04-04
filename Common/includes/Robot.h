@@ -77,6 +77,11 @@ public:
     void setPuckHeld(uid puckToHold);
 
     /**
+     * Returns the id of the puck which is currently being held
+     */
+    uid getPuckId();
+
+    /**
      * Returns true if the puck coords given are within our pickup range
      */
     bool puckInPickupRange(const float& puckX, const float& puckY) const;

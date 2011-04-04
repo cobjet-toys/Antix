@@ -91,6 +91,11 @@ void Robot::setPuckHeld(uid puckId)
     return;
 }
 
+uid Robot::getPuckId()
+{
+    return m_PuckHeld;
+}
+
 Msg_Action Robot::getAction()
 {
     unsigned int action = SET_SPEED;
