@@ -3,12 +3,12 @@
 START_LOCALLY = False # set to True to start all processes on localhost
                       # set to False to start all processes across CSIL machines
 TYPE = "release" # can be replaced with debug
-NUM_GRIDS = 2
-NUM_ROBOT_CLIENTS = 1
+NUM_GRIDS = 25
+NUM_ROBOT_CLIENTS = 10
 
 # Server settings
 GRID_RUN_COMMAND = "GridServer/build/" + TYPE + "/grid.bin"
-GRID_PORT = "53337" # for simplicity, every subsequent grid will use port +1
+GRID_PORT = "13337" # for simplicity, every subsequent grid will use port +1
 
 # the controller will cd to antix Path + this  directory and call "make":
 GRID_BUILD_DIR = "GridServer/"
@@ -16,7 +16,7 @@ GRID_BUILD_COMMAND = "make grid"
 
 # Clock settings
 CLOCK_RUN_COMMAND = "ClockServer/build/" + TYPE + "/clock.bin"
-CLOCK_PORT = "53437" # for simplicity, every subseqent clock will use port +1
+CLOCK_PORT = "13437" # for simplicity, every subseqent clock will use port +1
 
 # the controller will cd to antix Path + this  directory and call "make":
 CLOCK_BUILD_DIR = "ClockServer/"
@@ -45,20 +45,44 @@ DRAWER_BUILD_COMMAND = "make drawer"
 
 # Computers
 CSIL_COMPUTERS = (
+    'amber',
+    'aqua',
+    'auburn',
+    'azure',
+    'beige',
+    'black',
+    'blue',
+    'brown',
+    'buff',
     'carmine',
     'cerise',
     'cerulean',
     'chartreuse',
     'cinnabar',
     'crimson',
+    'ecru',
+    'emerald',
+    'gray',
+    'green',
+    #'khaki',
+    'magenta',
+    'maize',
+    'mauve',
+    'ochre',
+    'pink',
+    'puce',
+    'red',
+    'russet',
+    'scarlet',
+    'sienna',
+    'tan',
+    'taupe',
+    'teal',
+    'turquoise',
+    'vermillion',
     'violet',
     'white',
     'yellow',
-)
-
-'''
-# Computers
-CSIL_COMPUTERS = (
     'apple',
     'apricot',
     'avocado',
@@ -99,43 +123,4 @@ CSIL_COMPUTERS = (
     'salak',
     'tamarind',
     'tangerine',
-    'amber',
-    'aqua',
-    'auburn',
-    'azure',
-    'beige',
-    'black',
-    'blue',
-    'brown',
-    'buff',
-    'carmine',
-    'cerise',
-    'cerulean',
-    'chartreuse',
-    'cinnabar',
-    'crimson',
-    'ecru',
-    'emerald',
-    'gray',
-    'green',
-    'khaki',
-    'magenta',
-    'maize',
-    'mauve',
-    'ochre',
-    'pink',
-    'puce',
-    'red',
-    'russet',
-    'scarlet',
-    'sienna',
-    'tan',
-    'taupe',
-    'teal',
-    'turquoise',
-    'vermillion',
-    'violet',
-    'white',
-    'yellow',
 )
-'''
