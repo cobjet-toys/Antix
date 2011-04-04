@@ -21,10 +21,10 @@ DrawServer::DrawServer()
     this->m_framestep = 0;
     this->m_drawerDataType = DRAWER_FULLDETAILS;    
     
-	this->m_viewTL_x = 0;
-	this->m_viewTL_y = 0;
-	this->m_viewBR_x = this->m_windowSize;
-	this->m_viewBR_y = this->m_windowSize;
+	this->m_viewLeft = 0;
+	this->m_viewTop = 0;
+	this->m_viewRight = this->m_windowSize;
+	this->m_viewBottom = this->m_windowSize;
 }
 
 DrawServer::~DrawServer() 
@@ -64,8 +64,8 @@ DrawServer* DrawServer::getInstance()
 void DrawServer::setWindowSize(int val)
 {
 	this->m_windowSize = val;
-	this->m_viewBR_x = this->m_windowSize;
-	this->m_viewBR_y = this->m_windowSize;
+	this->m_viewRight = this->m_windowSize;
+	this->m_viewBottom = this->m_windowSize;
 }
 
 // Sends initialization message to grid @ host:port, telling it 
@@ -141,13 +141,13 @@ size_t DrawServer::initPucks(int size)
     return this->m_pucks.size();
 }
 
-void DrawServer::updateViewRange(float tl_x, float tl_y, float br_x, float br_y)
+void DrawServer::updateViewRange(float top, float bottom, float left, float right)
 {	
 	//update view range
-	this->m_viewTL_x = tl_x;
-	this->m_viewTL_y = tl_y;
-	this->m_viewBR_x = br_x;
-	this->m_viewBR_y = br_y;	
+	this->m_viewTop = top;
+	this->m_viewBottom = bottom;	
+	this->m_viewLeft = left;
+	this->m_viewRight = right;
 	
 	//reset puck and robot positions	
 	for(int i=0; i<this->m_pucks.size(); i++)
@@ -197,10 +197,10 @@ int DrawServer::sendGridConfig(int grid_fd)
     //Pack config message
 	l_DrawerConfig.send_data = 'T';
 	l_DrawerConfig.data_type = this->m_drawerDataType;
-	l_DrawerConfig.tl_x = this->m_viewTL_x;
-	l_DrawerConfig.tl_y = this->m_viewTL_y;
-	l_DrawerConfig.br_x = this->m_viewBR_x;
-	l_DrawerConfig.br_y = this->m_viewBR_y;
+	l_DrawerConfig.tl_x = this->m_viewLeft;
+	l_DrawerConfig.tl_y = this->m_viewTop;
+	l_DrawerConfig.br_x = this->m_viewRight;
+	l_DrawerConfig.br_y = this->m_viewBottom;
     pack(l_Buffer+l_BufferOf, Msg_DrawerConfig_format, 
     	l_DrawerConfig.send_data, l_DrawerConfig.data_type, l_DrawerConfig.tl_x, l_DrawerConfig.tl_y, l_DrawerConfig.br_x, l_DrawerConfig.br_y);
     
@@ -224,7 +224,7 @@ void DrawServer::initTeams()
 
 void DrawServer::updateObject(Msg_RobotInfo newInfo)
 {    
-    uint32_t objType, objId, objIndex;
+    uint32_t objType, objId, objIndex, puckIndex;
     Antix::getTypeAndId(newInfo.robotid, &objType, &objId);
 	objIndex = objId - 1;
 	objType = objId > 10000000;
@@ -234,17 +234,19 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
 		if(objType == PUCK)
 		{
 			objIndex -= 10000000;
-		    this->m_pucks.at(objIndex)->getPosition()->setX(newInfo.x_pos);
-			this->m_pucks.at(objIndex)->getPosition()->setY(newInfo.y_pos);      
+		    this->m_pucks.at(objIndex)->setPosition(newInfo.x_pos, newInfo.y_pos, 0.0);
 			//DEBUGPRINT("Puck[%d]: x=%f, y=%f\n", objIndex, this->m_pucks.at(objIndex)->getPosition()->getX(), this->m_pucks.at(objIndex)->getPosition()->getY() );  		
 		}
 		else
 		{    
-			
-			this->m_robots.at(objIndex)->getPosition()->setX(newInfo.x_pos);
-			this->m_robots.at(objIndex)->getPosition()->setY(newInfo.y_pos);
-            this->m_robots.at(objIndex)->getPosition()->setOrient(newInfo.angle);    		    
-		    this->m_robots.at(objIndex)->m_PuckHeld = newInfo.puckid;
+			this->m_robots.at(objIndex)->setPosition(newInfo.x_pos, newInfo.y_pos, newInfo.angle);
+		    this->m_robots.at(objIndex)->m_PuckHeld = newInfo.puckid;		    
+	    	puckIndex = newInfo.puckid - 10000000;
+		    
+		    if (puckIndex > 0)
+		    {
+		    	this->m_pucks.at(puckIndex)->setPosition(-1.0, -1.0, 0.0);
+		    }
 		    //DEBUGPRINT("Robot[%d]: x=%f, y=%f\n", objIndex, this->m_robots.at(objIndex)->getPosition()->getX(), this->m_robots.at(objIndex)->getPosition()->getY() );  		
 		}
 	}

@@ -38,7 +38,7 @@ endif
 
 # ----------------------------------------------------------------------
 
-drawer_debug: common drawer_depend drawer_debug_objects
+drawer_debug: common_debug drawer_depend drawer_debug_objects
 	@echo "Building DEBUG ----------------------------------------------------------------------------------"
 	$(shell cd $(drawer_DEBUG_PATH)/; $(drawer_COMPILER) -g -lpthread -o $(drawer_EXECUTABLE) $(drawer_DEBUG_OBJ) $(PWD)/$(ROOT_DIR)/build/debug/libcommon.a $(GLUTLIBS) $(GLUTFLAGS) )
 	@echo "Building DEBUG drawer COMPLETE --------------------------------------------------------"
