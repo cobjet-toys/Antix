@@ -9,17 +9,6 @@
 
 using namespace Network;
 
-void* SortThread(void* gridServer)
-{
-    GridServer* l_gridServer = (GridServer*)gridServer;
-
-    GridGame* l_gridGame = l_gridServer->Game();
-
-    l_gridGame->sortPopulation();
-    l_gridServer->setSortDone();
-    l_gridServer->sendHeartBeat();
-    pthread_exit(NULL);
-}
 GridServer::GridServer():Server()
 {
     m_uId = -1;
@@ -38,52 +27,6 @@ GridServer::GridServer():Server()
     m_ReadyPartners = 0;
     m_ClockFd = 0;
     m_numClients = 0;
-    m_Sorted = false;
-}
-
-void GridServer::setSortDone()
-{
-    m_Sorted = true;
-}
-
-int GridServer::sendHeartBeat()
-{
-    if (m_Sorted && (m_ReadyPartners == (NUM_NEIGHBOURS*m_numClients)))
-    {
-        Msg_header l_Header = {SENDER_CLIENT, MSG_HEARTBEAT};
-        Msg_HB l_HB = {m_Hb};
-
-        unsigned int l_MessageSize = l_Header.size+l_HB.size;
-        unsigned char* l_HBBuffer = new unsigned char[l_MessageSize];
-
-        if (l_HBBuffer == NULL)
-        {
-            ERRORPRINT("Error creating buffer for sending heartbeat\n");
-            return -1;
-        }
-        NetworkCommon::packHeaderMessage(l_HBBuffer, &l_Header);
-      
-        //Pack the hearbeat into the header message buffer.
-        if (pack(l_HBBuffer+l_Header.size, Msg_HB_format, l_HB.hb) != l_HB.size)
-        {
-            DEBUGPRINT("Failed to pack the HB message\n");
-            return -1;
-        }
-
-        TcpConnection *l_ClockConn = m_Clients[m_ClockFd];
-        NetworkCommon::sendWrapper(l_ClockConn, l_HBBuffer, l_MessageSize);
-        DEBUGPRINT("Sent heartbeat. %hd\n", m_Hb);
-        m_ReadyPartners = 0;
-        m_Sorted = false;
-
-        delete[]l_HBBuffer;
-    }
-    return 0;
-}
-
-GridGame* GridServer::Game()
-{
-    return gridGameInstance;
 }
 
 int GridServer::initGridGame()
@@ -293,9 +236,6 @@ int GridServer::handler(int fd)
             {
                 case(MSG_HEARTBEAT) :
                 {
-
-                   pthread_create(&m_SortThread, NULL, SortThread, (void*)this);
-
                    Msg_HB l_HB;
                    unsigned char *l_hbBuffer = new unsigned char[l_HB.size]; 
 
@@ -381,8 +321,37 @@ int GridServer::handler(int fd)
                     }
 
                     m_ReadyPartners++;
-                    sendHeartBeat();
-				
+                    if (m_ReadyPartners == NUM_NEIGHBOURS*m_numClients)
+                    {
+                        gridGameInstance->sortPopulation();
+                        Msg_header l_Header = {SENDER_CLIENT, MSG_HEARTBEAT};
+                        Msg_HB l_HB = {m_Hb};
+
+                        unsigned int l_MessageSize = l_Header.size+l_HB.size;
+                        unsigned char* l_HBBuffer = new unsigned char[l_MessageSize];
+
+                        if (l_HBBuffer == NULL)
+                        {
+                            ERRORPRINT("Error creating buffer for sending heartbeat\n");
+                            return -1;
+                        }
+                        NetworkCommon::packHeaderMessage(l_HBBuffer, &l_Header);
+                      
+                        //Pack the hearbeat into the header message buffer.
+                        if (pack(l_HBBuffer+l_Header.size, Msg_HB_format, l_HB.hb) != l_HB.size)
+                        {
+                            DEBUGPRINT("Failed to pack the HB message\n");
+                            return -1;
+                        }
+
+                        TcpConnection *l_ClockConn = m_Clients[m_ClockFd];
+                        NetworkCommon::sendWrapper(l_ClockConn, l_HBBuffer, l_MessageSize);
+                        DEBUGPRINT("Sent heartbeat. %hd\n", m_Hb);
+                        m_ReadyPartners = 0;
+
+                        delete[]l_HBBuffer;
+                    }
+					
 					// Clean up all allocated memory
 					delete []l_Buffer;
 					
