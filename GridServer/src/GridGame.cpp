@@ -409,6 +409,8 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
 int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector< Msg_RobotInfo >* results, std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >* robots_to_pass)
 {
 
+    DEBUGPRINT("===PROCESSACTION");
+
     // basic movement, not checking collisons
     // not even checking the angle sent by the client.
     // check to see if the robot is in the boundary zone, if they are add them to robots_to_pass
@@ -445,22 +447,25 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
 
             if((*it).action == PICKUP)
             {
-                DEBUGPRINT("Pickup puck!");
+                DEBUGPRINT("Pickup puck!\n");
             }
             else if((*it).action == DROP)
             {
-                DEBUGPRINT("Drop puck!");
+                DEBUGPRINT("Drop puck!\n");
             }
             else if((*it).action == SET_SPEED)
             {
+                DEBUGPRINT("Set speed!\n");
 
                 Math::Position* l_CurrentPos = l_Robot->getPosition();
+
+                DEBUGPRINT("id:%d, forwspeed: %f, rotspeed: %f", (*it).robotid, (*it).speed, (*it).angle );
 
                 float l_Dx = (*it).speed * fast_cos( l_CurrentPos->getOrient() );
                 float l_Dy = (*it).speed * fast_sin( l_CurrentPos->getOrient() );
 
-                float new_x = Math::DistanceNormalize( l_CurrentPos->getX(), m_WorldSize );
-                float new_y = Math::DistanceNormalize( l_CurrentPos->getY(), m_WorldSize );
+                float new_x = Math::DistanceNormalize( l_CurrentPos->getX() + l_Dx, m_WorldSize );
+                float new_y = Math::DistanceNormalize( l_CurrentPos->getY() + l_Dy, m_WorldSize );
 
                 float new_orient = Math::AngleNormalize(l_CurrentPos->getOrient() + (*it).angle);
 

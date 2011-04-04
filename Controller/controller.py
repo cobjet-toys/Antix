@@ -372,7 +372,7 @@ start_process("controller")
 
 print "** STARTING ROBOT CLIENTS **"
 print
-for i in range(int(NUM_ROBOT_CLIENTS)):
+for i in range(NUM_ROBOT_CLIENTS):
     start_process("client", client_num=i)
 
 print "** STARTING DRAWER **"
