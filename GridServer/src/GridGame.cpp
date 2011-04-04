@@ -238,7 +238,7 @@ int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
     DEBUGPRINT("GRIDGAME STATUS:\t Robot counter: %d\n", robotcounter);
     if (robotcounter == total_robots)
     {
-        sortPopulation();
+       // sortPopulation();
 
     }
 
@@ -534,7 +534,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
     }
 
     // sort population after we update the positions
-    sortPopulation();
+    //sortPopulation();
 
     return 0;
 }
@@ -625,7 +625,7 @@ int GridGame::updateRobots(RobotInfoList& robots)
             }
         }
     }
-    sortPopulation();
+    //sortPopulation();
     return 0;
 }
 
