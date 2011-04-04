@@ -180,6 +180,8 @@ void drawRobots(int edgePoints)
             int xPos = (int)robotPos->getX();
             int yPos = (int)robotPos->getY();
 
+            float tPI = 2*M_PI;
+
             if(xPos > left - 10 && xPos < right + 10 && xPos != -1)
             {
                 if(yPos > bottom - 10 && yPos < top + 10)
@@ -191,7 +193,8 @@ void drawRobots(int edgePoints)
                         sPts[(edgePoints*2*d) + (2*a) + 1] = robotPos->getY() + yRobotVals[(int)(a*360/edgePoints)];
                     }
 
-                    int angle = (int)((robotPos->getOrient()/(2*M_PI))*360);
+                    int angle = 90 - (int)((robotPos->getOrient()/tPI)*360);
+                    while(angle < 0){angle += 360;}
     
                     // Sets the heading line points for each robot
                     lPts[(4*d) + 0] = robotPos->getX();

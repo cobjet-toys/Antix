@@ -242,7 +242,8 @@ void DrawServer::updateObject(Msg_RobotInfo newInfo)
 		{    
 			
 			this->m_robots.at(objIndex)->getPosition()->setX(newInfo.x_pos);
-			this->m_robots.at(objIndex)->getPosition()->setY(newInfo.y_pos);       		    
+			this->m_robots.at(objIndex)->getPosition()->setY(newInfo.y_pos);
+            this->m_robots.at(objIndex)->getPosition()->setOrient(newInfo.angle);    		    
 		    this->m_robots.at(objIndex)->m_PuckHeld = newInfo.puckid;
 		    //DEBUGPRINT("Robot[%d]: x=%f, y=%f\n", objIndex, this->m_robots.at(objIndex)->getPosition()->getX(), this->m_robots.at(objIndex)->getPosition()->getY() );  		
 		}

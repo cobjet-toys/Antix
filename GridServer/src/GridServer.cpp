@@ -1170,7 +1170,7 @@ int GridServer::updateDrawer(uint32_t framestep)
 
     for (int i = 0; i < l_Size.msgSize; i++)
     {
-        pack(l_Buffer+l_Offset, Msg_RobotInfo_format, objects[i].robotid, objects[i].x_pos, objects[i].y_pos, 0, 0, 0 ); 
+        pack(l_Buffer+l_Offset, Msg_RobotInfo_format, objects[i].robotid, objects[i].x_pos, objects[i].y_pos, 0.0, objects[i].angle, 0, 0); 
         
         //unpack(l_Buffer+l_Offset, Msg_RobotInfo_format,
                                 //&l_RoboInfo.robotid, &l_RoboInfo.x_pos, &l_RoboInfo.y_pos, &l_RoboInfo.speed, &l_RoboInfo.angle, &l_RoboInfo.puckid, &l_RoboInfo.gridid );
