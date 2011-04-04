@@ -321,8 +321,9 @@ int GridServer::handler(int fd)
                     }
 
                     m_ReadyPartners++;
-                    if (m_ReadyPartners == NUM_NEIGHBOURS)
+                    if (m_ReadyPartners == NUM_NEIGHBOURS*m_numClients)
                     {
+                        gridGameInstance->sortPopulation();
                         Msg_header l_Header = {SENDER_CLIENT, MSG_HEARTBEAT};
                         Msg_HB l_HB = {m_Hb};
 

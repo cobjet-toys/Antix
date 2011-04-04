@@ -89,14 +89,6 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
 
     for (int i = id_from; i <= id_to; i++)
     {
-
-#ifdef DEBUG
-        //std::cout << "Robot id being created:" <<i << std::endl;
-        // if you can divide the id by the robots per team, that means that this is a team, create a new team
-        // object for the rest of the robots to point to
-
-        //std::cout << "WTF id:" <<i << "robots per team: "<< robots_per_team << std::endl;
-#endif
         if (i%robots_per_team == 0)
         {
             //std::cout << "WTF2 id:" <<i << "robots per team: "<< robots_per_team << std::endl;
@@ -151,11 +143,6 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
         LOGPRINT("GRIDGAME STATUS:\t INIT TEAM ID: %u Xpos:%f, Ypos:%f\n", (*it)->getId(), (*it)->getX(), (*it)->getY());
     }
 
-
-    // Sort generated pucks
-    //sortPopulation(); // commented out as we should not sort the population until the getRobot function is
-    //                     run enough times that all of the clients have all of the robots
-
     // set team and robot counters used by getRobots function
     teamcounter = 0;
     robotcounter = 0;
@@ -163,8 +150,6 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
 
 GridGame::~GridGame()
 {
-    //Note: The delete of the robot population is the responsiblity of the team object.
-
     //Delete the Robots.
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != m_Population.end(); it++)
     {
@@ -208,11 +193,8 @@ int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
 
     DEBUGPRINT("GRIDGAME STATUS:\t Team id: %d, Team x: %f, Team y: %f\n", team.id, team.x, team.y);
 
-    //std::vector<robot_info> l_robot_info_vector = new std::vector<robot_info>();
-
-    int i;
-    DEBUGPRINT("GRIDGAME STATUS:\t Robo Counter Min:%d, Robot Counter Max: %d\n", robotcounter, robotcounter+m_Robots_Per_Team);
-    for (i = robotcounter; i < robotcounter+m_Robots_Per_Team; i++)
+	DEBUGPRINT("GRIDGAME STATUS:\t Robo Counter Min:%d, Robot Counter Max: %d\n", robotcounter, robotcounter+m_Robots_Per_Team);
+    for(int i = robotcounter; i < robotcounter+m_Robots_Per_Team; i++)
     {
         GameObject* l_Robot = m_Population[i];
 
@@ -237,7 +219,7 @@ int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
     DEBUGPRINT("GRIDGAME STATUS:\t Robot counter: %d\n", robotcounter);
     if (robotcounter == total_robots)
     {
-        sortPopulation();
+       // sortPopulation();
 
     }
 
@@ -293,8 +275,10 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
 {
     DEBUGPRINT("GRIDGAME STATUS:\t Entering returnSensorData()\n");
 
+#ifdef DEBUG
     printPopulation();
-
+#endif
+    
     std::vector<uid>::iterator clientend = robot_ids_from_client.end();
     for(std::vector<uid>::iterator it = robot_ids_from_client.begin(); it != clientend; it++)
     {
@@ -393,16 +377,6 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
         sensor_data->push_back(RobotSensedObjectsPair((*it), temp_vector));
         //std::cout << "NumSensed: " << temp_vector.size() << "\n";
     }
-
-    for( std::vector< RobotSensedObjectsPair >::iterator it = sensor_data->begin(); it != sensor_data->end(); it++)
-    {
-        DEBUGPRINT("GRIDGAME STATUS:\t RobotId:%d with Sensed Information\n", it->first); 
-        for( std::vector<Msg_SensedObjectGroupItem>::iterator iit = (it->second).begin(); iit != (it->second).end(); iit++)
-        {
-            DEBUGPRINT("GRIDGAME STATUS:\t RobotId:%d sensed object %d\n" , it->first ,(*iit).id);
-        }
-    }
-
     return 0;
 }
 
@@ -617,7 +591,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
         }
     }
     // sort population after we update the positions
-    sortPopulation();
+    //sortPopulation();
 
     return 0;
 }
@@ -709,7 +683,7 @@ int GridGame::updateRobots(RobotInfoList& robots)
             }
         }
     }
-    sortPopulation();
+    //sortPopulation();
     return 0;
 }
 
@@ -754,12 +728,24 @@ int GridGame::removeObjectFromPop(int objectid)
 
 int GridGame::getPopulation(std::vector< Msg_DrawerObjectInfo >* results, float top, float bottom, float left, float right)
 {
+	//buffer so robots don't get stuck
+	float buffer = 0.05 * (right-left);	//5% buffer
+	float topBuff = top + buffer;
+	float bottomBuff = bottom - buffer;	
+	if (left < m_leftBoundary)
+		left = m_leftBoundary;
+	else if (right > m_rightBoundary)
+		right = m_rightBoundary;			
+	float leftBuff = left - buffer;
+	float rightBuff = right + buffer;
+	
     std::vector<GameObject*>::iterator endit = m_Population.end();
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != endit; it++)
     {   
         float l_x = (**it).getX();
         float l_y = (**it).getY();
-
+        if (l_x > rightBuff || l_x < leftBuff || l_y > topBuff || l_y < bottomBuff) continue;
+        
         Msg_DrawerObjectInfo l_ObjInfo;
         l_ObjInfo.robotid = Antix::writeId((**it).getId(), ROBOT);
         l_ObjInfo.x_pos = -1.0;
@@ -768,17 +754,16 @@ int GridGame::getPopulation(std::vector< Msg_DrawerObjectInfo >* results, float 
         l_ObjInfo.puckid = 0;        
 
         //send reset values if the robot is out of bounds, otherwise, send real position data
-        if (!outOfBoundsLeft(l_x) && !outOfBoundsRight(l_x))
-        {		
-            //only send robots within view....unless they're out of boundary, then send them anyways
-            if (l_x > right || l_x < left || l_y > top || l_y < bottom) continue;    
-
-            l_ObjInfo.x_pos = l_x;
-            l_ObjInfo.y_pos = l_y;
-            l_ObjInfo.angle = ((**it).getPosition())->getOrient();
-            //l_ObjInfo.puckid = (**it).m_PuckHeld;		//TODO: fix
+        if (l_x >= left && l_x <= right && l_y <= top && l_y >= bottom)
+        {
+		    l_ObjInfo.x_pos = l_x;
+		    l_ObjInfo.y_pos = l_y;
+		    l_ObjInfo.angle = ((**it).getPosition())->getOrient();
+		    
+		     //if object is a robot, add puck info
+		    if (l_ObjInfo.robotid < 10000000)
+		    	l_ObjInfo.puckid = ((Robot*)*it)->getPuckId();
         }
-
         results->push_back(l_ObjInfo);
     }
 

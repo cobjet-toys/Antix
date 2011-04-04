@@ -157,7 +157,6 @@ void drawRobots(int edgePoints)
     glPointSize(1.0);
 
     const size_t len(drawServerRef->getRobotsCount()); 
-
     int robotsPerTeam = len/drawServerRef->getTeamsCount();
 
     // keep this buffer around between calls for speed
@@ -200,7 +199,7 @@ void drawRobots(int edgePoints)
                     lPts[(4*d) + 2] = robotPos->getX() + xRobotVals[angle];
                     lPts[(4*d) + 3] = robotPos->getY() + yRobotVals[angle];
 
-                    int colorIndex = ((*it)->getId() + 1)/robotsPerTeam;
+                    int colorIndex = (*it)->getId()/robotsPerTeam;
 
                     colors[3*d + 0] = colorArray[(colorIndex*3) + 0];
                     colors[3*d + 1] = colorArray[(colorIndex*3) + 1];
@@ -247,7 +246,7 @@ void drawRobots(int edgePoints)
             pts[(2*i) + 0] = robotPos->getX();
             pts[(2*i) + 1] = robotPos->getY();
 
-            int colorIndex = ((*it)->getId() + 1)/robotsPerTeam;
+            int colorIndex = (*it)->getId()/robotsPerTeam;
 
             colors[3*i + 0] = colorArray[(colorIndex*3) + 0];
             colors[3*i + 1] = colorArray[(colorIndex*3) + 1];

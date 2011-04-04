@@ -148,8 +148,18 @@ void DrawServer::updateViewRange(float left, float top, float right, float botto
 	this->m_viewRight = right;
 	this->m_viewBottom = bottom;	
 	
-	std::map<int, TcpConnection*>::iterator it;	
+	//reset puck and robot positions	
+	for(int i=0; i<this->m_pucks.size(); i++)
+	{
+		this->m_pucks[i]->setPosition(-1.0, -1.0, 0);
+	}		
+	for(int i=0; i<this->m_robots.size(); i++)
+	{
+		this->m_robots[i]->setPosition(-1.0, -1.0, 0);
+	}
 	
+	//notify grids
+	std::map<int, TcpConnection*>::iterator it;		
 	for (it = this->m_serverList.begin(); it != this->m_serverList.end(); it++)
 	{
 		this->sendGridConfig((*it).first);
@@ -232,7 +242,7 @@ void DrawServer::updateObject(Msg_DrawerObjectInfo newInfo)
 			
 			this->m_robots.at(objIndex)->getPosition()->setX(newInfo.x_pos);
 			this->m_robots.at(objIndex)->getPosition()->setY(newInfo.y_pos);       		    
-		    //this->m_robots[newInfo.id]->m_PuckHeld = this->m_pucks[newInfo.puck_id];
+		    this->m_robots.at(objIndex)->setPuckHeld(newInfo.puckid);
 		    //DEBUGPRINT("Robot[%d]: x=%f, y=%f\n", objIndex, this->m_robots.at(objIndex)->getPosition()->getX(), this->m_robots.at(objIndex)->getPosition()->getY() );  		
 		}
 	}

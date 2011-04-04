@@ -175,9 +175,15 @@ def get_free_computer():
                 m_lavg_five = machine_lavg[1]
                 m_lavg_fifteen = machine_lavg[2]
                 machine_idle = info[2].split("%")[0]
+                print machine_to_test
+                print "lavg1: " + m_lavg_one
+                print "lavg5: " + m_lavg_five
+                print "lavg15: " + m_lavg_fifteen
+                print "idle: " + machine_idle
 
                 # not using the metrics right now, just return the next machine
-                machine = machine_to_test
+                if float(m_lavg_five) < 0.2 or float(m_lavg_one) < 0.1:
+                    machine = machine_to_test
             except BashScriptException as e:
                 print "* ERROR CONNECTING TO " + machine_to_test.upper() + " *"
                 print e
