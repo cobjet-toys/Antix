@@ -15,9 +15,16 @@ void* SortThread(void* gridServer)
 
     GridGame* l_gridGame = l_gridServer->Game();
 
-    l_gridGame->sortPopulation();
-    l_gridServer->setSortDone();
-    l_gridServer->sendHeartBeat();
+    while(true)
+    {
+        if (!l_gridServer->Sorted())
+        {
+            l_gridGame->sortPopulation();
+            l_gridServer->setSortDone();
+            l_gridServer->sendHeartBeat();
+        }
+    }
+
     pthread_exit(NULL);
 }
 GridServer::GridServer():Server()
@@ -39,6 +46,11 @@ GridServer::GridServer():Server()
     m_ClockFd = 0;
     m_numClients = 0;
     m_Sorted = false;
+}
+
+bool GridServer::Sorted()
+{
+    return m_Sorted;
 }
 
 void GridServer::setSortDone()
@@ -204,6 +216,8 @@ int GridServer::initGridGame()
 	    m_idRangeFrom, m_idRangeTo, m_homeRadius, m_worldSize, m_numGrids, m_puckTotal);
     #endif
 
+    pthread_create(&m_SortThread, NULL, SortThread, (void*)this);
+
 	return 0;
 }
 
@@ -294,8 +308,7 @@ int GridServer::handler(int fd)
                 case(MSG_HEARTBEAT) :
                 {
 
-                   pthread_create(&m_SortThread, NULL, SortThread, (void*)this);
-
+ 
                    Msg_HB l_HB;
                    unsigned char *l_hbBuffer = new unsigned char[l_HB.size]; 
 
@@ -1135,8 +1148,7 @@ int GridServer::handler(int fd)
                         m_drawerConn = l_curConnection;
 
 						//create update thread
-		                pthread_t update_thread;
-		                int iret1 = pthread_create(&update_thread, NULL, drawer_function, (void *)this);
+		                int iret1 = pthread_create(&m_DrawThread, NULL, drawer_function, (void *)this);
 		                if(iret1 != 0)
 		                {
 		                    perror("pthread failed");
