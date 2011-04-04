@@ -44,8 +44,8 @@ void Position::setY(const float& yloc)
 
 Position* Position::randomPosition(const float& worldSize, const float& lbound, const int& rbound)
 {
-    float x_pos = ((rbound - lbound)*((float)rand()/(float)RAND_MAX)) + lbound;
-    float y_pos = ((float)rand()/(float)RAND_MAX)*worldSize;
+    float x_pos = (((rbound - lbound)*((float)rand()/(float)RAND_MAX)) + lbound)*(0.95f);
+    float y_pos = ((float)rand()/(float)RAND_MAX)*worldSize*(0.95f);
     Position *newPos = new Position(x_pos, y_pos, 0.0f);
     return newPos;
 }

@@ -113,7 +113,6 @@ Msg_Action Robot::getAction()
     float l_Da = fast_atan(l_Dx, l_Dy);
     float l_Distance = hypot(l_Dx, l_Dy);
     
-    std::cout << "Holding: " << Holding() << std::endl;
     //If holding a puck, drive home.
     if (Holding())
     {
@@ -130,7 +129,6 @@ Msg_Action Robot::getAction()
     {   
         //If we're not holding a puck.
         //If there are pucks and I'm not at home.
-        std::cout << "not holding puck, num pucks: " << m_VisiblePucks.size() << std::endl;
         if (m_VisiblePucks.size() > 0 && l_Distance > Robot::HomeRadius)
         {
             //Find the closest angle to the closest puck that is not being carried.
@@ -146,6 +144,7 @@ Msg_Action Robot::getAction()
                 
                 if(distToPuck < Robot::PickupRange)
                 {
+                    std::cout << "PICKING UP" << std::endl;
                     action = PICKUP;
                     m_LastPickup->setX(l_CurrentPos->getX());
                     m_LastPickup->setY(l_CurrentPos->getY()); 

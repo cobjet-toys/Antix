@@ -45,7 +45,7 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     robot_FOV = Math::dtor(90.0);
     robot_Radius = 0.01;
     robot_SensorRange = 5.0;
-    robot_PickupRange = robot_SensorRange/5.0;
+    robot_PickupRange = robot_SensorRange;
 
     LOGPRINT("GRIDGAME STATUS:\t Robot FOV: \n%f\n", robot_FOV);
 
@@ -453,8 +453,6 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             {
                 DEBUGPRINT("GRIDGAME STATUS: Pickup puck!\n");
 
-                printf("wants to puck up puck for this robot\n");
-
                 bool leftTooFar = false;
                 bool rightTooFar = false;
                 int offset = 1;
@@ -518,9 +516,9 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
                         }
 
                     }
-                    std::cout << "offset: " << offset << std::endl;
                     offset += 1;
                 }
+                sortPopulation();
                 results->push_back(temp);
             }
             else if((*it).action == DROP)

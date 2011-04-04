@@ -24,8 +24,8 @@ RobotGame::RobotGame()
     Robot::Radius = robot_Radius;
     Robot::SensorRange = robot_SensorRange;
     Robot::PickupRange = robot_PickupRange;
-    Robot::WorldSize = 10;
-    Robot::HomeRadius = 0.1;
+    Robot::WorldSize = 1000;
+    Robot::HomeRadius = 10;
 }
 
 RobotGame::~RobotGame()
