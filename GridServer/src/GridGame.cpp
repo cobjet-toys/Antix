@@ -160,6 +160,9 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     // set team and robot counters used by getRobots function
     teamcounter = 0;
     robotcounter = 0;
+
+    sortPopulation();
+    pthread_mutex_init(&m_PopLock, NULL); 
 }
 
 GridGame::~GridGame()
@@ -171,6 +174,7 @@ GridGame::~GridGame()
     {
         delete (*it);
     }
+    pthread_mutex_destroy(&m_PopLock);
 }
 
 void GridGame::sortPopulation()
@@ -181,6 +185,7 @@ void GridGame::sortPopulation()
     GameObject* l_Key;
     for(unsigned int j = 1; j < m_Population.size(); j++)
     {
+        pthread_mutex_lock(&m_PopLock);
         l_Key = m_Population[j];
         i = j - 1;
         while(i >= 0 && m_Population[i]->getPosition()->getY() > l_Key->getPosition()->getY())
@@ -189,9 +194,9 @@ void GridGame::sortPopulation()
             m_YObjects[m_Population[i+1]] = i+1;
             --i;
         }
-
         m_Population[i+1] = l_Key;
         m_YObjects[l_Key] = i+1;
+        pthread_mutex_unlock(&m_PopLock);
     }
     DEBUGPRINT("GRIDGAME STATUS:\t Sort Population execution finished\n");
     return;
@@ -200,7 +205,7 @@ void GridGame::sortPopulation()
 
 int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
 {
-
+    pthread_mutex_lock(&m_PopLock);
     DEBUGPRINT("GRIDGAME STATUS:\t Executing GETROBOTS() Team Counter: %d\n", teamcounter);
     Team* l_Team = m_Teams[teamcounter];
     team.id = l_Team->getId();
@@ -241,6 +246,7 @@ int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
        // sortPopulation();
 
     }
+    pthread_mutex_unlock(&m_PopLock);
 
     return 0;
 }
@@ -296,6 +302,7 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
     
     printPopulation();
     
+    pthread_mutex_lock(&m_PopLock);
     std::vector<uid>::iterator clientend = robot_ids_from_client.end();
     for(std::vector<uid>::iterator it = robot_ids_from_client.begin(); it != clientend; it++)
     {
@@ -311,11 +318,14 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
         }
 
         // grab vector position in sorted population
-        int position = m_YObjects[tempobj];
+        
+                int position = m_YObjects[tempobj];
 
         //printf("position for gameobject id %d: %d\n", (*tempobj).m_id, position); 
 
         GameObject* position_obj = m_Population[position];
+        
+            
 
 		if (position_obj == NULL)
 		{
@@ -349,7 +359,9 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
                     
                 }
                 counter--;
+
                 position_obj = m_Population[counter];
+
             }
             else
             {
@@ -358,7 +370,9 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
         }
 
         counter = position;
-        position_obj = m_Population[position];
+
+       position_obj = m_Population[position];
+
 
         //DEBUGPRINT("Counter: %d - Size client list: %zu\n", counter, robot_ids_from_client.size() );
 
@@ -393,7 +407,9 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
         
         sensor_data->push_back(RobotSensedObjectsPair((*it), temp_vector));
     }
-    
+
+    pthread_mutex_unlock(&m_PopLock);
+
     for( std::vector< RobotSensedObjectsPair >::iterator it = sensor_data->begin(); it != sensor_data->end(); it++)
     {
         DEBUGPRINT("GRIDGAME STATUS:\t RobotId:%d with Sensed Information\n", it->first); 
@@ -429,6 +445,8 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
     
     left_robots->clear();
     right_robots->clear();
+
+    pthread_mutex_lock(&m_PopLock);
 
     // iterate through each robot recieved by grabbing that robot from our population array
     for(std::vector<Msg_Action>::iterator it = robot_actions.begin(); it != robot_actions.end(); it++)
@@ -533,6 +551,8 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
         }
     }
 
+    pthread_mutex_unlock(&m_PopLock);
+
     // sort population after we update the positions
     //sortPopulation();
 
@@ -596,6 +616,7 @@ int GridGame::updateRobots(RobotInfoList& robots)
 {
     DEBUGPRINT("GRIDGAME STATUS:\t Entering updateRobot function\n");
 
+    pthread_mutex_lock(&m_PopLock);
     // iterate through each robot recieved by grabbing that robot from our population array
     for(std::vector<Msg_RobotInfo>::iterator it = robots.begin(); it != robots.end(); it++)
     {
@@ -625,6 +646,8 @@ int GridGame::updateRobots(RobotInfoList& robots)
             }
         }
     }
+    pthread_mutex_unlock(&m_PopLock);
+
     //sortPopulation();
     return 0;
 }
@@ -634,6 +657,7 @@ int GridGame::addObjectToPop(GameObject* object)
     this->m_MapPopulation[(*object).m_id] = object ;
     this->m_Population.push_back(object);
     this->m_YObjects[object] = m_Population.size();
+
 
     //DEBUGPRINT("Total Population of Game Objects: %zu\n", m_Population.size());
     //printPopulation();
@@ -654,14 +678,14 @@ int GridGame::removeObjectFromPop(int objectid)
     GameObject* obj = m_MapPopulation[objectid];
     m_MapPopulation.erase( objectid );
     m_YObjects.erase( obj );
+
     std::vector<GameObject*>::iterator end = m_Population.end();
-   
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != end; it++)
     {
         if ((**it).m_id == objectid){
             DEBUGPRINT("GRIDGAME STATUS:\t Removing robot ID:%d from the population\n", objectid);
-            this->m_Population.erase(it);
-            break;
+                        this->m_Population.erase(it);
+                        break;
         }
     }
 
@@ -681,6 +705,8 @@ int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results, float top, fl
 	float leftBuff = left - buffer;
 	float rightBuff = right + buffer;
 	
+    pthread_mutex_lock(&m_PopLock);
+
     std::vector<GameObject*>::iterator endit = m_Population.end();
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != endit; it++)
     {   
@@ -688,9 +714,12 @@ int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results, float top, fl
         float l_x = (**it).getX();
         float l_y = (**it).getY();
         if (l_x > rightBuff || l_x < leftBuff || l_y > topBuff || l_y < bottomBuff) continue;
+        float l_orient = (**it).getPosition()->getOrient();
+        float l_id  = (**it).getId(); 
+        if (l_x > right || l_x < left || l_y > top || l_y < bottom) continue;
         
         Msg_RobotInfo l_ObjInfo;
-        l_ObjInfo.robotid = Antix::writeId((**it).getId(), ROBOT);
+        l_ObjInfo.robotid = Antix::writeId(l_id, ROBOT);
         l_ObjInfo.x_pos = -1.0;
         l_ObjInfo.y_pos = -1.0;
         l_ObjInfo.angle = 0.0;
@@ -706,17 +735,22 @@ int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results, float top, fl
 		     //if object is a robot, add puck info
 		    if (l_ObjInfo.robotid < 10000000)
 		    	l_ObjInfo.puckid = ((Robot*)*it)->m_PuckHeld;
+		    l_ObjInfo.angle = l_orient;
+		    //l_ObjInfo.puckid = (**it).m_PuckHeld;
         }
 
         results->push_back(l_ObjInfo);
     }
-    
+
+    pthread_mutex_unlock(&m_PopLock);
+
     DEBUGPRINT("GRIDGAME STATUS:\t Done pushing robots to drawer\n");
     return 0;
 }
 
 int GridGame::getTeams(std::vector< Msg_TeamInit >* results)
 {
+    pthread_mutex_lock(&m_PopLock);
     std::vector<Team*>::iterator endit = m_Teams.end();
     
     for(std::vector<Team*>::iterator it = m_Teams.begin(); it != endit; it++)
@@ -730,6 +764,7 @@ int GridGame::getTeams(std::vector< Msg_TeamInit >* results)
 
         results->push_back(l_TeamInfo);
     }
+    pthread_mutex_unlock(&m_PopLock);
     DEBUGPRINT("GRIDGAME STATUS:\t Done pushing teams to drawer\n");
     return 0;
 }

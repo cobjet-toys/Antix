@@ -115,6 +115,8 @@ public:
 
 private:
 
+    pthread_mutex_t m_PopLock; 
+
     bool outOfBoundsLeft(float x_pos);
     bool outOfBoundsRight(float x_pos);
     bool inLeftInnerBoundary(float x_pos);

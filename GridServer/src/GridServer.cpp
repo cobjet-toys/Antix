@@ -9,6 +9,24 @@
 
 using namespace Network;
 
+void* SortThread(void* gridServer)
+{
+    GridServer* l_gridServer = (GridServer*)gridServer;
+
+    GridGame* l_gridGame = l_gridServer->Game();
+
+    while(true)
+    {
+        if (!l_gridServer->Sorted())
+        {
+            l_gridGame->sortPopulation();
+            l_gridServer->setSortDone();
+            l_gridServer->sendHeartBeat();
+        }
+    }
+
+    pthread_exit(NULL);
+}
 GridServer::GridServer():Server()
 {
     m_uId = -1;
@@ -27,6 +45,57 @@ GridServer::GridServer():Server()
     m_ReadyPartners = 0;
     m_ClockFd = 0;
     m_numClients = 0;
+    m_Sorted = false;
+}
+
+bool GridServer::Sorted()
+{
+    return m_Sorted;
+}
+
+void GridServer::setSortDone()
+{
+    m_Sorted = true;
+}
+
+int GridServer::sendHeartBeat()
+{
+    if (m_Sorted && (m_ReadyPartners == (NUM_NEIGHBOURS*m_numClients)))
+    {
+        Msg_header l_Header = {SENDER_CLIENT, MSG_HEARTBEAT};
+        Msg_HB l_HB = {m_Hb};
+
+        unsigned int l_MessageSize = l_Header.size+l_HB.size;
+        unsigned char* l_HBBuffer = new unsigned char[l_MessageSize];
+
+        if (l_HBBuffer == NULL)
+        {
+            ERRORPRINT("Error creating buffer for sending heartbeat\n");
+            return -1;
+        }
+        NetworkCommon::packHeaderMessage(l_HBBuffer, &l_Header);
+      
+        //Pack the hearbeat into the header message buffer.
+        if (pack(l_HBBuffer+l_Header.size, Msg_HB_format, l_HB.hb) != l_HB.size)
+        {
+            DEBUGPRINT("Failed to pack the HB message\n");
+            return -1;
+        }
+
+        TcpConnection *l_ClockConn = m_Clients[m_ClockFd];
+        NetworkCommon::sendWrapper(l_ClockConn, l_HBBuffer, l_MessageSize);
+        DEBUGPRINT("Sent heartbeat. %hd\n", m_Hb);
+        m_ReadyPartners = 0;
+        m_Sorted = false;
+
+        delete[]l_HBBuffer;
+    }
+    return 0;
+}
+
+GridGame* GridServer::Game()
+{
+    return gridGameInstance;
 }
 
 int GridServer::initGridGame()
@@ -146,6 +215,8 @@ int GridServer::initGridGame()
 	gridGameInstance = new GridGame(m_uId, m_teamsAvailable, m_robotsPerTeam,
 	    m_idRangeFrom, m_idRangeTo, m_homeRadius, m_worldSize, m_numGrids, m_puckTotal);
     #endif
+
+    pthread_create(&m_SortThread, NULL, SortThread, (void*)this);
 
 	return 0;
 }
@@ -1104,8 +1175,7 @@ int GridServer::handler(int fd)
                         m_drawerConn = l_curConnection;
 
 						//create update thread
-		                pthread_t update_thread;
-		                int iret1 = pthread_create(&update_thread, NULL, drawer_function, (void *)this);
+		                int iret1 = pthread_create(&m_DrawThread, NULL, drawer_function, (void *)this);
 		                if(iret1 != 0)
 		                {
 		                    perror("pthread failed");
