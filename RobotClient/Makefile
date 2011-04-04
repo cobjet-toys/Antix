@@ -27,13 +27,11 @@ robot_DEBUG_OBJ = $(addprefix $(robot_DEBUG_OBJ_PATH)/, $(robot_SRC:.cpp=.o))
 robot_debug: common_debug robot_depend robot_debug_objects
 	@echo "Building DEBUG ----------------------------------------------------------------------------------"
 	$(shell cd $(robot_DEBUG_PATH)/; $(robot_COMPILER) -g -o $(robot_EXECUTABLE) $(robot_DEBUG_OBJ) $(robot_PWD)/$(ROOT_DIR)/build/debug/libcommon.a )
-	$(shell cp build/ROBOT_CONFIG build/debug/ROBOT_CONFIG)
 	@echo "Building DEBUG robot COMPLETE -------------------------------------------------------------------"
 
 robot: common robot_depend robot_release_objects
 	@echo "Building RELEASE --------------------------------------------------------------------------------"
-	$(shell cd $(robot_RELEASE_PATH)/; $(robot_COMPILER) -o $(robot_EXECUTABLE) $(robot_RELEASE_OBJ) $(robot_PWD)/$(ROOT_DIR)/build/release/libcommon.a )
-	$(shell cp build/ROBOT_CONFIG build/release/ROBOT_CONFIG)
+	$(shell cd $(robot_RELEASE_PATH)/; $(robot_COMPILER) -02 -o $(robot_EXECUTABLE) $(robot_RELEASE_OBJ) $(robot_PWD)/$(ROOT_DIR)/build/release/libcommon.a )
 	@echo "Building robot COMPLETE -------------------------------------------------------------------------"
 
 robot_depend:
@@ -44,7 +42,7 @@ robot_depend:
 
 robot_release_objects:
 	@echo "Building robot release objects ------------------------------------------------------------------"
-	$(shell cd $(robot_RELEASE_OBJ_PATH); $(robot_COMPILER) -c -I$(robot_INCLUDE_PATH) -I$(robot_INCLUDE_COMMON_PATH) $(addprefix $(robot_SRC_PATH)/, $(robot_SRC)))
+	$(shell cd $(robot_RELEASE_OBJ_PATH); $(robot_COMPILER) -c -O2 -I$(robot_INCLUDE_PATH) -I$(robot_INCLUDE_COMMON_PATH) $(addprefix $(robot_SRC_PATH)/, $(robot_SRC)))
 	@echo "Building robot release objects COMPLETE --------------------------------------------------------"
 
 robot_debug_objects:

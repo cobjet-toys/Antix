@@ -96,9 +96,12 @@ uid Robot::getPuckId()
     return m_PuckHeld;
 }
 
-Msg_Action Robot::getAction()
+
+int Robot::getAction(Msg_RobotInfo* action)
 {
-    unsigned int action = SET_SPEED;
+	if (action == NULL) return -2; // invalid input
+    unsigned int toPerform = ACTION_MOVE;
+
     float l_HeadingError = 0.0;
 
     Position* l_CurrentPos = getPosition();
@@ -122,7 +125,7 @@ Msg_Action Robot::getAction()
         //If we're inside the home radius, drop the puck.
         if (l_Distance < (drand48() * Robot::HomeRadius))
         {
-            action = DROP;
+            toPerform = ACTION_DROP_PUCK;
         }
     }
     else
@@ -144,8 +147,9 @@ Msg_Action Robot::getAction()
                 
                 if(distToPuck < Robot::PickupRange)
                 {
-                    std::cout << "PICKING UP" << std::endl;
-                    action = PICKUP;
+                    toPerform = ACTION_PICKUP_PUCK;
+                    // TODO, sets this to the correct value
+                    action->puckid = 0;
                     m_LastPickup->setX(l_CurrentPos->getX());
                     m_LastPickup->setY(l_CurrentPos->getY()); 
                     break;
@@ -198,21 +202,13 @@ Msg_Action Robot::getAction()
     }
     
     //Create action
-    Msg_Action l_action;
-    l_action.robotid = this->getId();
-    l_action.action = action;
-    if(action == SET_SPEED)
+    action->robotid = this->getId();
+    if(toPerform == ACTION_MOVE)
     {
-        l_action.speed = m_Speed->getForwSpeed();
-        l_action.angle = m_Speed->getRotSpeed();
+        action->speed = m_Speed->getForwSpeed();
+        action->angle = m_Speed->getRotSpeed();
     }
-    return l_action; 
-}
-
-bool Robot::puckInPickupRange(const float& puckX, const float& puckY) const
-{
-    //TODO
-    return true;
+    return toPerform; 
 }
 
 bool Robot::Holding() const

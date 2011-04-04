@@ -138,6 +138,25 @@ int NetworkCommon::recvMessageSize(Msg_MsgSize &msg, TcpConnection * curConnecti
 	return 0;
 }
 
+int NetworkCommon::recvMessageSize32(Msg_MsgSize_32 &msg, TcpConnection * curConnection)
+{
+	if (curConnection == NULL) return -2; // make sure no bad connection
+	
+	Msg_MsgSize_32 l_msgSize;
+	
+	unsigned char l_msgSizeBuff[l_msgSize.size];
+                    
+	if (curConnection->recv(l_msgSizeBuff, l_msgSize.size) == -1)
+	{
+		DEBUGPRINT("Request for robots failed\n");
+		return -1;
+	}
+
+	unpack(l_msgSizeBuff, Msg_MsgSize_32_format, &msg.msgSize); // @todo need some error checking
+
+	return 0;
+}
+
 int NetworkCommon::packSizeOfMessage(unsigned char * buffer, int size)
 {
 	return 0;

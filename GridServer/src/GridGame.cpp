@@ -380,221 +380,162 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
     return 0;
 }
 
-int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector< Msg_RobotInfo >* results, std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >* robots_to_pass)
+int GridGame::processAction(std::vector<Msg_Request_Movement> *moveActionsRequests,
+                            std::vector<Msg_Request_Drop> *dropActionsRequests,
+						    std::vector<Msg_Request_Pickup> *pickupActionsRequests,
+                            std::vector<Msg_Response_Movement> *moveActionsResponse,
+						    std::vector<Msg_Response_Drop> *dropActionsResponse,
+                            std::vector<Msg_Response_Pickup> *pickupActionsResponse,
+						    std::vector<std::pair<int, std::vector<Msg_RobotInfo> > > *robotsToPass)
 {
-
-    DEBUGPRINT("===PROCESSACTION");
-
-    // basic movement, not checking collisons
-    // not even checking the angle sent by the client.
-    // check to see if the robot is in the boundary zone, if they are add them to robots_to_pass
-
-    if(robots_to_pass->size() == 0)
+	if (moveActionsRequests == NULL || dropActionsRequests == NULL || 
+        pickupActionsRequests == NULL || moveActionsResponse == NULL ||
+        dropActionsResponse == NULL || pickupActionsResponse == NULL || robotsToPass == NULL )
+	{
+		return -2;
+	}
+	
+	DEBUGPRINT("GRIDGAME STATUS:\t Inside process action\n");
+	
+	if(robotsToPass->size() == 0)
     {
         DEBUGPRINT("GRIDGAME STATUS:\t No robots to pass\n");
         RobotInfoList left_robots;
         RobotInfoList right_robots;
         std::pair<int, RobotInfoList > left_robots_pair = std::make_pair(0, left_robots);
         std::pair<int, RobotInfoList > right_robots_pair = std::make_pair(1, right_robots);
-        robots_to_pass->push_back(left_robots_pair);
-        robots_to_pass->push_back(right_robots_pair);
+        robotsToPass->push_back(left_robots_pair);
+        robotsToPass->push_back(right_robots_pair);
     }
 
-    RobotInfoList* left_robots = &robots_to_pass->at(0).second;
-    RobotInfoList* right_robots = &robots_to_pass->at(1).second;
-
+    RobotInfoList* left_robots = &robotsToPass->at(0).second;
+    RobotInfoList* right_robots = &robotsToPass->at(1).second;
+    
     left_robots->clear();
     right_robots->clear();
-
-    // iterate through each robot recieved by grabbing that robot from our population array
-    for(std::vector<Msg_Action>::iterator it = robot_actions.begin(); it != robot_actions.end(); it++)
-    {
-        // grab the robots and update their positions
-        DEBUGPRINT("GRIDGAME STATUS:\t Looking for robot: %d\n", (*it).robotid);
-
-        Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
-        if (l_Robot == NULL)
+	
+	for (int i = 0; i < moveActionsRequests->size(); i++)
+	{
+		Msg_Response_Movement l_robotActionRequested;
+        Msg_Request_Movement l_moveRequest = moveActionsRequests->at(i);
+		l_robotActionRequested.robotId = l_moveRequest.robotId;
+				
+		DEBUGPRINT("GRIDGAME STATUS:\t Looking for robot: %u\n", l_robotActionRequested.robotId);
+        Robot* l_Robot = (Robot*)m_MapPopulation[l_robotActionRequested.robotId];
+        if (l_Robot != NULL)
         {
-            DEBUGPRINT("GRIDGAME ERROR: Looked for robot that does not exist here");
-            return -1;
+            DEBUGPRINT("GRIDGAME STATUS: Set speed!\n");
+            Math::Position* l_CurrentPos = l_Robot->getPosition();
+
+            //DEBUGPRINT("GRIDGAME STATUS: id:%d, forwspeed: %f, rotspeed: %f", (*it).robotid, (*it).speed, (*it).angle );
+
+            float l_Dx = l_moveRequest.forwardSpeed * fast_cos( l_CurrentPos->getOrient() );
+            float l_Dy = l_moveRequest.forwardSpeed * fast_sin( l_CurrentPos->getOrient() );
+
+            float new_x = Math::DistanceNormalize( l_CurrentPos->getX() + l_Dx, m_WorldSize );
+            float new_y = Math::DistanceNormalize( l_CurrentPos->getY() + l_Dy, m_WorldSize );
+
+            float new_orient = Math::AngleNormalize(l_CurrentPos->getOrient() + l_moveRequest.rotationSpeed);
+
+            l_robotActionRequested.xPos = new_x;
+            l_robotActionRequested.yPos = new_y;
+            DEBUGPRINT("GRIDGAME STATUS:\t Previous Xpos: %f Ypos: %f\n", l_Robot->getX(), l_Robot->getY());
+
+            l_robotActionRequested.orientation = new_orient;
+            DEBUGPRINT("GRIDGAME STATUS:\t New position Xpos: %f Ypos: %f\n", l_robotActionRequested.x_pos, l_robotActionRequested.y_pos);
+
+            float old_xpos = l_CurrentPos->getX();
+            float old_ypos = l_CurrentPos->getY();
+
+            // set the new position of the robot
+            l_Robot->setPosition(new_x, new_y, new_orient );
+
+            // check if the robots new position is in a new grid. If it is, we must remove the robot
+            // from the grids population, and set the gridid in the Msg_RobotInfo, so the robotclient
+            // can fix the mapping
+            if( outOfBoundsRight(new_x) )
+            {
+                // set the robot to the appropriate grid
+                l_robotActionRequested.gridId = m_RightGrid;
+                // remove robot from population
+                removeObjectFromPop(l_robotActionRequested.robotId);
+
+                DEBUGPRINT("GRIDGAME STATUS:\t Robot has left this grid on the right side! Removing it from population\n");
+
+            } 
+            else if( outOfBoundsLeft(new_x) )
+            {
+                // set the robot to the appropriate grid
+                l_robotActionRequested.gridId = m_LeftGrid;
+                //remove robot from population
+                removeObjectFromPop(l_robotActionRequested.robotId);
+
+                DEBUGPRINT("GRIDGAME STATUS:\t Robot has left this grid on the left side! Removing it from population\n");
+            }
+            else
+            {
+                l_robotActionRequested.gridId = m_GridId;
+            }
+
+            // add the robot to the results (which will be processed by the client who requested
+            moveActionsResponse->push_back(l_robotActionRequested);
+
+            Msg_RobotInfo toPass;
+            toPass.robotid = l_robotActionRequested.robotId;
+            toPass.x_pos = l_robotActionRequested.xPos;
+            toPass.y_pos = l_robotActionRequested.yPos;
+            toPass.speed = 0;
+            toPass.angle = l_robotActionRequested.orientation;
+            toPass.puckid = l_Robot->getPuckId();
+            toPass.gridid = l_robotActionRequested.gridId;
+
+            if(m_NumGrids != 1)
+            {
+                // check if robots are in the boundary zone
+                if( inRightInnerBoundary(new_x) || outOfBoundsRight(new_x) )
+                {
+                    right_robots->push_back(toPass);
+                    DEBUGPRINT("GRIDGAME STATUS:\t Sending robotid %d to the right grid", l_robotActionRequested.robotid);
+                }
+                else if( inLeftInnerBoundary(new_x) || outOfBoundsLeft(new_x) )
+                {
+                    left_robots->push_back(toPass);
+                    DEBUGPRINT("GRIDGAME STATUS:\t Sending robotid %d to the left grid", l_robotActionRequested.robotid);
+                }
+            
+                // Check to see if robot was in boundary zone, and then left. If so, tell neighbor that robot
+                // is now gone.
+                if( inLeftInnerBoundary(old_xpos) && inMidZone(new_x) )
+                {
+                    toPass.gridid = 0;
+                    left_robots->push_back(toPass);
+                }
+                else if( inRightInnerBoundary(old_xpos) && inMidZone(new_x) )
+                {
+                    toPass.gridid = 0;
+                    right_robots->push_back(toPass);
+                }
+            }
         }
         else
         {
-            Msg_RobotInfo temp;
-            temp.robotid = l_Robot->getId();
-
-            if((*it).action == PICKUP)
-            {
-                DEBUGPRINT("GRIDGAME STATUS: Pickup puck!\n");
-                /*
-                bool leftTooFar = false;
-                bool rightTooFar = false;
-                int offset = 1;
-                int robotElement = m_YObjects[l_Robot];
-                Robot* thisRobot = (Robot*)m_Population[robotElement];
-                temp.x_pos = thisRobot->getX();
-                temp.y_pos = thisRobot->getY();
-                temp.angle = thisRobot->getPosition()->getOrient();
-                temp.puckid = thisRobot->getPuckId();
-
-                while(leftTooFar != true || rightTooFar != true)
-                {
-                    int checkLeft = robotElement - offset;
-                    int checkRight = robotElement + offset;
-
-                    if (checkLeft < 0)
-                    {
-                        checkLeft = m_YObjects.size() - checkLeft;
-                    }
-                    else if( checkRight > m_YObjects.size() )
-                    {
-                        checkRight = checkRight % m_YObjects.size() - 1;
-                    }
-
-                    GameObject* leftObject = m_Population[checkLeft];
-                    if(leftObject == NULL) std::cout << "ERROR: leftobject null" << std::endl;
-                    GameObject* rightObject = m_Population[checkRight];
-                    if(rightObject == NULL) std::cout << "ERROR: rightobject null" << std::endl;
-
-                    if (fabs(leftObject->getY() - thisRobot->getY() ) > robot_PickupRange)
-                        // if the object is farther then the pickup range
-                    {
-                        leftTooFar = true;
-                    }
-                    else
-                    {
-                        if (leftObject->getId() > 10000000)
-                        {
-                            temp.puckid = leftObject->getId();
-                            std::cout << "Removing object with id: " << leftObject->getId() << std::endl;
-                            removeObjectFromPop(leftObject);
-                            printf("Drop a puck left!\n");
-                            break;
-                        }
-
-                    }
-                    if (fabs(rightObject->getY() - thisRobot->getY() ) > robot_PickupRange)
-                        // if the object is farther then the pickup range
-                    {
-                        rightTooFar = true;
-                    }
-                    else
-                    {
-                        if (rightObject->getId() > 10000000)
-                        {
-                            temp.puckid = rightObject->getId();
-                            std::cout << "Removing object with id: " << rightObject->getId() << std::endl;
-                            removeObjectFromPop(rightObject);
-                            printf("Drop a puck right!\n");
-                            break;
-                        }
-
-                    }
-                    offset += 1;
-                }
-                sortPopulation();
-                results->push_back(temp);
-                */
-            }
-            else if((*it).action == DROP)
-            {
-                DEBUGPRINT("GRIDGAME STATUS: Drop puck!\n");
-            }
-            else if((*it).action == SET_SPEED)
-            {
-                DEBUGPRINT("GRIDGAME STATUS: Set speed!\n");
-
-                Math::Position* l_CurrentPos = l_Robot->getPosition();
-
-                DEBUGPRINT("GRIDGAME STATUS: id:%d, forwspeed: %f, rotspeed: %f", (*it).robotid, (*it).speed, (*it).angle );
-
-                float l_Dx = (*it).speed * fast_cos( l_CurrentPos->getOrient() );
-                float l_Dy = (*it).speed * fast_sin( l_CurrentPos->getOrient() );
-
-                float new_x = Math::DistanceNormalize( l_CurrentPos->getX() + l_Dx, m_WorldSize );
-                float new_y = Math::DistanceNormalize( l_CurrentPos->getY() + l_Dy, m_WorldSize );
-
-                float new_orient = Math::AngleNormalize(l_CurrentPos->getOrient() + (*it).angle);
-
-                temp.x_pos = new_x;
-                temp.y_pos = new_y;
-                DEBUGPRINT("GRIDGAME STATUS:\t Previous Xpos: %f Ypos: %f\n", l_Robot->getX(), l_Robot->getY());
-
-                temp.speed = (*it).speed;
-                temp.angle = new_orient;
-                temp.puckid = 0;
-                DEBUGPRINT("GRIDGAME STATUS:\t New position Xpos: %f Ypos: %f\n", temp.x_pos, temp.y_pos);
-
-                float old_xpos = l_CurrentPos->getX();
-                float old_ypos = l_CurrentPos->getY();
-
-                // set the new position of the robot
-                l_Robot->setPosition(new_x, new_y, new_orient );
-
-                // check if the robots new position is in a new grid. If it is, we must remove the robot
-                // from the grids population, and set the gridid in the Msg_RobotInfo, so the robotclient
-                // can fix the mapping
-                if( outOfBoundsRight(new_x) )
-                {
-                    // set the robot to the appropriate grid
-                    temp.gridid = m_RightGrid;
-                    // remove robot from population
-                    removeObjectFromPop(temp.robotid);
-
-                    DEBUGPRINT("GRIDGAME STATUS:\t Robot has left this grid on the right side! Removing it from population\n");
-
-                } //&& !(temp.x_pos < (0.0f + robot_SensorRange)) 
-                else if( outOfBoundsLeft(new_x) )
-                {
-                    // set the robot to the appropriate grid
-                    temp.gridid = m_LeftGrid;
-                    //remove robot from population
-                    removeObjectFromPop(temp.robotid);
-
-                    DEBUGPRINT("GRIDGAME STATUS:\t Robot has left this grid on the left side! Removing it from population\n");
-                }
-                else
-                {
-                    temp.gridid = m_GridId;
-                }
-
-                // add the robot to the results (which will be processed by the client who requested
-                results->push_back(temp);
-
-                if(m_NumGrids != 1)
-                {
-                    // check if robots are in the boundary zone
-                    if( inRightInnerBoundary(new_x) || outOfBoundsRight(new_x) )
-                    {
-                        right_robots->push_back(temp);
-                        DEBUGPRINT("GRIDGAME STATUS:\t Sending robotid %d to the right grid", temp.robotid);
-                    }
-                    else if( inLeftInnerBoundary(new_x) || outOfBoundsLeft(new_x) )
-                    {
-                        left_robots->push_back(temp);
-                        DEBUGPRINT("GRIDGAME STATUS:\t Sending robotid %d to the left grid", temp.robotid);
-                    }
-
-                    // Check to see if robot was in boundary zone, and then left. If so, tell neighbor that robot
-                    // is now gone.
-                    if( inLeftInnerBoundary(old_xpos) && inMidZone(new_x) )
-                    {
-                        temp.gridid = 0;
-                        left_robots->push_back(temp);
-                    }
-                    else if( inRightInnerBoundary(old_xpos) && inMidZone(new_x) )
-                    {
-                        temp.gridid = 0;
-                        right_robots->push_back(temp);
-                    }
-                }
-            }
+            DEBUGPRINT("GRIDGAME ERROR:\t Robot is not in the population");
+            return -1;
         }
-    }
-    // sort population after we update the positions
-    //sortPopulation();
-
-    return 0;
+    }		
+	
+/*	
+	for (int i = 0; i < dropActionsRequests->size(); i++)
+	{
+	
+	}
+	
+	for (int i = 0; i < pickupActionsRequests->size(); i++)
+	{
+	
+	}
+*/	
+	return 0;
 }
 
 bool GridGame::outOfBoundsLeft(float x_pos)

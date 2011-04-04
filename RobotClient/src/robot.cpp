@@ -69,6 +69,8 @@ int main(int argc, char** argv)
 	}
 	DEBUGPRINT("Done reading files\n");
 
+	 l_rclient->initRobotGame();
+
     l_rclient->start();
 
     return 0;

@@ -48,7 +48,7 @@ public:
     /**
      * Update the AI - this is what tells the robot what to do.
      */
-    Msg_Action getAction();
+    int getAction(Msg_RobotInfo *action);
 
     /**
      * Is the robot holding a puck.
@@ -80,11 +80,6 @@ public:
      * Returns the id of the puck being held, 0 if it is not holding a puck
      */
     uid getPuckId();
-
-    /**
-     * Returns true if the puck coords given are within our pickup range
-     */
-    bool puckInPickupRange(const float& puckX, const float& puckY) const;
 
     /**
      * FOV of any robot.

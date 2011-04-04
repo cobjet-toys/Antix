@@ -38,14 +38,14 @@ endif
 
 # ----------------------------------------------------------------------
 
-drawer_debug: common drawer_depend drawer_debug_objects
+drawer_debug: common_debug drawer_depend drawer_debug_objects
 	@echo "Building DEBUG ----------------------------------------------------------------------------------"
 	$(shell cd $(drawer_DEBUG_PATH)/; $(drawer_COMPILER) -g -lpthread -o $(drawer_EXECUTABLE) $(drawer_DEBUG_OBJ) $(PWD)/$(ROOT_DIR)/build/debug/libcommon.a $(GLUTLIBS) $(GLUTFLAGS) )
 	@echo "Building DEBUG drawer COMPLETE --------------------------------------------------------"
 
-drawer: common drawer_depend drawer_release_objects
+drawer: common_debug drawer_depend drawer_release_objects
 	@echo "Building RELEASE --------------------------------------------------------------------------------"
-	$(shell cd $(drawer_RELEASE_PATH)/; $(drawer_COMPILER) -lpthread -o $(drawer_EXECUTABLE) $(drawer_RELEASE_OBJ) $(PWD)/$(ROOT_DIR)/build/release/libcommon.a $(GLUTLIBS) $(GLUTFLAGS) )
+	$(shell cd $(drawer_RELEASE_PATH)/; $(drawer_COMPILER) -lpthread -O2 -o $(drawer_EXECUTABLE) $(drawer_RELEASE_OBJ) $(PWD)/$(ROOT_DIR)/build/release/libcommon.a $(GLUTLIBS) $(GLUTFLAGS) )
 	@echo "Building drawer COMPLETE --------------------------------------------------------------"
 
 drawer_depend:
@@ -56,7 +56,7 @@ drawer_depend:
 
 drawer_release_objects:
 	@echo "Building drawer release objects -------------------------------------------------------"
-	$(shell cd $(drawer_RELEASE_OBJ_PATH); $(drawer_COMPILER) -c -I$(drawer_INCLUDE_PATH) -I$(drawer_INCLUDE_COMMON_PATH) $(addprefix $(drawer_SRC_PATH)/, $(drawer_SRC)))
+	$(shell cd $(drawer_RELEASE_OBJ_PATH); $(drawer_COMPILER) -c -O2 -I$(drawer_INCLUDE_PATH) -I$(drawer_INCLUDE_COMMON_PATH) $(addprefix $(drawer_SRC_PATH)/, $(drawer_SRC)))
 	@echo "Building {{PROJECT_NAME}} release objects COMPLETE ----------------------------------------------"
 
 drawer_debug_objects:
