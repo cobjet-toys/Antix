@@ -166,6 +166,7 @@ int RobotGame::actionResult(vector<Msg_RobotInfo>* results)
         }
         
         l_robotp->setPosition( result.x_pos, result.y_pos, result.angle );
+        l_robotp->setPuckHeld( result.puckid );
         
         int oldGridId = m_robotGrids.find(robotId)->second;
         int newGridId = result.gridid;

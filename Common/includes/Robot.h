@@ -38,7 +38,7 @@ public:
     /**
      * Update the objects visible to the robot.
      */
-    void updateSensors(SensedItemsList sensedItems );
+    void updateSensors(SensedItemsList& sensedItems );
 
     /**
      * Update the position of the robot.
@@ -77,7 +77,7 @@ public:
     void setPuckHeld(uid puckToHold);
 
     /**
-     * Returns the id of the puck which is currently being held
+     * Returns the id of the puck being held, 0 if it is not holding a puck
      */
     uid getPuckId();
 

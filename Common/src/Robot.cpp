@@ -63,7 +63,7 @@ void Robot::updatePosition(const float x_pos, const float y_pos)
     return;
 }
 
-void Robot::updateSensors( SensedItemsList sensedItems )
+void Robot::updateSensors( SensedItemsList& sensedItems )
 {
     // TODO Might be a more optimal way to do this, diffs?
     m_VisiblePucks.clear();
