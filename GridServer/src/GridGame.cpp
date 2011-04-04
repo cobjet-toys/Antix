@@ -90,14 +90,6 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
 
     for (int i = id_from; i <= id_to; i++)
     {
-
-        #ifdef DEBUG
-        //std::cout << "Robot id being created:" <<i << std::endl;
-       // if you can divide the id by the robots per team, that means that this is a team, create a new team
-       // object for the rest of the robots to point to
-
-        //std::cout << "WTF id:" <<i << "robots per team: "<< robots_per_team << std::endl;
-        #endif
         if (i%robots_per_team == 0)
         {
             //std::cout << "WTF2 id:" <<i << "robots per team: "<< robots_per_team << std::endl;
@@ -146,16 +138,11 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
        Puck* l_Puck = new Puck(l_PuckPos, i);
        addObjectToPop(l_Puck);
     }
-    
+
     for(std::vector<Team*>::iterator it = m_Teams.begin(); it != m_Teams.end(); it++)
     {
         LOGPRINT("GRIDGAME STATUS:\t INIT TEAM ID: %u Xpos:%f, Ypos:%f\n", (*it)->getId(), (*it)->getX(), (*it)->getY());
     }
-
-
-    // Sort generated pucks
-    //sortPopulation(); // commented out as we should not sort the population until the getRobot function is
-    //                     run enough times that all of the clients have all of the robots
 
     // set team and robot counters used by getRobots function
     teamcounter = 0;
@@ -165,7 +152,6 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
 GridGame::~GridGame()
 {
     //Note: The delete of the robot population is the responsiblity of the team object.
-   
     //Delete the Robots.
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != m_Population.end(); it++)
     {
@@ -209,11 +195,8 @@ int GridGame::getRobots(Msg_TeamInit& team, std::vector<Msg_InitRobot>* robots)
 
     DEBUGPRINT("GRIDGAME STATUS:\t Team id: %d, Team x: %f, Team y: %f\n", team.id, team.x, team.y);
 
-    //std::vector<robot_info> l_robot_info_vector = new std::vector<robot_info>();
-
-    int i;
 	DEBUGPRINT("GRIDGAME STATUS:\t Robo Counter Min:%d, Robot Counter Max: %d\n", robotcounter, robotcounter+m_Robots_Per_Team);
-    for (i = robotcounter; i < robotcounter+m_Robots_Per_Team; i++)
+    for(int i = robotcounter; i < robotcounter+m_Robots_Per_Team; i++)
     {
         GameObject* l_Robot = m_Population[i];
         
@@ -293,8 +276,10 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
                                int& totalSensed)
 {
     DEBUGPRINT("GRIDGAME STATUS:\t Entering returnSensorData()\n");
-    
+
+#ifdef DEBUG
     printPopulation();
+#endif
     
     std::vector<uid>::iterator clientend = robot_ids_from_client.end();
     for(std::vector<uid>::iterator it = robot_ids_from_client.begin(); it != clientend; it++)
@@ -392,15 +377,6 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
         }
         
         sensor_data->push_back(RobotSensedObjectsPair((*it), temp_vector));
-    }
-    
-    for( std::vector< RobotSensedObjectsPair >::iterator it = sensor_data->begin(); it != sensor_data->end(); it++)
-    {
-        DEBUGPRINT("GRIDGAME STATUS:\t RobotId:%d with Sensed Information\n", it->first); 
-        for( std::vector<Msg_SensedObjectGroupItem>::iterator iit = (it->second).begin(); iit != (it->second).end(); iit++)
-        {
-            DEBUGPRINT("GRIDGAME STATUS:\t RobotId:%d sensed object %d\n" , it->first ,(*iit).id);
-        }
     }
     
     return 0;
