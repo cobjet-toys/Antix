@@ -646,13 +646,24 @@ int GridGame::removeObjectFromPop(int objectid)
 
 int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results, float top, float bottom, float left, float right)
 {
+	//buffer so robots don't get stuck
+	float buffer = 0.05 * (right-left);	//5% buffer
+	float topBuff = top + buffer;
+	float bottomBuff = bottom - buffer;	
+	if (left < m_leftBoundary)
+		left = m_leftBoundary;
+	else if (right > m_rightBoundary)
+		right = m_rightBoundary;			
+	float leftBuff = left - buffer;
+	float rightBuff = right + buffer;
+	
     std::vector<GameObject*>::iterator endit = m_Population.end();
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != endit; it++)
     {   
     	//only send robots within view
         float l_x = (**it).getX();
         float l_y = (**it).getY();
-        if (l_x > right || l_x < left || l_y > top || l_y < bottom) continue;
+        if (l_x > rightBuff || l_x < leftBuff || l_y > topBuff || l_y < bottomBuff) continue;
         
         Msg_RobotInfo l_ObjInfo;
         l_ObjInfo.robotid = Antix::writeId((**it).getId(), ROBOT);
@@ -662,12 +673,15 @@ int GridGame::getPopulation(std::vector< Msg_RobotInfo >* results, float top, fl
         l_ObjInfo.puckid = 0;        
         
         //send reset values if the robot is out of bounds, otherwise, send real position data
-        if (!outOfBoundsLeft(l_x) && !outOfBoundsRight(l_x))
+        if (l_x >= left && l_x <= right && l_y <= top && l_y >= bottom)
         {
 		    l_ObjInfo.x_pos = l_x;
 		    l_ObjInfo.y_pos = l_y;
 		    l_ObjInfo.angle = ((**it).getPosition())->getOrient();
-		    //l_ObjInfo.puckid = (**it).m_PuckHeld;
+		    
+		     //if object is a robot, add puck info
+		    if (l_ObjInfo.robotid < 10000000)
+		    	l_ObjInfo.puckid = ((Robot*)*it)->m_PuckHeld;
         }
 
         results->push_back(l_ObjInfo);
