@@ -437,29 +437,100 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
     {
         // grab the robots and update their positions
         DEBUGPRINT("GRIDGAME STATUS:\t Looking for robot: %d\n", (*it).robotid);
-        std::tr1::unordered_map<int, GameObject*>::iterator robot_find = m_MapPopulation.find((*it).robotid);
-        if (robot_find != m_MapPopulation.end())
+            
+        Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
+        if (l_Robot == NULL)
         {
-            Robot* l_Robot = (Robot*)m_MapPopulation[(*it).robotid];
+            DEBUGPRINT("GRIDGAME ERROR: Looked for robot that does not exist here");
+            return -1;
+
+        }
+        else
+        {
             Msg_RobotInfo temp;
             temp.robotid = l_Robot->getId();
 
-
             if((*it).action == PICKUP)
             {
-                DEBUGPRINT("Pickup puck!\n");
+                DEBUGPRINT("GRIDGAME STATUS: Pickup puck!\n");
+
+                printf("wants to puck up puck for this robot");
+
+                bool leftTooFar = false;
+                bool rightTooFar = false;
+                int offset = 1;
+                int robotElement = m_YObjects[l_Robot];
+                Robot* thisRobot = (Robot*)m_Population[robotElement];
+                temp.x_pos = thisRobot->getX();
+                temp.y_pos = thisRobot->getY();
+                temp.angle = thisRobot->getPosition()->getOrient();
+                temp.puckid = thisRobot->getPuckId();
+
+                while(leftTooFar != true || rightTooFar != true)
+                {
+                    int checkLeft = robotElement - offset;
+                    int checkRight = robotElement + offset;
+
+                    if (checkLeft < 0)
+                    {
+                        checkLeft = m_YObjects.size() - checkLeft;
+                    }
+                    else if( checkRight > m_YObjects.size() )
+                    {
+                        checkRight = checkRight % m_YObjects.size() - 1;
+                    }
+
+                    GameObject* leftObject = m_Population[robotElement];
+                    GameObject* rightObject = m_Population[robotElement];
+
+                    if (fabs(leftObject->getY() - thisRobot->getY() ) > robot_PickupRange)
+                    // if the object is farther then the pickup range
+                    {
+                        leftTooFar = true;
+                    }
+                    else
+                    {
+                        if (leftObject->getId() > 10000000)
+                        {
+                            temp.puckid = leftObject->getId();
+                            removeObjectFromPop(leftObject);
+                            printf("Drop a puck left!");
+                        }
+
+                    }
+                    if (fabs(rightObject->getY() - thisRobot->getY() ) > robot_PickupRange)
+                    // if the object is farther then the pickup range
+                    {
+                        rightTooFar = true;
+                    }
+                    else
+                    {
+                        if (rightObject->getId() > 10000000)
+                        {
+                            temp.puckid = rightObject->getId();
+                            removeObjectFromPop(leftObject);
+                            printf("Drop a puck right!");
+                        }
+
+                    }
+                    offset + 1;
+                }
+                results->push_back(temp);
+
+                
+
             }
             else if((*it).action == DROP)
             {
-                DEBUGPRINT("Drop puck!\n");
+                DEBUGPRINT("GRIDGAME STATUS: Drop puck!\n");
             }
             else if((*it).action == SET_SPEED)
             {
-                DEBUGPRINT("Set speed!\n");
+                DEBUGPRINT("GRIDGAME STATUS: Set speed!\n");
 
                 Math::Position* l_CurrentPos = l_Robot->getPosition();
 
-                DEBUGPRINT("id:%d, forwspeed: %f, rotspeed: %f", (*it).robotid, (*it).speed, (*it).angle );
+                DEBUGPRINT("GRIDGAME STATUS: id:%d, forwspeed: %f, rotspeed: %f", (*it).robotid, (*it).speed, (*it).angle );
 
                 float l_Dx = (*it).speed * fast_cos( l_CurrentPos->getOrient() );
                 float l_Dy = (*it).speed * fast_sin( l_CurrentPos->getOrient() );
@@ -542,11 +613,6 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
                     }
                 }
             }
-        }
-        else
-        {
-            DEBUGPRINT("GRIDGAME ERROR:\t Robot is not in the population");
-            return -1;
         }
     }
 
