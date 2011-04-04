@@ -9,6 +9,7 @@
 #include <GLUT/glut.h>
 #endif
 
+#define WAIT 500000	 //500 ms
 
 void * listener_function(void* args)
 {
@@ -157,7 +158,7 @@ void drawRobots(int edgePoints)
     glPointSize(1.0);
 
     const size_t len(drawServerRef->getRobotsCount()); 
-    int robotsPerTeam = len/drawServerRef->getTeamsCount();
+    int robotsPerTeam = len/drawServerRef->m_totalNumTeams;
 
     // keep this buffer around between calls for speed
     static std::vector<GLfloat> pts, sPts, lPts;
@@ -223,6 +224,7 @@ void drawRobots(int edgePoints)
             glDrawArrays(GL_LINE_LOOP, x*edgePoints, edgePoints);     
         }
 
+		/*
         // Draw robot orientation lines
         glVertexPointer(2, GL_FLOAT, 0, &lPts[0]);
         for (int x = 0; x < d; x++)
@@ -230,6 +232,7 @@ void drawRobots(int edgePoints)
             glColor3f(colors[(x*3)], colors[(x*3) + 1], colors[(x*3) + 2]);
             glDrawArrays(GL_LINE_LOOP, x*2, 2);
         }
+        */
 
         // Deactivate vertex arrays after drawing
         glDisableClientState(GL_VERTEX_ARRAY);
@@ -702,6 +705,9 @@ void initGraphics(int argc, char **argv)
 	    perror("pthread failed: can't start client listener.\n");
 	} 
     
+    while(drawServerRef->getTeamsCount() < drawServerRef->m_totalNumTeams)
+    	usleep(WAIT);
+    	
     glutMainLoop();
 }
 

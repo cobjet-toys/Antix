@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <stdio.h>
 
+#define PUCK_ID_SHIFT 10000000
+
 using namespace Network;
 
 DrawServer* DrawServer::m_instance = NULL;
@@ -13,11 +15,11 @@ DrawServer* DrawServer::m_instance = NULL;
 DrawServer::DrawServer()
 {    
     this->m_windowSize = 600;
-    this->m_worldSize = 1.0;
+    this->m_worldSize = 1.0f;
     this->m_FOVEnabled = false;
-    this->m_FOVAngle = 0.0;
-    this->m_FOVRange = 0.0;
-    this->m_homeRadius = 20.0;
+    this->m_FOVAngle = 0.0f;
+    this->m_FOVRange = 0.0f;
+    this->m_homeRadius = 20.0f;
     this->m_framestep = 0;
     this->m_drawerDataType = DRAWER_FULLDETAILS;    
     
@@ -168,6 +170,11 @@ void DrawServer::updateViewRange(float left, float top, float right, float botto
 
 int DrawServer::sendGridConfig(int grid_fd)
 {
+	if (grid_fd < 0)
+	{
+		ERRORPRINT("DRAWSERVER ERROR:\t Grid fiile descriptor cannot be negative\n");
+		return 0;
+	}
 	//send config to grid
     TcpConnection * l_curConn = m_serverList[grid_fd];
 	if(l_curConn == NULL)
@@ -206,44 +213,32 @@ int DrawServer::sendGridConfig(int grid_fd)
     return sendWrapper(l_curConn, l_Buffer, l_MessageSize);   
 }
 
-void DrawServer::initTeams()
-{    
-    if (this->m_teams.size() == 0)
-    {
-    	Math::Position *homePos = new Math::Position(55.0, 150.0, 0.0);
-		if(homePos == NULL)
-		{
-			ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initTeams()\n");
-		}
-        this->m_teams[1] = new Game::Team(homePos, 1);
-    }
-
-    DEBUGPRINT("Teams=%zu\n", this->m_teams.size());
-}
-
 void DrawServer::updateObject(Msg_DrawerObjectInfo newInfo)
 {    
-    uint32_t objType, objId, objIndex;
+    uint32_t objType, objId, objIndex, puckIndex;
     Antix::getTypeAndId(newInfo.robotid, &objType, &objId);
 	objIndex = objId - 1;
-	objType = objId > 10000000;
+	objType = objId > PUCK_ID_SHIFT;
 	
 	try
 	{
 		if(objType == PUCK)
 		{
-			objIndex -= 10000000;
-		    this->m_pucks.at(objIndex)->getPosition()->setX(newInfo.x_pos);
-			this->m_pucks.at(objIndex)->getPosition()->setY(newInfo.y_pos);      
+			objIndex -= PUCK_ID_SHIFT;
+		    this->m_pucks.at(objIndex)->setPosition(newInfo.x_pos, newInfo.y_pos, 0.0f);
 			//DEBUGPRINT("Puck[%d]: x=%f, y=%f\n", objIndex, this->m_pucks.at(objIndex)->getPosition()->getX(), this->m_pucks.at(objIndex)->getPosition()->getY() );  		
 		}
 		else
 		{    
 			
-			this->m_robots.at(objIndex)->getPosition()->setX(newInfo.x_pos);
-			this->m_robots.at(objIndex)->getPosition()->setY(newInfo.y_pos);       		    
+			this->m_robots.at(objIndex)->setPosition(newInfo.x_pos, newInfo.y_pos, newInfo.angle);
 		    this->m_robots.at(objIndex)->setPuckHeld(newInfo.puckid);
-		    //DEBUGPRINT("Robot[%d]: x=%f, y=%f\n", objIndex, this->m_robots.at(objIndex)->getPosition()->getX(), this->m_robots.at(objIndex)->getPosition()->getY() );  		
+		    
+		    puckIndex = newInfo.puckid - PUCK_ID_SHIFT;
+		    if (puckIndex > 0 && this->m_pucks.size() > puckIndex)
+		    	this->m_pucks.at(objIndex)->setPosition(-1.0f, -1.0f, 0.0f);
+		    
+		    DEBUGPRINT("Robot[%d]: x=%f, y=%f, puck=%d\n", objIndex, this->m_robots.at(objIndex)->getPosition()->getX(), this->m_robots.at(objIndex)->getPosition()->getY(), this->m_robots.at(objIndex)->getPuckHeld() );  		
 		}
 	}
 	catch (std::exception &e)

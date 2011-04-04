@@ -44,7 +44,6 @@ namespace Network
         virtual int handler(int fd);
 		int initGrid(const char * host, const char * port);
 		int sendGridConfig(int grid_fd);
-        void initTeams();
         void updateObject(Msg_DrawerObjectInfo newInfo);        
         
         void updateViewRange(float left, float top, float right, float bottom);        
