@@ -550,7 +550,7 @@ int GridGame::processAction(std::vector<Msg_Request_Movement> *moveActionsReques
 		return -2;
 	}
 	
-	printf("GRIDGAME STATUS:\t Inside process action\n");
+	DEBUGPRINT("GRIDGAME STATUS:\t Inside process action\n");
 	
 	if(robotsToPass->size() == 0)
     {
@@ -654,7 +654,7 @@ int GridGame::processAction(std::vector<Msg_Request_Movement> *moveActionsReques
             l_robotActionRequested.yPos = l_RobotInformation->getY();
             l_robotActionRequested.orientation = l_RobotInformation->getPosition()->getOrient();
             l_robotActionRequested.robotId = l_robotActionRequested.robotId;
-            l_robotActionRequested.gridId = m_GridId;
+            l_robotActionRequested.gridId = l_robot.gridid;
             
             moveActionsResponse->push_back(l_robotActionRequested);
 

@@ -730,7 +730,7 @@ int GridServer::handler(int fd)
                     l_MessageSize += l_dropObjectCountMsg.msgSize*l_dropMsg.size;
                     l_MessageSize += l_pickupObjectCountMsg.msgSize*l_pickupMsg.size;
                     
-                    printf("GRID_SERVER ERROR:\t messagesize: %i\n", l_MessageSize);
+                    DEBUGPRINT("GRID_SERVER ERROR:\t messagesize: %i\n", l_MessageSize);
                     
                     unsigned char * l_ActionBuffer = new unsigned char[l_MessageSize];
                     
@@ -740,7 +740,7 @@ int GridServer::handler(int fd)
                     	return -1;
                     }
                     
-                    printf("recv\n");
+                    DEBUGPRINT("recv\n");
                     
                   	if (l_curConnection->recv(l_ActionBuffer, l_MessageSize) < 0)
 					{
@@ -748,7 +748,7 @@ int GridServer::handler(int fd)
 						return -1;
 					}
 
-					printf("done recv\n");			
+					DEBUGPRINT("done recv\n");			
 			
 					std::vector<Msg_Request_Movement> l_move;
 					std::vector<Msg_Request_Pickup> l_pickup;
@@ -760,14 +760,14 @@ int GridServer::handler(int fd)
                     {
                     	Msg_Request_Movement l_requestMovement;
                     	
-                    	printf("GRID_SERVER STATUS:\t Unpacking MOVE request\n");
+                    	DEBUGPRINT("GRID_SERVER STATUS:\t Unpacking MOVE request\n");
                     	
                         unpack(l_ActionBuffer+l_Offset, Msg_Request_Movement_format, &l_requestMovement.robotId, 
                         		&l_requestMovement.forwardSpeed, &l_requestMovement.rotationSpeed);
                         
                         l_move.push_back(l_requestMovement);
                         	
-                       	printf("GRID_SERVER STATUS:\t Unpacking MOVE request done\n");
+                       	DEBUGPRINT("GRID_SERVER STATUS:\t Unpacking MOVE request done\n");
                        
                         DEBUGPRINT("ROBOT_CLIENT STATUS:\t Unpacked MOVE Robot ID:%u, forwardSpeed:%f rotationalSpeed:%f\n", 
                         			l_requestMovement.robotId, l_requestMovement.forwardSpeed, l_requestMovement.rotationSpeed);
@@ -775,19 +775,19 @@ int GridServer::handler(int fd)
                         l_Offset += l_moveMsg.size;
                     }    
                     
-                    printf("GRID_SERVER STATUS:\t Done unpacking all MOVE requests\n"); 
+                    DEBUGPRINT("GRID_SERVER STATUS:\t Done unpacking all MOVE requests\n"); 
                              
                     for (int i = 0; i < l_dropObjectCountMsg.msgSize; i++)
                     {
                     	Msg_Request_Drop l_requestDrop;
                     	
-                    	printf("GRID_SERVER STATUS:\t Unpacking DROP request\n");
+                    	DEBUGPRINT("GRID_SERVER STATUS:\t Unpacking DROP request\n");
                     	
                         unpack(l_ActionBuffer+l_Offset, Msg_Request_Drop_format, &l_requestDrop.robotId);
                         
                         l_drop.push_back(l_requestDrop);
                         		
-                       	printf("GRID_SERVER STATUS:\t Unpacking DROP request done\n");;
+                       	DEBUGPRINT("GRID_SERVER STATUS:\t Unpacking DROP request done\n");;
                        
                         DEBUGPRINT("ROBOT_CLIENT STATUS:\t Unpacked DROP Robot ID:%u\n", l_requestDrop.robotId);
                         			
@@ -795,20 +795,20 @@ int GridServer::handler(int fd)
                     }    
                     
                     
-                    printf("GRID_SERVER STATUS:\t Done unpacking all DROP requests\n"); 
+                    DEBUGPRINT("GRID_SERVER STATUS:\t Done unpacking all DROP requests\n"); 
                     
                     for (int i = 0; i < l_pickupObjectCountMsg.msgSize; i++)
                     {
                     	Msg_Request_Pickup l_requestPickup;
                     	
-                    	printf("GRID_SERVER STATUS:\t Unpacking PICKUP request\n");
+                    	DEBUGPRINT("GRID_SERVER STATUS:\t Unpacking PICKUP request\n");
                     	
                         unpack(l_ActionBuffer+l_Offset, Msg_Request_Pickup_format, 
                         		&l_requestPickup.robotId, &l_requestPickup.puckId);
                         
                         l_pickup.push_back(l_requestPickup);
                         		
-                       	printf("GRID_SERVER STATUS:\t Unpacking PICKUP request done\n");;
+                       	DEBUGPRINT("GRID_SERVER STATUS:\t Unpacking PICKUP request done\n");;
                        
                         DEBUGPRINT("ROBOT_CLIENT STATUS:\t Unpacked PICKUP Robot ID:%u Puck ID:%u\n", 
                         			l_requestPickup.robotId, l_requestPickup.puckId);
@@ -816,7 +816,7 @@ int GridServer::handler(int fd)
                         l_Offset += l_moveMsg.size;
                     } 
                     
-                   	printf("GRID_SERVER STATUS:\t Done unpacking all PICKUP requests\n");    
+                   	DEBUGPRINT("GRID_SERVER STATUS:\t Done unpacking all PICKUP requests\n");    
                     
                     std::vector<Msg_Response_Movement> l_responseMove;
 					std::vector<Msg_Response_Drop> l_responseDrop;
@@ -1289,7 +1289,7 @@ int GridServer::handler(int fd)
             }   		
 		default:
 		{
-			printf("no matching msg handler for UNKNOWN\n");
+			ERRORPRINT("no matching msg handler for UNKNOWN\n");
 			return -1;
 		} // end of default
 		

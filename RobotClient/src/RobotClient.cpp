@@ -366,7 +366,7 @@ int RobotClient::handler(int fd)
                     l_MessageSize += l_dropObjectCountMsg.msgSize*l_dropMsg.size;
                     l_MessageSize += l_pickupObjectCountMsg.msgSize*l_pickupMsg.size;
                     
-                    printf("GRID_SERVER ERROR:\t messagesize: %i\n", l_MessageSize);
+                    DEBUGPRINT("GRID_SERVER ERROR:\t messagesize: %i\n", l_MessageSize);
                     
                     unsigned char * l_ResultsBuffer = new unsigned char[l_MessageSize];
                     
@@ -376,7 +376,7 @@ int RobotClient::handler(int fd)
                     	return -1;
                     }
                     
-                    printf("recv\n");
+                    DEBUGPRINT("recv\n");
                     
                   	if (l_curConnection->recv(l_ResultsBuffer, l_MessageSize) < 0)
 					{
@@ -384,7 +384,7 @@ int RobotClient::handler(int fd)
 						return -1;
 					}
 
-					printf("GRID_SERVER ERROR:\t done recv\n");			
+					DEBUGPRINT("GRID_SERVER ERROR:\t done recv\n");			
 			
 					std::vector<Msg_Response_Movement> l_moveResponse;
 					std::vector<Msg_Response_Drop> l_dropResponse;
