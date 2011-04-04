@@ -44,8 +44,8 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     //Robot configurations.
     robot_FOV = Math::dtor(90.0);
     robot_Radius = 0.01;
-    robot_SensorRange = 5.0;
-    robot_PickupRange = robot_SensorRange;
+    robot_SensorRange = 0.2;
+    robot_PickupRange = robot_SensorRange/5.0;
 
     LOGPRINT("GRIDGAME STATUS:\t Robot FOV: \n%f\n", robot_FOV);
 
@@ -93,8 +93,8 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
         {
             //std::cout << "WTF2 id:" <<i << "robots per team: "<< robots_per_team << std::endl;
             Math::Position* l_HomePosition = Math::Position::randomPosition(m_WorldSize,
-                    m_leftInnerBoundary, 
-                    m_rightInnerBoundary);
+                    m_leftBoundary, 
+                    m_rightBoundary);
             l_team = new Team(l_HomePosition, i/robots_per_team);
             m_Teams.push_back(l_team);
         }
@@ -131,8 +131,8 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
         std::cout << i << std::endl;
         //Get a random location.
         Math::Position* l_PuckPos = Math::Position::randomPosition(m_WorldSize, 
-                m_leftInnerBoundary,
-                m_rightInnerBoundary);
+                m_leftBoundary,
+                m_rightBoundary);
         //Create the puck.
         Puck* l_Puck = new Puck(l_PuckPos, i);
         addObjectToPop(l_Puck);
@@ -426,7 +426,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             if((*it).action == PICKUP)
             {
                 DEBUGPRINT("GRIDGAME STATUS: Pickup puck!\n");
-
+                /*
                 bool leftTooFar = false;
                 bool rightTooFar = false;
                 int offset = 1;
@@ -494,6 +494,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
                 }
                 sortPopulation();
                 results->push_back(temp);
+                */
             }
             else if((*it).action == DROP)
             {
@@ -717,7 +718,7 @@ int GridGame::removeObjectFromPop(int objectid)
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != end; it++)
     {
         if ((**it).m_id == objectid){
-            printf("GRIDGAME STATUS:\t Removing robot ID:%d from the population\n", objectid);
+            DEBUGPRINT("GRIDGAME STATUS:\t Removing robot ID:%d from the population\n", objectid);
             this->m_Population.erase(it);
             break;
         }
