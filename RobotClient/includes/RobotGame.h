@@ -42,7 +42,7 @@ public:
 
 	// NEW INTERFACE
     int sendAction(int grid_id, std::vector<Msg_Request_Movement> *positionUpdates, std::vector<Msg_Request_Drop> *puckDrops, std::vector<Msg_Request_Pickup> *puckPickups);
-    //int actionResult(vector<Msg_Response_Movement> *positionUpdates, vector<Msg_Response_Drop> *puckDrops, vector<Msg_Response_Pickup> *puckPickups);
+    int actionResult(vector<Msg_Response_Movement> *positionUpdates, vector<Msg_Response_Drop> *puckDrops, vector<Msg_Response_Pickup> *puckPickups);
 
 private:
 

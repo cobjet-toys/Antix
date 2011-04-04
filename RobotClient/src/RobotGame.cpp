@@ -207,3 +207,54 @@ int RobotGame::actionResult(vector<Msg_RobotInfo>* results)
     return 0;
 }
 
+int RobotGame::actionResult(vector<Msg_Response_Movement> *positionUpdates, 
+									vector<Msg_Response_Drop> *puckDrops, 
+									vector<Msg_Response_Pickup> *puckPickups
+								)
+{
+    // for a grid, it updates the new positions (and status) of all robots
+    // question: shouldn't the action_results type have a robot
+	if (positionUpdates == NULL || puckDrops == NULL || puckPickups == NULL) return -2;
+	
+    for(int i = 0; i < positionUpdates->size(); i++)
+    {
+        uid robotId = positionUpdates->at(i).robotId;
+        Msg_Response_Movement result = positionUpdates->at(i);
+        
+        Robot* l_robotp = m_robots[robotId];
+        
+        if(l_robotp == NULL)
+        {
+			ERRORPRINT("ROBOTGAME ERROR:\t Invalid robotID %d for this grid, in actionResult()\n", robotId);
+            return -1;
+        }
+        
+        // TODO Currently our action_result message does not send a rotational velocity
+
+        l_robotp->setPosition( result.xPos, result.yPos, result.orientation );
+        
+        int oldGridId = m_robotGrids.find(robotId)->second;
+        int newGridId = result.gridId;
+
+        if(oldGridId != newGridId)
+        {
+            DEBUGPRINT("Moving robot %d from OldGridId: %d, to new gridId, %d\n",robotId, oldGridId, newGridId);
+            // Remove from the reference to oldGrid
+            std::vector<Robot*>::iterator toRemove = std::remove( m_robotsByGrid[oldGridId].begin(),
+                                                                  m_robotsByGrid[oldGridId].end(),
+                                                                  l_robotp );
+            if(toRemove != m_robotsByGrid[oldGridId].end())
+            {
+                m_robotsByGrid[oldGridId].erase( toRemove );
+                m_robotsByGrid[newGridId].push_back(l_robotp);
+                m_robotGrids[robotId] = newGridId;
+            }
+            else
+            {
+                DEBUGPRINT("Robot not found in oldGrid %d", oldGridId);
+            }
+        }
+    }
+    
+    return 0;
+}

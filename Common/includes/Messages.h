@@ -245,21 +245,20 @@ typedef struct{
 static const char * Msg_ClockStatus_format = "c";
 
 typedef struct {
+	uint32_t	robotId;
 	float	xPos;
 	float	yPos;
-	float	rotationSpeed;
-	float	robotId;
+	float	orientation;
 	char	gridId;
-	static const size_t size = 18;
+	static const size_t size = 17;
 } Msg_Response_Movement;
-static const char * Msg_Response_Movement_format = "ffffc";
+static const char * Msg_Response_Movement_format = "lfffc";
 
 typedef struct {
 	uint32_t robotId;
-	uint32_t puckId;
-	static const size_t size = 8;
+	static const size_t size = 4;
 } Msg_Response_Drop;
-static const char * Msg_Response_Drop_format = "ll";
+static const char * Msg_Response_Drop_format = "l";
 
 typedef struct {
 	uint32_t robotId;

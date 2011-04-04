@@ -68,6 +68,11 @@ public:
      * Interface function to Network layer for processing actions for each robot.
      */
     int processAction(std::vector<Msg_Action>& robot_actions, std::vector< Msg_RobotInfo >* results, std::vector<std::pair<int, std::vector<Msg_RobotInfo> > >* robots_to_pass);
+	
+	int processAction(std::vector<Msg_Request_Movement> *moveActionsRequests, std::vector<Msg_Request_Drop> *dropActionsRequests,
+						std::vector<Msg_Request_Pickup> *pickupActionsRequests, std::vector<Msg_Response_Movement> *moveActionsResponse,
+						std::vector<Msg_Response_Drop> *dropActionsResponse, std::vector<Msg_Response_Pickup> *pickupActionsResponse,
+						std::vector<std::pair<int, std::vector<Msg_RobotInfo> > > *robotsToPass);
 
     /**
      * Interface function to updateRobots based on new/update robots on edge cases
