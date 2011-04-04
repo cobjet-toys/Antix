@@ -16,8 +16,9 @@ RobotGame::RobotGame()
     //TODO: these should come out of the config
     robot_FOV = Math::dtor(90.0);
     robot_Radius = 0.01;
-    robot_SensorRange = 0.2;
-    robot_PickupRange = robot_SensorRange / 5.0;
+    robot_SensorRange = 5.0;
+    robot_PickupRange = robot_SensorRange;
+    std::cout << "Sensor Range: " << robot_SensorRange << " Pickup Range: " << robot_PickupRange << std::endl;
 
     Robot::FOV = robot_FOV;
     Robot::Radius = robot_Radius;

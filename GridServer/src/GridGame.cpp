@@ -44,7 +44,7 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     //Robot configurations.
     robot_FOV = Math::dtor(90.0);
     robot_Radius = 0.01;
-    robot_SensorRange = 0.2;
+    robot_SensorRange = 5.0;
     robot_PickupRange = robot_SensorRange/5.0;
 
     LOGPRINT("GRIDGAME STATUS:\t Robot FOV: \n%f\n", robot_FOV);
@@ -443,7 +443,6 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
         {
             DEBUGPRINT("GRIDGAME ERROR: Looked for robot that does not exist here");
             return -1;
-
         }
         else
         {
@@ -454,7 +453,7 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
             {
                 DEBUGPRINT("GRIDGAME STATUS: Pickup puck!\n");
 
-                printf("wants to puck up puck for this robot");
+                printf("wants to puck up puck for this robot\n");
 
                 bool leftTooFar = false;
                 bool rightTooFar = false;
@@ -480,8 +479,10 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
                         checkRight = checkRight % m_YObjects.size() - 1;
                     }
 
-                    GameObject* leftObject = m_Population[robotElement];
-                    GameObject* rightObject = m_Population[robotElement];
+                    GameObject* leftObject = m_Population[checkLeft];
+                    if(leftObject == NULL) std::cout << "ERROR: leftobject null" << std::endl;
+                    GameObject* rightObject = m_Population[checkRight];
+                    if(rightObject == NULL) std::cout << "ERROR: rightobject null" << std::endl;
 
                     if (fabs(leftObject->getY() - thisRobot->getY() ) > robot_PickupRange)
                         // if the object is farther then the pickup range
@@ -493,8 +494,10 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
                         if (leftObject->getId() > 10000000)
                         {
                             temp.puckid = leftObject->getId();
+                            std::cout << "Removing object with id: " << leftObject->getId() << std::endl;
                             removeObjectFromPop(leftObject);
-                            printf("Drop a puck left!");
+                            printf("Drop a puck left!\n");
+                            break;
                         }
 
                     }
@@ -508,12 +511,15 @@ int GridGame::processAction(std::vector<Msg_Action>& robot_actions, std::vector<
                         if (rightObject->getId() > 10000000)
                         {
                             temp.puckid = rightObject->getId();
-                            removeObjectFromPop(leftObject);
-                            printf("Drop a puck right!");
+                            std::cout << "Removing object with id: " << rightObject->getId() << std::endl;
+                            removeObjectFromPop(rightObject);
+                            printf("Drop a puck right!\n");
+                            break;
                         }
 
                     }
-                    offset + 1;
+                    std::cout << "offset: " << offset << std::endl;
+                    offset += 1;
                 }
                 results->push_back(temp);
             }
@@ -739,7 +745,7 @@ int GridGame::removeObjectFromPop(int objectid)
     for(std::vector<GameObject*>::iterator it = m_Population.begin(); it != end; it++)
     {
         if ((**it).m_id == objectid){
-            DEBUGPRINT("GRIDGAME STATUS:\t Removing robot ID:%d from the population\n", objectid);
+            printf("GRIDGAME STATUS:\t Removing robot ID:%d from the population\n", objectid);
             this->m_Population.erase(it);
             break;
         }
