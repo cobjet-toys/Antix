@@ -31,7 +31,14 @@ public:
     //Drawer Connections
     int updateDrawer(uint32_t framestep);
 
+    GridGame* Game();
+    int sendHeartBeat();
+    void setSortDone();
+
 private:
+    bool m_Sorted;
+    pthread_t m_SortThread;
+
     uint32_t m_uId;
     uint32_t m_hb_rcvd;
 	uint32_t m_idRangeFrom;
