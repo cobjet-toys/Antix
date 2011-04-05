@@ -689,7 +689,7 @@ int GridGame::getPopulation(std::vector< Msg_DrawerObjectInfo >* results, float 
         if (l_x > rightBuff || l_x < leftBuff || l_y > topBuff || l_y < bottomBuff) continue;
         
         Msg_DrawerObjectInfo l_ObjInfo;
-        l_ObjInfo.robotid = Antix::writeId((**it).getId(), ROBOT);
+        l_ObjInfo.robotid = (**it).getId();
         l_ObjInfo.x_pos = -1.0;
         l_ObjInfo.y_pos = -1.0;
         l_ObjInfo.angle = 0.0;

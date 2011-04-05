@@ -236,7 +236,7 @@ void DrawServer::updateObject(Msg_DrawerObjectInfo newInfo)
 		    
 		    puckIndex = newInfo.puckid - PUCK_ID_SHIFT;
 		    if (puckIndex > 0 && this->m_pucks.size() > puckIndex)
-		    	this->m_pucks.at(objIndex)->setPosition(-1.0f, -1.0f, 0.0f);
+		    	this->m_pucks.at(puckIndex)->setPosition(-1.0f, -1.0f, 0.0f);
 		    
 		    DEBUGPRINT("Robot[%d]: x=%f, y=%f, puck=%d\n", objIndex, this->m_robots.at(objIndex)->getPosition()->getX(), this->m_robots.at(objIndex)->getPosition()->getY(), this->m_robots.at(objIndex)->getPuckHeld() );  		
 		}
