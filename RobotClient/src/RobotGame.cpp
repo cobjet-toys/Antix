@@ -15,11 +15,11 @@ RobotGame::RobotGame(float robotFOV, float robotRadius, float sensorRange, float
 {
 
     robot_FOV = robotFOV;
-    robot_Radius = robotRadius;
-    robot_SensorRange = sensorRange;
-    robot_PickupRange = pickupRange;
+    robot_Radius = robotRadius * worldSize;
+    robot_SensorRange = sensorRange * worldSize + robot_Radius;
+    robot_PickupRange = robotRadius * worldSize;
     robot_WorldSize = worldSize;
-    robot_HomeRadius = homeRadius;
+    robot_HomeRadius = homeRadius * worldSize;
     
     Robot::FOV = robot_FOV;
     Robot::Radius = robot_Radius;
@@ -151,20 +151,18 @@ int RobotGame::sendAction(int grid_id, std::vector<Msg_Request_Movement> *positi
         }
         else if (action == ACTION_PICKUP_PUCK)
         {
-        	Msg_Request_Drop dropRequest;
-            dropRequest.robotId = actionRequest.robotid;
-			
-			puckDrops->push_back(dropRequest);
-			
-        } 
-        else if (action == ACTION_DROP_PUCK)
-        {
-        	Msg_Request_Pickup pickupRequest;
+        	/*Msg_Request_Pickup pickupRequest;
             pickupRequest.robotId = actionRequest.robotid;
 			pickupRequest.puckId = actionRequest.puckid;       
 			
-			puckPickups->push_back(pickupRequest);
+			puckPickups->push_back(pickupRequest);	*/
+        } 
+        else if (action == ACTION_DROP_PUCK)
+        {
+        	Msg_Request_Drop dropRequest;
+            dropRequest.robotId = actionRequest.robotid;
 			
+			puckDrops->push_back(dropRequest);			
         } 
         else
         {
@@ -267,6 +265,15 @@ int RobotGame::actionResult(vector<Msg_Response_Movement> *positionUpdates,
             }
         }
     }
+    
+    /*for(int i = 0 ; i < puckPickups->size(); i++)
+    {
+    	printf("========================================== FUCK YEAH!");
+    	uid robotId = puckPickups->at(i).robotId;
+    	uid puckId = puckPickups->at(i).puckId; 
+    	 Robot* l_robotp = m_robots[robotId];
+    	 l_robotp->setPuckHeld(puckId);
+    }*/
     
     return 0;
 }

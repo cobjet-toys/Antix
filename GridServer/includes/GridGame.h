@@ -145,6 +145,7 @@ private:
 
     //O(1) lookup of robots by id;     
     std::tr1::unordered_map<int, Game::GameObject*> m_MapPopulation;
+	std::tr1::unordered_map<int, Game::GameObject*> m_PucksHeld;
 
     //O(1) lookup of our sorted vector;     
     std::tr1::unordered_map<Game::GameObject*, int> m_YObjects;

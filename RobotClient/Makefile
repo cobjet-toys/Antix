@@ -31,7 +31,7 @@ robot_debug: common_debug robot_depend robot_debug_objects
 
 robot: common robot_depend robot_release_objects
 	@echo "Building RELEASE --------------------------------------------------------------------------------"
-	$(shell cd $(robot_RELEASE_PATH)/; $(robot_COMPILER) -02 -o $(robot_EXECUTABLE) $(robot_RELEASE_OBJ) $(robot_PWD)/$(ROOT_DIR)/build/release/libcommon.a )
+	$(shell cd $(robot_RELEASE_PATH)/; $(robot_COMPILER) -O2 -o $(robot_EXECUTABLE) $(robot_RELEASE_OBJ) $(robot_PWD)/$(ROOT_DIR)/build/release/libcommon.a )
 	@echo "Building robot COMPLETE -------------------------------------------------------------------------"
 
 robot_depend:

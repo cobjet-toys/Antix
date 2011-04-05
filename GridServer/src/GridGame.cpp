@@ -42,10 +42,10 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
     m_Robots_Per_Team = robots_per_team;
 
     //Robot configurations.
-    robot_FOV = Math::dtor(90.0);
-    robot_Radius = 0.01;
-    robot_SensorRange = 0.2;
-    robot_PickupRange = robot_SensorRange/5.0;
+    robot_FOV = Math::dtor(120.0);
+    robot_Radius = 0.005 * worldSize;
+    robot_SensorRange = 0.015 * worldSize + robot_Radius;
+    robot_PickupRange = 0.005 * worldSize;
 
     LOGPRINT("GRIDGAME STATUS:\t Robot FOV: \n%f\n", robot_FOV);
 
@@ -136,6 +136,7 @@ GridGame::GridGame(int gridid, int num_of_teams, int robots_per_team, int id_fro
         //Create the puck.
         Puck* l_Puck = new Puck(l_PuckPos, i);
         addObjectToPop(l_Puck);
+        //m_PucksHeld[i] = NULL; // add puck to available pucks container
     }
 
     for(std::vector<Team*>::iterator it = m_Teams.begin(); it != m_Teams.end(); it++)
@@ -359,7 +360,8 @@ int GridGame::returnSensorData(std::vector<uid>& robot_ids_from_client,
                     // if the game object found in the sensor range is the same
                     // as the robot we are looking for, do not add the same robot to
                     // its own sensed objects
-                    if (tempobj->getId() != position_obj->getId())
+                    
+                   if (tempobj->getId() != position_obj->getId())
                     {
                         temp_vector.push_back( temp_sensed );
                         totalSensed++;
@@ -432,13 +434,34 @@ int GridGame::processAction(std::vector<Msg_Request_Movement> *moveActionsReques
             float l_Dx = l_moveRequest.forwardSpeed * fast_cos( l_CurrentPos->getOrient() );
             float l_Dy = l_moveRequest.forwardSpeed * fast_sin( l_CurrentPos->getOrient() );
 
-            float new_x = Math::DistanceNormalize( l_CurrentPos->getX() + l_Dx, m_WorldSize );
+
+			float new_x = Math::DistanceNormalize( l_CurrentPos->getX() + l_Dx, m_WorldSize );
             float new_y = Math::DistanceNormalize( l_CurrentPos->getY() + l_Dy, m_WorldSize );
 
             float new_orient = Math::AngleNormalize(l_CurrentPos->getOrient() + l_moveRequest.rotationSpeed);
 
+			/*float new_x = l_CurrentPos->getX() + 0.01;
+			float new_y = l_CurrentPos->getY() + 0.01;
+			float new_orient*/
+					
+			if (new_y > m_WorldSize)
+			{
+				new_y = Math::WrapDistance(new_y, m_WorldSize);
+				new_x = Math::WrapDistance(new_x, m_WorldSize);
+			} else if (new_y < 0)
+			{
+				new_y = Math::WrapDistance(new_y, m_WorldSize);
+				new_x = Math::WrapDistance(new_x, m_WorldSize);			
+			}			
+
+			//new_x = Math::DistanceNormalize( l_CurrentPos->getX() , m_WorldSize );
+           
+
+
+
             l_robotActionRequested.xPos = new_x;
             l_robotActionRequested.yPos = new_y;
+            
             DEBUGPRINT("GRIDGAME STATUS:\t Previous Xpos: %f Ypos: %f\n", l_Robot->getX(), l_Robot->getY());
 
             l_robotActionRequested.orientation = new_orient;
@@ -530,11 +553,40 @@ int GridGame::processAction(std::vector<Msg_Request_Movement> *moveActionsReques
 	
 	}
 	
+ 	========================================== working here */
+ 	
 	for (int i = 0; i < pickupActionsRequests->size(); i++)
 	{
-	
+			
+			
+			/*unsigned int l_puckId = pickupActionsRequests->at(i).puckId;
+			std::tr1::unordered_map<int, Game::GameObject*>::iterator l_puck =  m_PucksHeld.find(l_puckId);
+			std::tr1::unordered_map<int, Game::GameObject*>::iterator l_puckEnd = m_PucksHeld.end();
+			
+			if (l_puck != l_puckEnd)
+			{
+				m_PucksHeld[l_puckId] = m_MapPopulation[pickupActionsRequests->at(i).robotId];
+				if (m_MapPopulation[pickupActionsRequests->at(i).robotId] == NULL)
+				{
+					printf("robot was not found in list %u\n",pickupActionsRequests->at(i).robotId);
+
+				}
+				printf("Robot ID:%u has claimed a puck\n", pickupActionsRequests->at(i).robotId);
+				Msg_Response_Pickup puckPickup = {pickupActionsRequests->at(i).robotId, pickupActionsRequests->at(i).puckId};
+				pickupActionsResponse->push_back(puckPickup);	
+		
+			}
+			else 
+			{
+				//printf("Sorry the puck is already taken\n");
+				
+			}
+			
+							printf("Robot ID:%u has claimed a puck\n", pickupActionsRequests->at(i).robotId);
+				Msg_Response_Pickup puckPickup = {pickupActionsRequests->at(i).robotId, pickupActionsRequests->at(i).puckId};
+				pickupActionsResponse->push_back(puckPickup);*/	
+			
 	}
-*/	
 	return 0;
 }
 
@@ -696,7 +748,7 @@ int GridGame::getPopulation(std::vector< Msg_DrawerObjectInfo >* results, float 
         l_ObjInfo.puckid = 0;        
 
         //send reset values if the robot is out of bounds, otherwise, send real position data
-        if (l_x >= left && l_x <= right && l_y <= top && l_y >= bottom)
+        //if (l_x >= left && l_x <= right && l_y <= top && l_y >= bottom)
         {
 		    l_ObjInfo.x_pos = l_x;
 		    l_ObjInfo.y_pos = l_y;

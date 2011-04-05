@@ -27,6 +27,8 @@ Robot::Robot(Math::Position *pos, float homeX, float homeY, unsigned int id):Gam
     // Puckheld is 0 when the robot is not holding a puck
     m_PuckHeld = 0;
     m_LastPickup = new Position();
+    
+    time(&searchTime);
 }
 
 
@@ -73,14 +75,20 @@ void Robot::updateSensors( SensedItemsList& sensedItems )
     SensedItemsList::iterator iter;
     for( iter = sensedItems.begin(); iter != sensedItems.end(); iter++)
     {
+    	std::pair<unsigned int, Location> object;
+    	object.first = (*iter).id;
+    	object.second = Location( (*iter).x, (*iter).y );
+    	
         DEBUGPRINT("Adding sensed item: %d, %d, %d\n", (*iter).id, (*iter).x, (*iter).y);
-        if( (*iter).id < 10000000 )
+        if( (*iter).id <= 10000000 )
         {
-            m_VisibleRobots.push_back( Location( (*iter).x, (*iter).y ) );
+        	
+            m_VisibleRobots.push_back( object );
         }
         else
         {
-            m_VisiblePucks.push_back( Location( (*iter).x, (*iter).y ) );
+			//printf("Robot has added a puck! %u\n", object.first);
+            m_VisiblePucks.push_back( object );
         }
     }
 }
@@ -119,48 +127,57 @@ int Robot::getAction(Msg_RobotInfo* action)
     //If holding a puck, drive home.
     if (Holding())
     {
+    	printf("Robot ID %u is holding a freaking puck!!! ZOMG\n", m_id);
         //Turn towards home.
         l_HeadingError = Math::AngleNormalize(l_Da - l_CurrentPos->getOrient());
         
         //If we're inside the home radius, drop the puck.
         if (l_Distance < (drand48() * Robot::HomeRadius))
         {
+        	printf("I'm at home\n");
             toPerform = ACTION_DROP_PUCK;
+            exit(0);
         }
     }
     else
     {   
         //If we're not holding a puck.
         //If there are pucks and I'm not at home.
+        
         if (m_VisiblePucks.size() > 0 && l_Distance > Robot::HomeRadius)
         {
             //Find the closest angle to the closest puck that is not being carried.
             float closestPuck = 1e9;
-            for (ObjectLocationList::iterator it = m_VisiblePucks.begin();
+            for (std::vector<std::pair<unsigned int, Location> >::iterator it = m_VisiblePucks.begin();
                     it != m_VisiblePucks.end(); it++)
             {
                 // If this puck is in range, try to pick it up, secondary
                 // plan is to adjust course towards the nearest puck
-                float puckX = it->first;
-                float puckY = it->second;
+                
+                
+                float puckX = it->second.first;
+                float puckY = it->second.second;
                 float distToPuck = hypot( puckX - l_x, puckY - l_y);
                 
                 if(distToPuck < Robot::PickupRange)
                 {
+                	//printf("Wanting to pickup puck!\n");
                     toPerform = ACTION_PICKUP_PUCK;
                     // TODO, sets this to the correct value
-                    action->puckid = 0;
+                    action->puckid = it->first;
                     m_LastPickup->setX(l_CurrentPos->getX());
                     m_LastPickup->setY(l_CurrentPos->getY()); 
                     break;
                 }
+		
+				printf("distToPuck:%f closestPuck:%f\n", distToPuck, closestPuck);
 
                 if (distToPuck < closestPuck)
                 {
                     float l_Dx = Math::WrapDistance(puckX - l_x, Robot::WorldSize);
                     float l_Dy = Math::WrapDistance(puckY - l_y, Robot::WorldSize);
                     closestPuck = distToPuck;
-                    l_HeadingError = Math::AngleNormalize(fast_atan(l_x,l_y) - l_orient);
+                    l_HeadingError = Math::AngleNormalize(fast_atan(l_Dx,l_Dy) - l_orient);
                 }
             }
         }
@@ -176,6 +193,7 @@ int Robot::getAction(Msg_RobotInfo* action)
             //then choose another place.
             if (hypot(l_Dx, l_Dy) < 0.05)
             {
+            	//printf("nothing found at old place\n");
                 m_LastPickup->setX(Math::DistanceNormalize(m_LastPickup->getX() + (drand48() * 0.4 -0.2),
                                                            l_WorldSize));
                 m_LastPickup->setY(Math::DistanceNormalize(m_LastPickup->getY() + (drand48() * 0.4 -0.2),
@@ -196,18 +214,22 @@ int Robot::getAction(Msg_RobotInfo* action)
     else
     {
         //Drive slow.
-        m_Speed->setForwSpeed(0.001);
+        printf("driving slow\n");
+        m_Speed->setForwSpeed(0.0001);
         //Turn to reduce error.
         m_Speed->setRotSpeed(0.2 * l_HeadingError);
     }
     
     //Create action
     action->robotid = this->getId();
+    
     if(toPerform == ACTION_MOVE)
     {
         action->speed = m_Speed->getForwSpeed();
         action->angle = m_Speed->getRotSpeed();
     }
+    
+
     return toPerform; 
 }
 

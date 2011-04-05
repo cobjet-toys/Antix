@@ -7,6 +7,7 @@ using namespace Game;
 
 GameObject::GameObject(Math::Position *pos):m_Position(pos)
 {
+	m_id = 0;
 }
 
 GameObject::GameObject(Math::Position *pos, unsigned int id):m_Position(pos)

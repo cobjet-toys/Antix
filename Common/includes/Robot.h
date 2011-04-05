@@ -10,6 +10,7 @@
 #include "Types.h"
 #include <list>
 #include <vector>
+#include <time.h>
 
 namespace Game
 {
@@ -112,9 +113,14 @@ public:
      static float WorldSize;
 
 private: 
+
+    time_t searchTime;
+
     /**
      * Current speed of the object.
      */
+     
+     
     Math::Speed* m_Speed;
 
     /**
@@ -130,8 +136,11 @@ private:
     /**
      * Collection of visible objects, resets at every update.
      */
-    ObjectLocationList m_VisiblePucks;
-    ObjectLocationList m_VisibleRobots;
+    //ObjectLocationList m_VisiblePucks;
+    //ObjectLocationList m_VisibleRobots;
+    
+    std::vector<std::pair<unsigned int, Location> > m_VisiblePucks;
+    std::vector<std::pair<unsigned int, Location> > m_VisibleRobots;
 
     /*
      * Absolute location of this robot's home

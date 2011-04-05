@@ -181,6 +181,8 @@ void drawRobots(int edgePoints)
             int xPos = (int)robotPos->getX();
             int yPos = (int)robotPos->getY();
 
+			float tPI = 2*M_PI;
+
             if(xPos > left - 10 && xPos < right + 10 && xPos != -1)
             {
                 if(yPos > bottom - 10 && yPos < top + 10)
@@ -192,7 +194,8 @@ void drawRobots(int edgePoints)
                         sPts[(edgePoints*2*d) + (2*a) + 1] = robotPos->getY() + yRobotVals[(int)(a*360/edgePoints)];
                     }
 
-                    int angle = (int)((robotPos->getOrient()/(2*M_PI))*360);
+                    int angle = 90 - (int)((robotPos->getOrient()/tPI)*360);
+                    while(angle < 0){angle += 360;}
     
                     // Sets the heading line points for each robot
                     lPts[(4*d) + 0] = robotPos->getX();
@@ -205,6 +208,13 @@ void drawRobots(int edgePoints)
                     colors[3*d + 0] = colorArray[(colorIndex*3) + 0];
                     colors[3*d + 1] = colorArray[(colorIndex*3) + 1];
                     colors[3*d + 2] = colorArray[(colorIndex*3) + 2];
+
+					/*if(d < 5)
+					{
+				    	char tmpBuf[80];
+						sprintf(tmpBuf, "Robots[%d]: angle: %f, calcAngle", i, robotPos->getOrient(), angle);
+						drawText(tmpBuf, 5, drawServerRef->getWindowSize() - 90, false);
+					}*/
 
                     d++;
                 }
@@ -224,15 +234,15 @@ void drawRobots(int edgePoints)
             glDrawArrays(GL_LINE_LOOP, x*edgePoints, edgePoints);     
         }
 
-		/*
-        // Draw robot orientation lines
+		
+        //Draw robot orientation lines
         glVertexPointer(2, GL_FLOAT, 0, &lPts[0]);
         for (int x = 0; x < d; x++)
         {
             glColor3f(colors[(x*3)], colors[(x*3) + 1], colors[(x*3) + 2]);
             glDrawArrays(GL_LINE_LOOP, x*2, 2);
         }
-        */
+        
 
         // Deactivate vertex arrays after drawing
         glDisableClientState(GL_VERTEX_ARRAY);

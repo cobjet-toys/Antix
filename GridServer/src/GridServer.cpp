@@ -780,6 +780,8 @@ int GridServer::handler(int fd)
                              
                     for (int i = 0; i < l_dropObjectCountMsg.msgSize; i++)
                     {
+                    
+                    
                     	Msg_Request_Drop l_requestDrop;
                     	
                     	DEBUGPRINT("GRID_SERVER STATUS:\t Unpacking DROP request\n");
@@ -800,6 +802,8 @@ int GridServer::handler(int fd)
                     
                     for (int i = 0; i < l_pickupObjectCountMsg.msgSize; i++)
                     {
+                    	printf("GRID_SERVER STATUS\t Robot is trying to puckup a puck\n");
+
                     	Msg_Request_Pickup l_requestPickup;
                     	
                     	DEBUGPRINT("GRID_SERVER STATUS:\t Unpacking PICKUP request\n");
@@ -1274,7 +1278,8 @@ int GridServer::handler(int fd)
                     //change send-to-drawer status accordingly
                     float l_gridLeft = gridGameInstance->getLeftBoundary();
                     float l_gridRight = gridGameInstance->getRightBoundary();
-                    m_updateDrawerFlag = !(l_gridLeft > configData.right || l_gridRight < configData.left);
+                    //m_updateDrawerFlag = !(l_gridLeft > configData.right || l_gridRight < configData.left);
+                    m_updateDrawerFlag = true;
                     m_drawerTop = configData.top;
                     m_drawerBottom = configData.bottom;
                     m_drawerLeft = configData.left;
