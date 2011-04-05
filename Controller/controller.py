@@ -227,10 +227,10 @@ class BashScriptException(Exception):
 
 # Get the user argument
 if (len(sys.argv) != 7) and (len(sys.argv) != 8):
-    print "Usage: python controller.py <sfu_username> <path/to/antix/directory/in/your/home/directory/> <grid config file> <drawer config file> <controller config file> <client config file> optional:BUILD"
+    print "Usage: python controller.py <sfu_username> <path/to/antix/directory/in/your/home/directory/> <grid config file> <drawer config file> <controller config file> <client config file> optional:BUILD\n"
     print "For example(with build): python contoller.py hha13 ~/Documents/Antix/ grid.config drawer.config controller.config BUILD"
-    print "For example(without build): python contoller.py hha13 ~/Documents/Antix/ grid.config drawer.config controller.config"
-    print "Also, make sure you've set up SSH keys for your account."
+    print "For example(without build): python contoller.py hha13 ~/Documents/Antix/ grid.config drawer.config controller.config client.config\n"
+    print "Also, make sure you've set up SSH keys for your account.\n"
     print len(sys.argv)
     sys.exit()
 
