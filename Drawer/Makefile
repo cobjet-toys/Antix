@@ -43,9 +43,9 @@ drawer_debug: common_debug drawer_depend drawer_debug_objects
 	$(shell cd $(drawer_DEBUG_PATH)/; $(drawer_COMPILER) -g -lpthread -o $(drawer_EXECUTABLE) $(drawer_DEBUG_OBJ) $(PWD)/$(ROOT_DIR)/build/debug/libcommon.a $(GLUTLIBS) $(GLUTFLAGS) )
 	@echo "Building DEBUG drawer COMPLETE --------------------------------------------------------"
 
-drawer: common drawer_depend drawer_release_objects
+drawer: common_debug drawer_depend drawer_release_objects
 	@echo "Building RELEASE --------------------------------------------------------------------------------"
-	$(shell cd $(drawer_RELEASE_PATH)/; $(drawer_COMPILER) -lpthread -o $(drawer_EXECUTABLE) $(drawer_RELEASE_OBJ) $(PWD)/$(ROOT_DIR)/build/release/libcommon.a $(GLUTLIBS) $(GLUTFLAGS) )
+	$(shell cd $(drawer_RELEASE_PATH)/; $(drawer_COMPILER) -lpthread -o $(drawer_EXECUTABLE) $(drawer_RELEASE_OBJ) $(PWD)/$(ROOT_DIR)/build/debug/libcommon.a $(GLUTLIBS) $(GLUTFLAGS) )
 	@echo "Building drawer COMPLETE --------------------------------------------------------------"
 
 drawer_depend:

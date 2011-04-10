@@ -153,8 +153,13 @@ int Network::ClockServer::SendHeartBeat()
    	m_responded = 0;
    	int fd;
 	DEBUGPRINT("CLOCK_SERVER STATUS:\t All ROBOT_CLIENTS and GRID_SERVERS ready\n");
-	
-	std::vector<int>::const_iterator l_End = m_clientList.end();
+
+#ifdef STEP_BY_STEP
+    char c;
+    std::cin >> c;
+#endif
+
+    std::vector<int>::const_iterator l_End = m_clientList.end();
 	
 	TcpConnection * conn;
 	

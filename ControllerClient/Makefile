@@ -31,7 +31,7 @@ controller_debug: common_debug controller_depend controller_debug_objects
 
 controller: common controller_depend controller_release_objects
 	@echo "Building RELEASE --------------------------------------------------------------------------------"
-	$(shell cd $(controller_RELEASE_PATH)/; $(controller_COMPILER) -o $(controller_EXECUTABLE) $(controller_RELEASE_OBJ) $(controller_PWD)/$(ROOT_DIR)/build/release/libcommon.a )
+	$(shell cd $(controller_RELEASE_PATH)/; $(controller_COMPILER) -O2 -o $(controller_EXECUTABLE) $(controller_RELEASE_OBJ) $(controller_PWD)/$(ROOT_DIR)/build/release/libcommon.a )
 	@echo "Building controller COMPLETE -------------------------------------------------------------------------"
 
 controller_depend:
@@ -42,7 +42,7 @@ controller_depend:
 
 controller_release_objects:
 	@echo "Building controller release objects ------------------------------------------------------------------"
-	$(shell cd $(controller_RELEASE_OBJ_PATH); $(controller_COMPILER) -c -I$(controller_INCLUDE_PATH) -I$(controller_INCLUDE_COMMON_PATH) $(addprefix $(controller_SRC_PATH)/, $(controller_SRC)))
+	$(shell cd $(controller_RELEASE_OBJ_PATH); $(controller_COMPILER) -O2 -c -I$(controller_INCLUDE_PATH) -I$(controller_INCLUDE_COMMON_PATH) $(addprefix $(controller_SRC_PATH)/, $(controller_SRC)))
 	@echo "Building controller release objects COMPLETE --------------------------------------------------------"
 
 controller_debug_objects:

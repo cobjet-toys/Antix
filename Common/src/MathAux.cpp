@@ -54,7 +54,7 @@ float Math::AngleNormalize(const float& a)
  * Fast Arc-tangent, arc-cos, and arc-sin code. Credit to Richard Vaughan
  * and the internet.
  */
-float Math::atan(const float& x, const float& y)
+float Math::fast_atan(const float& x, const float& y)
 {
     const float piD2( M_PI/2.0 );
     float atan;
@@ -85,7 +85,7 @@ float Math::atan(const float& x, const float& y)
     return atan;
 }
   
-float Math::sin(const float& t)
+float Math::fast_sin(const float& t)
 {
     const float B = 4/M_PI;
     const float C = -4/(M_PI*M_PI);
@@ -94,7 +94,7 @@ float Math::sin(const float& t)
     return( P * (tp * fabs(tp) - tp) + tp );
 }
   
-float Math::cos(const float& t)
+float Math::fast_cos(const float& t)
 {
     const float B = 4/M_PI;
     const float C = -4/(M_PI*M_PI);

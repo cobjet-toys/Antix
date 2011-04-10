@@ -44,10 +44,9 @@ namespace Network
         virtual int handler(int fd);
 		int initGrid(const char * host, const char * port);
 		int sendGridConfig(int grid_fd);
-        void initTeams();
-        void updateObject(Msg_RobotInfo newInfo);        
+        void updateObject(Msg_DrawerObjectInfo newInfo);        
         
-        void updateViewRange(float top, float bottom, float left, float right);        
+        void updateViewRange(float left, float top, float right, float bottom);        
         
         int getWindowSize() { return this->m_windowSize; }
         float getWorldSize() { return this->m_worldSize; }
@@ -100,10 +99,10 @@ namespace Network
         std::vector<Game::Team*> m_teams;
         
         uint32_t m_framestep;
-        float m_viewTop;
-        float m_viewBottom;
         float m_viewLeft;
+        float m_viewTop;
         float m_viewRight;
+        float m_viewBottom;
     };
 }
 

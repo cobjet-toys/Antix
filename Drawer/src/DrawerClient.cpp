@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <stdio.h>
 
+#define PUCK_ID_SHIFT 10000000
+
 using namespace Network;
 
 DrawServer* DrawServer::m_instance = NULL;
@@ -13,11 +15,11 @@ DrawServer* DrawServer::m_instance = NULL;
 DrawServer::DrawServer()
 {    
     this->m_windowSize = 600;
-    this->m_worldSize = 1.0;
+    this->m_worldSize = 1.0f;
     this->m_FOVEnabled = false;
-    this->m_FOVAngle = 0.0;
-    this->m_FOVRange = 0.0;
-    this->m_homeRadius = 20.0;
+    this->m_FOVAngle = 0.0f;
+    this->m_FOVRange = 0.0f;
+    this->m_homeRadius = 20.0f;
     this->m_framestep = 0;
     this->m_drawerDataType = DRAWER_FULLDETAILS;    
     
@@ -100,7 +102,7 @@ size_t DrawServer::initRobots(int size)
 			ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initRobots()\n");
 			return -1;
 		}
-		robot = new Game::Robot(pos, teamId, i);
+		robot = new Game::Robot(pos, i);
 		if(robot == NULL)
 		{
 			ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for robot in initRobots()\n");
@@ -141,13 +143,12 @@ size_t DrawServer::initPucks(int size)
     return this->m_pucks.size();
 }
 
-void DrawServer::updateViewRange(float top, float bottom, float left, float right)
+void DrawServer::updateViewRange(float left, float top, float right, float bottom)
 {	
-	//update view range
-	this->m_viewTop = top;
-	this->m_viewBottom = bottom;	
 	this->m_viewLeft = left;
+	this->m_viewTop = top;
 	this->m_viewRight = right;
+	this->m_viewBottom = bottom;	
 	
 	//reset puck and robot positions	
 	for(int i=0; i<this->m_pucks.size(); i++)
@@ -169,6 +170,11 @@ void DrawServer::updateViewRange(float top, float bottom, float left, float righ
 
 int DrawServer::sendGridConfig(int grid_fd)
 {
+	if (grid_fd < 0)
+	{
+		ERRORPRINT("DRAWSERVER ERROR:\t Grid fiile descriptor cannot be negative\n");
+		return 0;
+	}
 	//send config to grid
     TcpConnection * l_curConn = m_serverList[grid_fd];
 	if(l_curConn == NULL)
@@ -197,57 +203,41 @@ int DrawServer::sendGridConfig(int grid_fd)
     //Pack config message
 	l_DrawerConfig.send_data = 'T';
 	l_DrawerConfig.data_type = this->m_drawerDataType;
-	l_DrawerConfig.tl_x = this->m_viewLeft;
-	l_DrawerConfig.tl_y = this->m_viewTop;
-	l_DrawerConfig.br_x = this->m_viewRight;
-	l_DrawerConfig.br_y = this->m_viewBottom;
+	l_DrawerConfig.top = this->m_viewTop;
+	l_DrawerConfig.bottom = this->m_viewBottom;
+	l_DrawerConfig.right = this->m_viewRight;
+	l_DrawerConfig.left = this->m_viewLeft;
     pack(l_Buffer+l_BufferOf, Msg_DrawerConfig_format, 
-    	l_DrawerConfig.send_data, l_DrawerConfig.data_type, l_DrawerConfig.tl_x, l_DrawerConfig.tl_y, l_DrawerConfig.br_x, l_DrawerConfig.br_y);
+    	l_DrawerConfig.send_data, l_DrawerConfig.data_type, l_DrawerConfig.top, l_DrawerConfig.bottom, l_DrawerConfig.left, l_DrawerConfig.right);
     
     return sendWrapper(l_curConn, l_Buffer, l_MessageSize);   
 }
 
-void DrawServer::initTeams()
-{    
-    if (this->m_teams.size() == 0)
-    {
-    	Math::Position *homePos = new Math::Position(55.0, 150.0, 0.0);
-		if(homePos == NULL)
-		{
-			ERRORPRINT("DRAWSERVER ERROR:\t Failed to allocate memory for position in initTeams()\n");
-		}
-        this->m_teams[1] = new Game::Team(homePos, 1);
-    }
-
-    DEBUGPRINT("Teams=%zu\n", this->m_teams.size());
-}
-
-void DrawServer::updateObject(Msg_RobotInfo newInfo)
+void DrawServer::updateObject(Msg_DrawerObjectInfo newInfo)
 {    
     uint32_t objType, objId, objIndex, puckIndex;
     Antix::getTypeAndId(newInfo.robotid, &objType, &objId);
 	objIndex = objId - 1;
-	objType = objId > 10000000;
+	objType = objId > PUCK_ID_SHIFT;
 	
 	try
 	{
 		if(objType == PUCK)
 		{
-			objIndex -= 10000000;
-		    this->m_pucks.at(objIndex)->setPosition(newInfo.x_pos, newInfo.y_pos, 0.0);
+			objIndex -= PUCK_ID_SHIFT;
+		    this->m_pucks.at(objIndex)->setPosition(newInfo.x_pos, newInfo.y_pos, 0.0f);
 			//DEBUGPRINT("Puck[%d]: x=%f, y=%f\n", objIndex, this->m_pucks.at(objIndex)->getPosition()->getX(), this->m_pucks.at(objIndex)->getPosition()->getY() );  		
 		}
 		else
 		{    
 			this->m_robots.at(objIndex)->setPosition(newInfo.x_pos, newInfo.y_pos, newInfo.angle);
-		    this->m_robots.at(objIndex)->m_PuckHeld = newInfo.puckid;		    
-	    	puckIndex = newInfo.puckid - 10000000;
+		    this->m_robots.at(objIndex)->setPuckHeld(newInfo.puckid);
 		    
-		    if (puckIndex > 0)
-		    {
-		    	this->m_pucks.at(puckIndex)->setPosition(-1.0, -1.0, 0.0);
-		    }
-		    //DEBUGPRINT("Robot[%d]: x=%f, y=%f\n", objIndex, this->m_robots.at(objIndex)->getPosition()->getX(), this->m_robots.at(objIndex)->getPosition()->getY() );  		
+		    puckIndex = newInfo.puckid - PUCK_ID_SHIFT;
+		    if (puckIndex > 0 && this->m_pucks.size() > puckIndex)
+		    	this->m_pucks.at(puckIndex)->setPosition(-1.0f, -1.0f, 0.0f);
+		    
+		    DEBUGPRINT("Robot[%d]: x=%f, y=%f, puck=%d\n", objIndex, this->m_robots.at(objIndex)->getPosition()->getX(), this->m_robots.at(objIndex)->getPosition()->getY(), this->m_robots.at(objIndex)->getPuckHeld() );  		
 		}
 	}
 	catch (std::exception &e)
@@ -286,7 +276,7 @@ int DrawServer::handler(int fd)
                     DEBUGPRINT("MSG_GRIDDATAFULL\n");
                     
                     Msg_MsgSize l_NumObjects;
-	                Msg_RobotInfo l_ObjInfo;
+	                Msg_DrawerObjectInfo l_ObjInfo;
 	                unsigned char * l_ObjInfoBuf = new unsigned char[l_ObjInfo.size];
 	                
                     //Receive the total number of robots we are getting sens info for.
@@ -300,11 +290,8 @@ int DrawServer::handler(int fd)
                         
                         recvWrapper(l_Conn, l_ObjInfoBuf, l_ObjInfo.size);
 
-                        unpack(l_ObjInfoBuf, Msg_RobotInfo_format,
-                                &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.speed, &l_ObjInfo.angle, &l_ObjInfo.puckid, &l_ObjInfo.gridid );
-
-                        //DEBUGPRINT("Object: id=%d\tx=%f\ty=%f\tangle=%f\tpuck=%d\n",
-                        	        //l_ObjInfo.robotid, l_ObjInfo.x_pos, l_ObjInfo.y_pos, l_ObjInfo.angle, l_ObjInfo.puckid );
+                        unpack(l_ObjInfoBuf, Msg_DrawerObjectInfo_format,
+                                &l_ObjInfo.robotid, &l_ObjInfo.x_pos, &l_ObjInfo.y_pos, &l_ObjInfo.angle, &l_ObjInfo.puckid );
                                 
                         updateObject(l_ObjInfo);
                     }

@@ -11,13 +11,22 @@ using std::cout;
 using std::endl;
 using std::find;
 
-RobotGame::RobotGame()
+RobotGame::RobotGame(float robotFOV, float robotRadius, float sensorRange, float pickupRange, float worldSize, float homeRadius)
 {
-    //TODO: these should come out of the config
-    robot_FOV = Math::dtor(90.0);
-    robot_Radius = 0.01;
-    robot_SensorRange = 0.1;
-    robot_PickupRange = robot_SensorRange / 5.0;
+
+    robot_FOV = robotFOV;
+    robot_Radius = robotRadius;
+    robot_SensorRange = sensorRange;
+    robot_PickupRange = pickupRange;
+    robot_WorldSize = worldSize;
+    robot_HomeRadius = homeRadius;
+    
+    Robot::FOV = robot_FOV;
+    Robot::Radius = robot_Radius;
+    Robot::SensorRange = robot_SensorRange;
+    Robot::PickupRange = robot_PickupRange;
+    Robot::WorldSize = robot_WorldSize;
+    Robot::HomeRadius = robot_HomeRadius;
 }
 
 RobotGame::~RobotGame()
@@ -42,7 +51,9 @@ int RobotGame::setTeamRobot(int gridId, int teamId, Msg_InitRobot robot)
 		ERRORPRINT("ROBOTGAME ERROR:\t Failed to allocate memory for robotPosition in setTeamRobot()\n");
 		return -1;
 	}
-    Game::Robot* l_Robot = new Robot(l_robotPosition, teamId, robot.id);
+    
+    std::pair<float,float> homeLoc = m_homeLocations[teamId];
+    Game::Robot* l_Robot = new Robot(l_robotPosition, homeLoc.first, homeLoc.second, robot.id);
 	if(l_Robot == NULL)
 	{
 		ERRORPRINT("ROBOTGAME ERROR:\t Failed to allocate memory for robot in setTeamRobot()\n");
@@ -101,7 +112,7 @@ int RobotGame::receiveSensorData(vector< std::pair<uid, std::vector<Msg_SensedOb
 }
 
 // Send and recieve actions
-int RobotGame::sendAction(int grid_id, vector<Msg_Action>* robot_actions)
+int RobotGame::sendAction(int grid_id, std::vector<Msg_Request_Movement> *positionUpdates, std::vector<Msg_Request_Drop> *puckDrops, std::vector<Msg_Request_Pickup> *puckPickups)
 {
     // after a decision has been made, send it to the client
     // Shawn mentioned how the client and the grid would do this calculation twice,
@@ -110,19 +121,55 @@ int RobotGame::sendAction(int grid_id, vector<Msg_Action>* robot_actions)
     // that it picks up or moves, the calculation is trivial.
     // in the case that it moves, the robot only DECIDES to move, and doesn't calculate
     // it's new position so i don't think we need to change this.
-
+    
+    
+	if (positionUpdates == NULL || puckDrops == NULL || puckPickups == NULL) return -2; // failed because of bad input
+	
     // Get list of robots for this grid
-    vector<Msg_Action>& l_robotActions = *robot_actions;
+
     RobotList robots = m_robotsByGrid[grid_id];
     RobotList::iterator iter;
-   
+    RobotList::iterator iterEnd = robots.end();
+    Msg_RobotInfo actionRequest;
+       
     DEBUGPRINT("Getting actions for grid id %d with %zu robots\n", grid_id, robots.size()); 
     // Loop through the robots, and get an action to do for each robot
-    for(iter = robots.begin(); iter != robots.end(); iter++)
+    for(iter = robots.begin(); iter != iterEnd; iter++)
     {
         DEBUGPRINT("Accessing robot with with id %d\n", (*iter)->getId());
-        Msg_Action l_action = (*iter)->getAction();
-        l_robotActions.push_back(l_action);
+        int action = (*iter)->getAction(&actionRequest);
+        if (action == ACTION_MOVE)
+        {
+        	Msg_Request_Movement moveRequest;
+        	
+			moveRequest.robotId = actionRequest.robotid;
+			moveRequest.rotationSpeed = actionRequest.angle;
+			moveRequest.forwardSpeed = actionRequest.speed;
+        	
+        	positionUpdates->push_back(moveRequest);
+        	
+        }
+        else if (action == ACTION_PICKUP_PUCK)
+        {
+        	Msg_Request_Drop dropRequest;
+            dropRequest.robotId = actionRequest.robotid;
+			
+			puckDrops->push_back(dropRequest);
+			
+        } 
+        else if (action == ACTION_DROP_PUCK)
+        {
+        	Msg_Request_Pickup pickupRequest;
+            pickupRequest.robotId = actionRequest.robotid;
+			pickupRequest.puckId = actionRequest.puckid;       
+			
+			puckPickups->push_back(pickupRequest);
+			
+        } 
+        else
+        {
+        	return -1; // the robot returned a malformed action
+        }    
     }
 
     return 0;
@@ -144,9 +191,8 @@ int RobotGame::actionResult(vector<Msg_RobotInfo>* results)
             return -1;
         }
         
-        // TODO Currently our action_result message does not send a rotational velocity
-        l_robotp->setSpeed( new Math::Speed( result.speed, 0.0) );
         l_robotp->setPosition( result.x_pos, result.y_pos, result.angle );
+        l_robotp->setPuckHeld( result.puckid );
         
         int oldGridId = m_robotGrids.find(robotId)->second;
         int newGridId = result.gridid;
@@ -173,3 +219,54 @@ int RobotGame::actionResult(vector<Msg_RobotInfo>* results)
     return 0;
 }
 
+int RobotGame::actionResult(vector<Msg_Response_Movement> *positionUpdates, 
+									vector<Msg_Response_Drop> *puckDrops, 
+									vector<Msg_Response_Pickup> *puckPickups
+								)
+{
+    // for a grid, it updates the new positions (and status) of all robots
+    // question: shouldn't the action_results type have a robot
+	if (positionUpdates == NULL || puckDrops == NULL || puckPickups == NULL) return -2;
+	
+    for(int i = 0; i < positionUpdates->size(); i++)
+    {
+        uid robotId = positionUpdates->at(i).robotId;
+        Msg_Response_Movement result = positionUpdates->at(i);
+        
+        Robot* l_robotp = m_robots[robotId];
+        
+        if(l_robotp == NULL)
+        {
+			ERRORPRINT("ROBOTGAME ERROR:\t Invalid robotID %d for this grid, in actionResult()\n", robotId);
+            return -1;
+        }
+        
+        // TODO Currently our action_result message does not send a rotational velocity
+
+        l_robotp->setPosition( result.xPos, result.yPos, result.orientation );
+        
+        int oldGridId = m_robotGrids.find(robotId)->second;
+        int newGridId = result.gridId;
+
+        if(oldGridId != newGridId)
+        {
+            DEBUGPRINT("Moving robot %d from OldGridId: %d, to new gridId, %d\n",robotId, oldGridId, newGridId);
+            // Remove from the reference to oldGrid
+            std::vector<Robot*>::iterator toRemove = std::remove( m_robotsByGrid[oldGridId].begin(),
+                                                                  m_robotsByGrid[oldGridId].end(),
+                                                                  l_robotp );
+            if(toRemove != m_robotsByGrid[oldGridId].end())
+            {
+                m_robotsByGrid[oldGridId].erase( toRemove );
+                m_robotsByGrid[newGridId].push_back(l_robotp);
+                m_robotGrids[robotId] = newGridId;
+            }
+            else
+            {
+                DEBUGPRINT("Robot not found in oldGrid %d", oldGridId);
+            }
+        }
+    }
+    
+    return 0;
+}

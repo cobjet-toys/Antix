@@ -40,6 +40,8 @@ namespace NetworkCommon
      * Pack the 'header' message into the buffer.
      */
     int packSensReqMessage(unsigned char * buffer, Msg_RequestSensorData *header);
+    
+	int recvMessageSize32(Msg_MsgSize_32 &msg, TcpConnection * curConnection);
 }
 
 #endif

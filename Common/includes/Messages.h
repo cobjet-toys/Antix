@@ -56,6 +56,13 @@ enum
 	DRAWER_COMPRESSEDDETAILS = 'C',
 };
 
+enum
+{
+	ACTION_MOVE = 0,
+	ACTION_PICKUP_PUCK = 1,
+	ACTION_DROP_PUCK = 2
+};
+
 typedef struct
 {
     uint32_t id;
@@ -110,6 +117,12 @@ typedef struct{
 	static const size_t size = 2;
 } Msg_MsgSize;
 static const char* Msg_MsgSize_format = "h"; 
+
+typedef struct{
+	uint32_t msgSize; //THIS IS THE NUMBER OF OBJECTS WE ARE REQUESTING
+	static const size_t size = 4;
+} Msg_MsgSize_32;
+static const char* Msg_MsgSize_32_format = "l"; 
 
 typedef struct
 {
@@ -182,15 +195,26 @@ typedef struct{
     uint16_t gridid;        //2
 	static const size_t size = 26;
 } Msg_RobotInfo;
+
 static const char * Msg_RobotInfo_format = "lfffflh";
+
+typedef struct{
+    uint32_t robotid;       //4
+    float x_pos;            //4
+    float y_pos;            //4
+    float angle;            //4
+    uint32_t puckid;        //4
+	static const size_t size = 20;
+} Msg_DrawerObjectInfo;
+static const char * Msg_DrawerObjectInfo_format = "lfffl";
 
 typedef struct{
    	char send_data;			//'T' or 'F'
     char data_type;			//'F' or 'C'
-    float tl_x;				// top-left corner x; 0 for full grid
-    float tl_y;				// top-left corner y; 0 for full grid
-    float br_x;				// bottom-right corner x; 0 for full grid
-    float br_y;				// bottom-right corner y; 0 for full grid
+    float top;				// top edge of view; 0 for full grid
+    float bottom;			// bottom edge of view; 0 for full grid
+    float left;				// left edge of view; 0 for full grid
+    float right;			// right edge of view; 0 for full grid
 	static const size_t size = 18;
 } Msg_DrawerConfig;
 static const char * Msg_DrawerConfig_format = "ccffff";
@@ -229,5 +253,49 @@ typedef struct{
 	static const size_t size = 1;
 } Msg_ClockStatus;
 static const char * Msg_ClockStatus_format = "c";
+
+typedef struct {
+	uint32_t	robotId;
+	float	xPos;
+	float	yPos;
+	float	orientation;
+	char	gridId;
+	static const size_t size = 17;
+} Msg_Response_Movement;
+static const char * Msg_Response_Movement_format = "lfffc";
+
+typedef struct {
+	uint32_t robotId;
+	static const size_t size = 4;
+} Msg_Response_Drop;
+static const char * Msg_Response_Drop_format = "l";
+
+typedef struct {
+	uint32_t robotId;
+	uint32_t puckId;
+	static const size_t size = 8;	
+} Msg_Response_Pickup;
+static const char * Msg_Response_Pickup_format = "ll";
+
+typedef struct {
+	uint32_t robotId;
+	float forwardSpeed;
+	float rotationSpeed;
+	static const size_t size = 12;	
+} Msg_Request_Movement;
+static const char * Msg_Request_Movement_format = "lff";
+
+typedef struct {
+	uint32_t robotId;
+	uint32_t puckId;
+	static const size_t size = 8;	
+} Msg_Request_Pickup;
+static const char * Msg_Request_Pickup_format = "ll";
+
+typedef struct {
+	uint32_t robotId;
+	static const size_t size = 4;	
+} Msg_Request_Drop;
+static const char * Msg_Request_Drop_format = "l";
 
 #endif

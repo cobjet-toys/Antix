@@ -18,9 +18,8 @@ class RobotGame
 {
 public:
 
-    RobotGame();
+    RobotGame(float robotFOV, float robotRadius, float sensorRange, float pickupRange, float worldSize, float homeRadius);
     ~RobotGame();
-
 
     // Initialization functions
     //int intitializeTeam(int grid_id, vector<int> team_mapping);
@@ -38,10 +37,12 @@ public:
 	int receiveSensorData(vector< pair<uid, vector<Msg_SensedObjectGroupItem> > >* sensor_data);
 
     // Send and recieve actions
-    int sendAction(int grid_id, vector<Msg_Action>* robot_actions);
+	int sendAction(int grid_id, vector<Msg_Action>* robot_actions);
     int actionResult(vector<Msg_RobotInfo>* results);
 
-
+	// NEW INTERFACE
+    int sendAction(int grid_id, std::vector<Msg_Request_Movement> *positionUpdates, std::vector<Msg_Request_Drop> *puckDrops, std::vector<Msg_Request_Pickup> *puckPickups);
+    int actionResult(vector<Msg_Response_Movement> *positionUpdates, vector<Msg_Response_Drop> *puckDrops, vector<Msg_Response_Pickup> *puckPickups);
 
 private:
 
@@ -61,6 +62,9 @@ private:
     float robot_Radius;
     float robot_SensorRange;
     float robot_PickupRange;
+    float robot_WorldSize;
+    float robot_HomeRadius;
+    
 };
 
 #endif // __ROBOTGAME_H__

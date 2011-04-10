@@ -9,26 +9,32 @@
 using namespace Game;
 using namespace Antix;
 
-Robot::Robot(Math::Position *pos, int teamid, unsigned int id):GameObject(pos, id)
+float Robot::FOV;
+float Robot::Radius;
+float Robot::HomeRadius;
+float Robot::PickupRange;
+float Robot::SensorRange;
+float Robot::WorldSize;
+
+
+Robot::Robot(Math::Position *pos, float homeX, float homeY, unsigned int id):GameObject(pos, id)
 {
     m_Speed = new Math::Speed();
-    m_TeamId = teamid;
+    m_Position = pos;
+    m_homeX = homeX;
+    m_homeY = homeY;
 
-    //TODO: get TEAM_SIZE from the config
-    //int TEAM_SIZE = 1000;
-    //m_Team = id/TEAM_SIZE;
-    
+    // Puckheld is 0 when the robot is not holding a puck
     m_PuckHeld = 0;
+    m_LastPickup = new Position();
 }
 
 
 Robot::Robot(Math::Position *pos, unsigned int id):GameObject(pos, id)
 {
     m_Speed = new Math::Speed();
-
-    //TODO: get TEAM_SIZE from the config
-    //int TEAM_SIZE = 1000;
-    //m_Team = id/TEAM_SIZE;
+    m_Position = pos;
+    m_LastPickup = new Position();
 }
 
 Robot::~Robot()
@@ -57,7 +63,7 @@ void Robot::updatePosition(const float x_pos, const float y_pos)
     return;
 }
 
-void Robot::updateSensors( SensedItemsList sensedItems )
+void Robot::updateSensors( SensedItemsList& sensedItems )
 {
     // TODO Might be a more optimal way to do this, diffs?
     m_VisiblePucks.clear();
@@ -68,7 +74,7 @@ void Robot::updateSensors( SensedItemsList sensedItems )
     for( iter = sensedItems.begin(); iter != sensedItems.end(); iter++)
     {
         DEBUGPRINT("Adding sensed item: %d, %d, %d\n", (*iter).id, (*iter).x, (*iter).y);
-        if( getType((*iter).id) == ROBOT )
+        if( (*iter).id < 10000000 )
         {
             m_VisibleRobots.push_back( Location( (*iter).x, (*iter).y ) );
         }
@@ -79,27 +85,37 @@ void Robot::updateSensors( SensedItemsList sensedItems )
     }
 }
 
-Msg_Action Robot::getAction()
+void Robot::setPuckHeld(uid puckId)
 {
-    Msg_Action l_action;
-    l_action.robotid = this->getId();
-    l_action.action = 1;
-    l_action.speed = 1.0;
-    l_action.angle = 0.0f;
-    return l_action;
-/*
+    m_PuckHeld = puckId;
+    return;
+}
+
+uid Robot::getPuckId()
+{
+    return m_PuckHeld;
+}
+
+
+int Robot::getAction(Msg_RobotInfo* action)
+{
+	if (action == NULL) return -2; // invalid input
+    unsigned int toPerform = ACTION_MOVE;
+
     float l_HeadingError = 0.0;
 
     Position* l_CurrentPos = getPosition();
-    Position* l_HomePos = m_Home->getPosition();
-    float l_WorldSize = Robotix::getInstance()->getWorldSize();
+    float l_WorldSize = Robot::WorldSize;
 
-    //Distance and angle to home.
-    float l_Dx = Math::WrapDistance(l_HomePos->getX() - l_CurrentPos->getX(), l_WorldSize);
-    float l_Dy = Math::WrapDistance(l_HomePos->getY() - l_CurrentPos->getY(), l_WorldSize);
-    float l_Da = atan2(l_Dy, l_Dx);
+    float l_x = l_CurrentPos->getX();
+    float l_y = l_CurrentPos->getY();
+    float l_orient = l_CurrentPos->getOrient();
+
+    float l_Dx = Math::WrapDistance(m_homeX - l_x, Robot::WorldSize);
+    float l_Dy = Math::WrapDistance(m_homeY - l_y, Robot::WorldSize);
+    float l_Da = fast_atan(l_Dx, l_Dy);
     float l_Distance = hypot(l_Dx, l_Dy);
-
+    
     //If holding a puck, drive home.
     if (Holding())
     {
@@ -107,34 +123,45 @@ Msg_Action Robot::getAction()
         l_HeadingError = Math::AngleNormalize(l_Da - l_CurrentPos->getOrient());
         
         //If we're inside the home radius, drop the puck.
-        if (l_Distance < (drand48() * m_Home->getRadius()))
-            Drop();
+        if (l_Distance < (drand48() * Robot::HomeRadius))
+        {
+            toPerform = ACTION_DROP_PUCK;
+        }
     }
-    //If we're not holding a puck.
     else
-    {
+    {   
+        //If we're not holding a puck.
         //If there are pucks and I'm not at home.
-        if (m_VisiblePucks.size() > 0 && l_Distance > m_Home->getRadius())
+        if (m_VisiblePucks.size() > 0 && l_Distance > Robot::HomeRadius)
         {
             //Find the closest angle to the closest puck that is not being carried.
-            float l_ClosestRange = 1e9;
-            for (std::list<VisiblePuckPtr>::iterator it = m_VisiblePucks.begin();
+            float closestPuck = 1e9;
+            for (ObjectLocationList::iterator it = m_VisiblePucks.begin();
                     it != m_VisiblePucks.end(); it++)
             {
-                VisiblePuckPtr l_Puck = *it;
-                if (l_Puck.getRange() < l_ClosestRange && !l_Puck.getObject()->isHeld())
+                // If this puck is in range, try to pick it up, secondary
+                // plan is to adjust course towards the nearest puck
+                float puckX = it->first;
+                float puckY = it->second;
+                float distToPuck = hypot( puckX - l_x, puckY - l_y);
+                
+                if(distToPuck < Robot::PickupRange)
                 {
-                    l_HeadingError = l_Puck.getOrient();
-                    l_ClosestRange = l_Puck.getRange();
+                    toPerform = ACTION_PICKUP_PUCK;
+                    // TODO, sets this to the correct value
+                    action->puckid = 0;
+                    m_LastPickup->setX(l_CurrentPos->getX());
+                    m_LastPickup->setY(l_CurrentPos->getY()); 
+                    break;
                 }
-            }
 
-            //Attempt to puck up the puck.
-            if (Pickup())
-            {
-                //Got one! Remember where it was.
-                m_LastPickup->setX(l_CurrentPos->getX());
-                m_LastPickup->setY(l_CurrentPos->getY()); 
+                if (distToPuck < closestPuck)
+                {
+                    float l_Dx = Math::WrapDistance(puckX - l_x, Robot::WorldSize);
+                    float l_Dy = Math::WrapDistance(puckY - l_y, Robot::WorldSize);
+                    closestPuck = distToPuck;
+                    l_HeadingError = Math::AngleNormalize(fast_atan(l_x,l_y) - l_orient);
+                }
             }
         }
         else
@@ -143,17 +170,16 @@ Msg_Action Robot::getAction()
             float l_Dx = Math::WrapDistance(m_LastPickup->getX()-l_CurrentPos->getX(), l_WorldSize);
             float l_Dy = Math::WrapDistance(m_LastPickup->getY()-l_CurrentPos->getY(), l_WorldSize);
 
-            l_HeadingError = Math::AngleNormalize((atan2(l_Dy, l_Dx) - l_CurrentPos->getOrient()));
+            l_HeadingError = Math::AngleNormalize((fast_atan(l_Dy, l_Dx) - l_CurrentPos->getOrient()));
 
             //If we are at the last place we found a puck, and there are no visible pucks,
             //then choose another place.
             if (hypot(l_Dx, l_Dy) < 0.05)
             {
-                m_LastPickup->setX(m_LastPickup->getX() + (drand48() * 0.4 -0.2));
-                m_LastPickup->setY(m_LastPickup->getY() + (drand48() * 0.4 -0.2));
-                
-                m_LastPickup->setX(Math::DistanceNormalize(m_LastPickup->getX(), l_WorldSize));
-                m_LastPickup->setY(Math::DistanceNormalize(m_LastPickup->getY(), l_WorldSize));
+                m_LastPickup->setX(Math::DistanceNormalize(m_LastPickup->getX() + (drand48() * 0.4 -0.2),
+                                                           l_WorldSize));
+                m_LastPickup->setY(Math::DistanceNormalize(m_LastPickup->getY() + (drand48() * 0.4 -0.2),
+                                                           l_WorldSize));
             }
 
         }
@@ -174,54 +200,27 @@ Msg_Action Robot::getAction()
         //Turn to reduce error.
         m_Speed->setRotSpeed(0.2 * l_HeadingError);
     }
-*/
+    
+    //Create action
+    action->robotid = this->getId();
+    if(toPerform == ACTION_MOVE)
+    {
+        action->speed = m_Speed->getForwSpeed();
+        action->angle = m_Speed->getRotSpeed();
+    }
+    return toPerform; 
 }
 
 bool Robot::Holding() const
 {
     if (m_PuckHeld == 0)
     {
-        return true;
-    }
-    else{
         return false;
     }
-}
-
-int Robot::Drop()
-{
-    unsigned int temppuck;
-
-    //If we're holding a puck, drop it.
-    if (Holding())
+    else
     {
-        m_PuckHeld = NULL;
+        return true;
     }
-    return temppuck;
-}
-
-bool Robot::Pickup()
-{
-    /*
-    // TODO: Not deleting this yet, may be needed for actions
-    if (!Holding())
-    {
-        //Check our list of visible pucks.
-        for (std::list<VisiblePuckPtr>::iterator it = m_VisiblePucks.begin();
-                it != m_VisiblePucks.end(); it++)
-        {
-            //Puck up the first puck in our range that isn't held.
-            Puck* l_Puck = (*it).getObject();
-            if ((*it).getRange() < m_PickupRange && !l_Puck->isHeld())
-            {
-                m_PuckHeld = l_Puck;
-                m_PuckHeld->toggleHeld();
-                return true;
-            }
-        }
-    }
-    */
-    return false;
 }
 
 float Robot::getX()
@@ -237,5 +236,4 @@ float Robot::getY()
 	return (*getPosition()).getY();
 
 }
-
 

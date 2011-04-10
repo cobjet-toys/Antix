@@ -25,11 +25,15 @@ def start_process(name, **kwargs):
         current_clock_port += 1
     elif name is "client":
         # setup full config file for robot client
-        shutil.copy(GRIDS_IDS_TMP, "client_config.tmp")
+        shutil.copy(CLIENT_CONFIG, "client_config.tmp")
+        #shutil.copy(GRIDS_IDS_TMP, "client_config.tmp")
         CLIENT_FULL_CONFIG_FILE = open("client_config.tmp", 'a', 0) # 0 means no buffer
         client_num = kwargs['client_num']
 
-
+        temp_grids = open(GRIDS_IDS_TMP, 'r')
+        temp_grids_lines = temp_grids.readlines()
+        for line in temp_grids_lines:
+            CLIENT_FULL_CONFIG_FILE.write(line)
         
         teams_for_clients = GRID_DICT[client_num+1]
         print "Client: %d" %(client_num+1)
@@ -222,11 +226,11 @@ class BashScriptException(Exception):
 # Main:
 
 # Get the user argument
-if (len(sys.argv) != 6) and (len(sys.argv) != 7):
-    print "Usage: python controller.py <sfu_username> <path/to/antix/directory/in/your/home/directory/> <grid config file> <drawer config file> <controller config file> optional:BUILD"
+if (len(sys.argv) != 7) and (len(sys.argv) != 8):
+    print "Usage: python controller.py <sfu_username> <path/to/antix/directory/in/your/home/directory/> <grid config file> <drawer config file> <controller config file> <client config file> optional:BUILD\n"
     print "For example(with build): python contoller.py hha13 ~/Documents/Antix/ grid.config drawer.config controller.config BUILD"
-    print "For example(without build): python contoller.py hha13 ~/Documents/Antix/ grid.config drawer.config controller.config"
-    print "Also, make sure you've set up SSH keys for your account."
+    print "For example(without build): python contoller.py hha13 ~/Documents/Antix/ grid.config drawer.config controller.config client.config\n"
+    print "Also, make sure you've set up SSH keys for your account.\n"
     print len(sys.argv)
     sys.exit()
 
@@ -235,8 +239,9 @@ PATH = sys.argv[2]
 GRID_CONFIG = sys.argv[3]
 DRAWER_CONFIG = sys.argv[4]
 CTRL_CONFIG = sys.argv[5]
+CLIENT_CONFIG = sys.argv[6]
 try:
-    BUILD_OPTION = sys.argv[6]
+    BUILD_OPTION = sys.argv[7]
 except:
     print "Running without building\n"
     BUILD_OPTION = None
